@@ -46,7 +46,10 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
         else:
             pass 
     density_profile = np.array(density_profile).T # shape: (N radii, num_of_halos)
-    print(density_profile.shape)
+    if density_profile.shape[0] == 0:
+        print('no halos')
+    else:
+        print('num of halos: ', density_profile.shape[1])
     
     ### Find the median density profile ###
     if use_bootstrap == True:
