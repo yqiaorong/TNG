@@ -2,6 +2,8 @@
 
 ## code
 
+Install [illustris_python](https://github.com/illustristng/illustris_python) to ../code/illustris_python
+
 ### DMhalo
 
 * mass_hist.py
