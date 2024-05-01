@@ -6,6 +6,8 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 ### DMhalo
 
+../code/DM_halo
+
 * mass_hist.py
 
 * 1_all_halos.py --snap 
