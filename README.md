@@ -4,6 +4,8 @@
 
 ### DMhalo
 
+* mass_hist.py
+
 * 1_all_halos.py --snap 
 
   * one_halo.py --snap --halo_idx

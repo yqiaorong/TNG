@@ -2,10 +2,23 @@ import illustris_python as il
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import argparse
+
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--snap',default=99,type=int)
+args = parser.parse_args()
+
+print('')
+print(f'>>> DM halo mass histogram <<<')
+print('\nInput arguments:')
+for key, val in vars(args).items():
+	print('{:16} {}'.format(key, val))
+print('')
 
 # Specify the snapshot
 basePath = '/nfs/mvogelsblab002/Users/s_qyu/TNG300-1/output'
-snapNum = 99
+snapNum = args.snap
 
 # Load Halos from groupcat
 Group_M_Mean200 = il.groupcat.loadHalos(basePath, snapNum, fields='Group_M_Mean200')

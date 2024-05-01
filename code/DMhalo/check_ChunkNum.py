@@ -41,5 +41,3 @@ for f in flist:
         old_path = os.path.join(fdir, f)
         new_path = os.path.join(fdir, new_f)
         os.rename(old_path, new_path)
-# %%
-###
