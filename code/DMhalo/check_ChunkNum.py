@@ -41,3 +41,16 @@ for f in flist:
         old_path = os.path.join(fdir, f)
         new_path = os.path.join(fdir, new_f)
         os.rename(old_path, new_path)
+del fdir, flist
+        
+# %%
+### Check number of DM halo computed
+import os
+
+parent_dir = '/nfs/home2/s_qyu'
+halo_dir = os.path.join(parent_dir, 'AstroLab/TNG300-1/result/DM_halo_density_profiles',
+                        'snap_99')
+halo_list = os.listdir(halo_dir)
+print(len(halo_list))
+del halo_dir, halo_list
+# %%
