@@ -19,7 +19,7 @@ for key, val in vars(args).items():
 print('')
 
 # Specify the snapshot
-basePath = '/nfs/mvogelsblab002/Users/s_qyu/TNG300-1/output'
+basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L205n1250TNG/output'
 snapNum = 99
 
 # Load Halos from groupcat

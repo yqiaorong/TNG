@@ -2,8 +2,8 @@ import illustris_python as il
 import os
 
 # Specify the snapshot
-basePath = '/nfs/mvogelsblab002/Users/s_qyu/TNG300-1/output'
-snapNum = 99
+basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L205n1250TNG/output'
+snapNum = 78
 
 # Get the total number of DM halos
 Header = il.groupcat.loadHeader(basePath, snapNum)

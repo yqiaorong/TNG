@@ -3,10 +3,10 @@
 
 import os
 
-output_dir = '/nfs/mvogelsblab002/Users/s_qyu/TNG300-1/output'
+output_dir = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L205n1250TNG/output'
 
 # choose snapshot
-snap = 99
+snap = 78
 
 snap_dir = os.path.join(output_dir, f'snapdir_{snap:03d}')
 # Check the number of hdf5 chunk file
@@ -47,7 +47,7 @@ del fdir, flist
 ### Check number of DM halo computed
 import os
 
-parent_dir = '/nfs/home2/s_qyu'
+parent_dir = '/n/home01/sqyu'
 halo_dir = os.path.join(parent_dir, 'AstroLab/TNG300-1/result/DM_halo_density_profiles',
                         'snap_99')
 halo_list = os.listdir(halo_dir)
