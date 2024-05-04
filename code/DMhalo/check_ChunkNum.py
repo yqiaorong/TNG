@@ -47,9 +47,11 @@ del fdir, flist
 ### Check number of DM halo computed
 import os
 
+snapNum = 78
+
 parent_dir = '/n/home01/sqyu'
 halo_dir = os.path.join(parent_dir, 'AstroLab/TNG300-1/result/DM_halo_density_profiles',
-                        'snap_99')
+                        f'snap_{snapNum}')
 halo_list = os.listdir(halo_dir)
 print(len(halo_list))
 del halo_dir, halo_list

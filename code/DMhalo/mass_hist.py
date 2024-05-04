@@ -30,10 +30,17 @@ if os.path.isdir(save_dir) == False:
     
 # Histogram of halos mass
 plt.figure()
-plt.hist(Group_M_Mean200, bins=np.logspace(0.01, 6, 50))
+hist_values, _, _ = plt.hist(Group_M_Mean200, bins=np.logspace(0.01, 6, 50))
 plt.xlabel('Mass [10^10 MSun / h]')
 plt.ylabel('Frequency')
 plt.yscale('log')
 plt.xscale('log')
 plt.title(f"DM halos' mass histogram at snap {snapNum}")
 plt.savefig(f'result/DM halos mass histogram/snap_{snapNum}')
+
+# Print numbers in each bin
+sums = []
+for i in range(0, len(hist_values), 5):
+    sum_of_five = sum(hist_values[i:i+5])
+    sums.append(sum_of_five)
+print(sums)

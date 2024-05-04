@@ -9,6 +9,7 @@ from func import compt_density_profile
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--halo_idx',default=0,type=int)
+parser.add_argument('--snap',default=78,type=int)
 args = parser.parse_args()
 
 print('')
@@ -20,7 +21,7 @@ print('')
 
 # Specify the snapshot
 basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L205n1250TNG/output'
-snapNum = 99
+snapNum = args.snap
 
 # Load Halos from groupcat
 group_fields = ['GroupCM', 'Group_M_Mean200', 'Group_R_Mean200']
