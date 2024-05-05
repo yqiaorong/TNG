@@ -18,6 +18,10 @@ for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
 print('')
 
+# Compute DM softening length
+DM_soft = DMsoften(args.snap)
+print(f'The DM softening length: {np.round(DM_soft, 3)} ckpc/h')
+
 # Create mass bins
 bin_width = 0.5
 num_bins = int((args.bin_end-args.bin_start)/bin_width)
@@ -36,7 +40,7 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 15))
 # Iteration over mass bins
 for i in range(num_bins):
     # Compute median density profiles
-    radius, median_rho, rho_err = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
+    radius, median_rho, rho_err = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]], DM_soft)
     
     if radius.shape != 0:
         # Calculate d log rho / d log r

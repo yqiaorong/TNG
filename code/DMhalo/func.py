@@ -23,14 +23,15 @@ def compt_density_profile(coordinates, haloCM, halo_R_Mean200,
     
     return density_bins, radius_bins
 
-def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
+def stacked_density_profile(file_list, mass_criteria, DMsoften, use_bootstrap=True):
     
     import numpy as np
     
-    ### Load all density profile data ###
-    
     # Initialize the output
     scaled_radius_profile, density_profile = [], []
+    R200_list = []
+    
+    ### Load all density profile data ###
     # Iterate over halos
     for file in file_list:
         # load data
@@ -41,6 +42,7 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
             # radius profile
             halo_R_Mean200 = data['halo_R_Mean200']
             scaled_radius_profile = data['radius_profile']/halo_R_Mean200
+            R200_list.append(halo_R_Mean200)
             # density profile
             density_profile.append(data['density_profile'])
         else:
@@ -66,9 +68,36 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     else:
         medians = np.percentile(density_profile, 50, axis=1) # shape: (N radii, 1)
         errors = np.percentile(density_profile, [16,84], axis=1).T # shape: (N radii, 2)
-        
-    print(len(scaled_radius_profile), medians.shape, errors.shape)
-    return np.array(scaled_radius_profile), medians, errors  
+    
+    ### Compute the minimum radius in percentage in the stack
+    
+    min_ratio = DMsoften / min(R200_list)
+    new_radius_profile = scaled_radius_profile - min_ratio
+    min_radius_index = new_radius_profile.tolist().index(min(abs(new_radius_profile)))
+    del R200_list
+       
+    return np.array(scaled_radius_profile[min_radius_index:]), medians[min_radius_index:], errors[min_radius_index:]  
+
+def DMsoften(snapNum):
+    
+    import h5py
+    import illustris_python as il
+    
+    basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L205n1250TNG/output'
+    
+    # Groupcat
+    Header = il.groupcat.loadHeader(basePath, snapNum)
+    Boxsize = Header['BoxSize'] # ckpc/h
+    
+    # snapshot
+    with h5py.File(il.snapshot.snapPath(basePath, snapNum), 'r') as f:
+        header = dict(f['Header'].attrs.items())
+        nPart = il.snapshot.getNumPart(header)
+        DM_nPart = nPart[1]
+    
+    soft_length = Boxsize / (DM_nPart**(1/3) * 40) # ckpc/h
+
+    return soft_length
 
 def bootstrap(x, statfunc, Nboots=32):
     import numpy as np
