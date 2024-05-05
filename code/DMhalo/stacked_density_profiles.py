@@ -40,22 +40,22 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 15))
 # Iteration over mass bins
 for i in range(num_bins):
     # Compute median density profiles
-    radius, median_rho, rho_err = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]], DM_soft)
-    
+    radius, median_rho, rho_err, num_halo = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]], DM_soft)
+
     if radius.shape != 0:
         # Calculate d log rho / d log r
         slopes = gradient(radius, median_rho)
         slopes_errs = gradient(radius, rho_err)
-    
+
         # Plot the density profile
         axs[0].errorbar(radius, median_rho, 
                         #yerr = rho_err.T, 
                         fmt='.', 
-                    label=f'mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun')
+                    label=f'mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun: {num_halo} halos')
         axs[1].errorbar(radius[2:-2], slopes, 
                         #yerr=slopes_errs.T, 
                         fmt='.',
-                    label=f'mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun')
+                    label=f'mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun: {num_halo} halos')
 
 axs[0].set_xscale('log')
 axs[0].set_yscale('log')

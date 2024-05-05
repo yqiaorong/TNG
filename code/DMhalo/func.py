@@ -48,10 +48,13 @@ def stacked_density_profile(file_list, mass_criteria, DMsoften, use_bootstrap=Tr
         else:
             pass 
     density_profile = np.array(density_profile).T # shape: (N radii, num_of_halos)
+    
+    # Get the number of DM halos
+    num_halo = density_profile.shape[1]
     if density_profile.shape[0] == 0:
         print('no halos')
     else:
-        print('num of halos: ', density_profile.shape[1])
+        print(f'num of halos: {num_halo}')
     
     ### Find the median density profile ###
     if use_bootstrap == True:
@@ -70,13 +73,13 @@ def stacked_density_profile(file_list, mass_criteria, DMsoften, use_bootstrap=Tr
         errors = np.percentile(density_profile, [16,84], axis=1).T # shape: (N radii, 2)
     
     ### Compute the minimum radius in percentage in the stack
-    
     min_ratio = DMsoften / min(R200_list)
     new_radius_profile = scaled_radius_profile - min_ratio
     min_radius_index = new_radius_profile.tolist().index(min(abs(new_radius_profile)))
+    
     del R200_list
        
-    return np.array(scaled_radius_profile[min_radius_index:]), medians[min_radius_index:], errors[min_radius_index:]  
+    return np.array(scaled_radius_profile[min_radius_index:]), medians[min_radius_index:], errors[min_radius_index:], num_halo
 
 def DMsoften(snapNum):
     
