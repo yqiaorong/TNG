@@ -36,7 +36,7 @@ file_list = [os.path.join(load_dir, fname) for fname in file_list]
 
 # Set up the final plot
 fig, axs = plt.subplots(2, 1, figsize=(10, 15))
-
+        
 # Iteration over mass bins
 for i in range(num_bins):
     # Compute median density profiles
@@ -49,7 +49,7 @@ for i in range(num_bins):
         # Calculate d log rho / d log r
         slopes = gradient(radius, median_rho)
         slopes_errs = gradient(radius, rho_err)
-
+        
         # Plot the density profile
         axs[0].errorbar(radius, median_rho, 
                         #yerr = rho_err.T, 
@@ -59,18 +59,20 @@ for i in range(num_bins):
                         #yerr=slopes_errs.T, 
                         fmt='.',
                     label=f'mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun: {num_halo} halos')
+        axs[1].set_ylim([-3,2])
+        
+        # General settings
+        axs[0].set_xscale('log')
+        axs[0].set_yscale('log')
+        axs[0].set_ylabel("Density [10^10 solar mass / (ckpc/h)^3]")
+        axs[0].legend()
+        axs[0].set_title(f'Stacked density profiles')
 
-axs[0].set_xscale('log')
-axs[0].set_yscale('log')
-axs[0].set_ylabel("Density [10^10 solar mass / (ckpc/h)^3]")
-axs[0].legend()
-axs[0].set_title(f'Stacked density profiles')
-
-axs[1].set_xscale('log')
-axs[1].set_xlabel("R [r/R_Mean200]")
-axs[1].set_ylabel("Slope")
-axs[1].legend()
-axs[1].set_title('Finding splashback radius')
+        axs[1].set_xscale('log')
+        axs[1].set_xlabel("R [r/R_Mean200]")
+        axs[1].set_ylabel("Slope")
+        axs[1].legend()
+        axs[1].set_title('Finding splashback radius')
 
 plt.tight_layout()
 
