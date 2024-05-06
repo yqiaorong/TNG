@@ -19,3 +19,7 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 * 2_stacks.py --snap 
 
   * stacked_density_profiles.py --snap --bin_start --bin_end 
+
+../code/external
+
+* stacked_density_profiles.py --snap --bin_start --bin_end 
