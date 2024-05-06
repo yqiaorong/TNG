@@ -10,7 +10,9 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 * mass_hist.py
 
-* 1_all_halos.py --snap 
+* 1_all_halos.py --snap
+
+* 1_subset_halos.py --snap --mass_range
 
   * one_halo.py --snap --halo_idx
 
