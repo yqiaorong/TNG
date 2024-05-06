@@ -1,9 +1,15 @@
 import illustris_python as il
 import os
+import argparse
+
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--snap',default=78,type=int)
+args = parser.parse_args()
 
 # Specify the snapshot
 basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L205n1250TNG/output'
-snapNum = 99
+snapNum = args.snap
 
 # Get the total number of DM halos
 Header = il.groupcat.loadHeader(basePath, snapNum)

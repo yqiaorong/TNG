@@ -41,7 +41,7 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 15))
 for i in range(num_bins):
     # Compute median density profiles
     radius, median_rho, rho_err, num_halo = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]], DM_soft)
-
+    
     if radius.shape != 0:
         # Calculate d log rho / d log r
         slopes = gradient(radius, median_rho)

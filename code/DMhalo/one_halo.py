@@ -3,7 +3,6 @@ import numpy as np
 import os
 import argparse
 import h5py
-from tqdm import tqdm
 from func import compt_density_profile
 
 # Input arguments
@@ -46,7 +45,7 @@ zmin, zmax = haloCM[2] - 5 * halo_R_Mean200, haloCM[2] + 5 * halo_R_Mean200
 # Load Halos coordinates from snapshot
 # Coordinates = il.snapshot.loadSubset(basePath, snapNum, 'dm', ['Coordinates'], float32=True)
 
-load_dir = os.path.join(basePath, 'snapdir_099')
+load_dir = os.path.join(basePath, f'snapdir_{snapNum:03d}')
 load_list = os.listdir(load_dir)
 load_list = [fname for fname in load_list if fname.endswith('hdf5')]
 
