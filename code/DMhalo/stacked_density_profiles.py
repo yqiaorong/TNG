@@ -59,7 +59,7 @@ for i in range(num_bins):
                         #yerr=slopes_errs.T, 
                         fmt='.',
                     label=f'mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun: {num_halo} halos')
-        axs[1].set_ylim([-3,2])
+        axs[1].set_ylim([-2,2])
         
         # General settings
         axs[0].set_xscale('log')
