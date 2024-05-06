@@ -81,7 +81,7 @@ def stacked_density_profile(file_list, mass_criteria, DMsoften, use_bootstrap=Tr
        
     return np.array(scaled_radius_profile[min_radius_index:]), medians[min_radius_index:], errors[min_radius_index:], num_halo
 
-def DMsoften(snapNum):
+def DM(snapNum):
     
     import h5py
     import illustris_python as il
@@ -90,17 +90,19 @@ def DMsoften(snapNum):
     
     # Groupcat
     Header = il.groupcat.loadHeader(basePath, snapNum)
-    Boxsize = Header['BoxSize'] # ckpc/h
+    Boxsize = Header['BoxSize'] # ckpc/h  
     
     # snapshot
     with h5py.File(il.snapshot.snapPath(basePath, snapNum), 'r') as f:
         header = dict(f['Header'].attrs.items())
         nPart = il.snapshot.getNumPart(header)
         DM_nPart = nPart[1]
+        # DM mass
+        DMmass = header['MassTable'][1]
     
     soft_length = Boxsize / (DM_nPart**(1/3) * 40) # ckpc/h
 
-    return soft_length
+    return soft_length, DMmass
 
 def bootstrap(x, statfunc, Nboots=32):
     import numpy as np
