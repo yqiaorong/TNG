@@ -38,7 +38,7 @@ def stacked_density_profile(file_list, mass_criteria, DMsoften, use_bootstrap=Tr
         data = np.load(file, allow_pickle=True).item()
         halo_M_Mean200 = data['halo_M_Mean200']
         # apply the mass criteria 
-        if (halo_M_Mean200 > 10**mass_criteria[0]) & (halo_M_Mean200 < 10**mass_criteria[1]):
+        if (halo_M_Mean200 >= 10**mass_criteria[0]) & (halo_M_Mean200 < 10**mass_criteria[1]):
             # radius profile
             halo_R_Mean200 = data['halo_R_Mean200']
             scaled_radius_profile = data['radius_profile']/halo_R_Mean200

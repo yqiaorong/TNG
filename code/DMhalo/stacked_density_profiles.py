@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--snap', default=99, type=int)
-parser.add_argument('--bin_start', default=0, type=float)
-parser.add_argument('--bin_end', default=5.5, type=float)
+parser.add_argument('--bin_start', default=3.5, type=float)
+parser.add_argument('--bin_end', default=5, type=float)
 args = parser.parse_args()
 
 print('')

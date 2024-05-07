@@ -6,7 +6,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--snap', default=99, type=int)
 args = parser.parse_args()
 
-bins = [3.5, 4, 4.5, 5, 5.5]
+bins = [3.5, 4, 4.5, 5]
 
 # Single stack
 for i in range(len(bins)-1):

@@ -100,7 +100,7 @@ if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
 # Plot name and save
-if str(args.bin_start).endswith('0'):
+if str(args.bin_start).endswith('0') or isinstance(args.bin_start, int):
     start = int(args.bin_start)
     enda, endb = str(args.bin_end).split('.')
     end = f'{enda}-{endb}'
