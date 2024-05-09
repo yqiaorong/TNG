@@ -1,4 +1,4 @@
-# TNG300-1
+# TNG
 
 ## code
 
@@ -6,20 +6,14 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 ### DMhalo
 
-../code/DM_halo
+../code/DMhalo
 
-* mass_hist.py
+* mass_hist.py --boxsize --res
 
-* 1_all_halos.py --snap
+* 1_subset_halos.py --boxsize --res --snapnum --mass_range
 
-* 1_subset_halos.py --snap --mass_range
+  * one_halo.py --boxsize --res --snapnum --groupnum
 
-  * one_halo.py --snap --halo_idx
+* 2_stacks.py ---boxsize --res -snap 
 
-* 2_stacks.py --snap 
-
-  * stacked_density_profiles.py --snap --bin_start --bin_end 
-
-../code/external
-
-* stacked_density_profiles.py --snap --bin_start --bin_end 
+  * stacked_density_profiles.py --boxsize --res --snap --bin_start --bin_end 

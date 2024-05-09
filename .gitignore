@@ -2,4 +2,5 @@ output/
 result/
 job/
 code/illustris_python
-code/external/dark_matter_splashback.py
+code/DMhalo_new
+code/external
