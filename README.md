@@ -14,6 +14,6 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
   * one_halo.py --boxsize --res --snapnum --groupnum
 
-* 2_stacks.py ---boxsize --res -snap 
+* 2_stacks.py ---boxsize --res -snapnum
 
-  * stacked_density_profiles.py --boxsize --res --snap --bin_start --bin_end 
+  * stacked_density_profiles.py --boxsize --res --snapnum --bin_start --bin_end 
