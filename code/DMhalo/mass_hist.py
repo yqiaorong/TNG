@@ -5,7 +5,6 @@ import os
 import argparse
 
 # Input arguments
-# Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',default=205,type=int)
 parser.add_argument('--res',default=1250,type=int)
