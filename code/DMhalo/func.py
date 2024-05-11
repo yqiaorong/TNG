@@ -63,15 +63,20 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
             median_with_error = np.percentile(resampled_median_rho_data_at_r, [16, 50, 84])
             # Append new data to the lists
             medians.append(median_with_error[1])
-            errors.append([median_with_error[0], median_with_error[2]])
+            errors.append([median_with_error[1]-median_with_error[0], 
+                           median_with_error[2]-median_with_error[1]])
         # Convert the list to array
         medians = np.array(medians) # shape: (N radii, 1)
         errors = np.array(errors) # shape: (N radii, 2)
     else:
         medians = np.percentile(density_profiles, 50, axis=1) # shape: (N radii, 1)
         errors = np.percentile(density_profiles, [16,84], axis=1).T # shape: (N radii, 2)
-       
-    return radii, medians, errors, num_halo
+    
+    ### Compute radii centers
+    radii = np.insert(radii, 0, 0.001)
+    radial_centers = 10**( (np.log10(radii[1:])+np.log10(radii[:-1]))/2 )
+
+    return radial_centers, medians, errors, num_halo
 
 def bootstrap(x, statfunc, Nboots=32):
     import numpy as np
@@ -87,18 +92,25 @@ def bootstrap(x, statfunc, Nboots=32):
     
     return resampled_stat
 
-def gradient(r, rho):
+def gradient(r, rho, rho_err=None):
     import numpy as np
     
-    slopes = []
-    for i in (range(r.shape[0])):
+    slopes, errs = [], []
+    for i in range(r.shape[0]):
         if i >= 4:
             slope = (1/12 * np.log(rho[i-4]) - 2/3 * np.log(rho[i-3]) + 
                 2/3 * np.log(rho[i-1]) - 1/12 * np.log(rho[i])) / (
                     np.log(r[i]) - np.log(r[i-4]))
             slopes.append(slope)
-    
-    return np.array(slopes)
+            # Compute errs
+            if isinstance(rho_err, np.ndarray):
+                err = abs(slope) * ((rho_err[i-4]/rho[i-4])*(1/12) + 
+                            (rho_err[i-3]/rho[i-3])*(2/3) + 
+                            (rho_err[i-2]/rho[i-1])*(2/3) + 
+                            (rho_err[i]/rho[i])*(1/12)) 
+                errs.append(err)
+
+    return r[2:-2], np.array(slopes), np.array(errs)
 
 ### External functions ###
 

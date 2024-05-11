@@ -39,15 +39,20 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 15))
 for i in range(num_bins):
     # Compute median density profiles
     radius, median_rho, rho_err, num_halo = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
-    
-    # Calculate d log rho / d log r
-    slopes = gradient(radius, median_rho)
-    
     # Compute fitted median density profiles
     result = fit_profile_parametric(radius, median_rho, rho_err[:,0], 1)
     
-    # slopes_errs = gradient(radius, rho_err)
-    slopes_theory = gradient(result[0], result[1])
+    # Calculate d log rho / d log r
+    slope_radius, slopes, slopes_errs = gradient(radius, median_rho, rho_err[:,0])
+    
+    # Fit the slope
+    # M1:
+    slopes_fits_r, slopes_fits, _ = gradient(result[0], result[1])
+    # M2:
+    # slope_rhos = median_rho[2:-2]
+    # slope_rhos_errs = rho_err[2:-2, 0]
+    # slope_result = fit_gradient_parametric(slope_radius, slope_rhos, slope_rhos_errs, slopes, slopes_errs, 1)
+    # slopes_fits_r, slopes_fits = slope_result[0], slope_result[1]
     
     # Plot the density profile
     axs[0].errorbar(radius, median_rho, 
@@ -60,11 +65,11 @@ for i in range(num_bins):
                 label=f'Fit: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun: {num_halo} halos')
     
     # Plot the fitted gradients
-    axs[1].errorbar(radius[2:-2], slopes, 
+    axs[1].errorbar(slope_radius, slopes, 
                         #yerr=slopes_errs.T, 
                         fmt='.',
                     label=f'Data: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun: {num_halo} halos')
-    axs[1].errorbar(result[0][2:-2], slopes_theory, 
+    axs[1].errorbar(slopes_fits_r, slopes_fits, 
                         #yerr=slopes_errs.T, 
                         fmt='.',
                     label=f'Theory: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun: {num_halo} halos')
