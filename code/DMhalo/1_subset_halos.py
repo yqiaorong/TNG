@@ -32,7 +32,7 @@ print(f'In total, {Ngroups_subset} DM halos with mass 10^{args.mass_range+10} ~ 
 
 # Iterate over DM halos
 for i, halo_idx in enumerate(subset_idx):
-    if not os.path.exists(f'result/DMhalo_density_profiles/snap_{snapnum}/densities/halo_{halo_idx}.npy'):
+    if not os.path.exists(f'result/DMhalo_density_profiles/sim_{args.boxsize}_{args.res}/snap_{snapnum}/densities/halo_{halo_idx}.npy'):
         os.system(f'python3 code/DMhalo/one_halo.py --snap {snapnum} --groupnum {halo_idx}  --boxsize {args.boxsize} --res {args.res}')
     else:
         print(f'At snap {snapnum}, DM halo local index {i+1}/{Ngroups_subset} already exists.')

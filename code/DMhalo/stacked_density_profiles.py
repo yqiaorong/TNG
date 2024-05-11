@@ -26,7 +26,7 @@ num_bins = int((args.bin_end-args.bin_start)/bin_width)
 mass_bins = np.arange(args.bin_start, args.bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun
 
 # Load directory
-load_dir = f'result/DMhalo_density_profiles/snap_{args.snapnum}/densities'
+load_dir = f'result/DMhalo_density_profiles/sim_{args.boxsize}_{args.res}/snap_{args.snapnum}/densities'
 
 # Load density profile data
 file_list = os.listdir(load_dir)
@@ -85,7 +85,7 @@ for i in range(num_bins):
 plt.tight_layout()
 
 # Save directory
-save_dir = f'result/Stacked_density_profiles/snap_{args.snapnum}'
+save_dir = f'result/Stacked_density_profiles/sim_{args.boxsize}_{args.res}/snap_{args.snapnum}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 

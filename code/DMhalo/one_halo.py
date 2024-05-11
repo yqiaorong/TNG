@@ -111,7 +111,7 @@ densities = np.sum(rho_bins, axis=0)
 
 
 # Save directory
-save_dir = f'result/DMhalo_density_profiles/snap_{snapnum}'
+save_dir = f'result/DMhalo_density_profiles/sim_{args.boxsize}_{args.res}/snap_{snapnum}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
     
