@@ -43,6 +43,7 @@ snap_list = [s for s in snaps if any(s in fpath for fpath in file_list)]
 
 # Set up the final plot
 fig, axs = plt.subplots(2, 1, figsize=(10, 15))
+axs[0].set_title(f'Mass bin 10^{args.bin_start+10} ~ 10^{args.bin_end+10} Msun time evolution')
 
 # Set up the colour range
 cmap = plt.cm.get_cmap('hsv')
@@ -77,15 +78,14 @@ axs[0].set_xscale('log')
 axs[0].set_yscale('log')
 axs[0].set_ylabel("density [M$_{\odot}$/kpc$^3$]")
 axs[0].legend()
-axs[0].set_title(f'Stacked density profiles')
+# axs[0].set_title(f'Stacked density profiles')
 
 axs[1].set_xscale('log')
 axs[1].set_xlabel("r/R200")
 axs[1].set_ylabel("Slope")
 axs[1].legend()
-axs[1].set_title('Finding splashback radius')
+# axs[1].set_title('Finding splashback radius')
 
-plt.title(f'Mass bin 10^{args.bin_start+10} ~ 10^{args.bin_end+10} Msun time evolution')
 plt.tight_layout()
     
 # Save directory
