@@ -112,6 +112,17 @@ def gradient(r, rho, rho_err=None):
 
     return r[2:-2], np.array(slopes), np.array(errs)
 
+def float_to_str(bin_start, bin_end):
+    if str(bin_start).endswith('0'):
+        start = int(bin_start)
+        enda, endb = str(bin_end).split('.')
+        end = f'{enda}-{endb}'
+    else:
+        starta, startb = str(bin_start).split('.')
+        start = f'{starta}-{startb}'
+        end = int(bin_end)
+    return start, end
+
 ### External functions ###
 
 import numpy as np

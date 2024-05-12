@@ -43,7 +43,7 @@ for i in range(num_bins):
     result = fit_profile_parametric(radius, median_rho, rho_err[:,0], 1)
     
     # Calculate d log rho / d log r
-    slope_radius, slopes, slopes_errs = gradient(radius, median_rho, rho_err[:,0])
+    slopes_radius, slopes, slopes_errs = gradient(radius, median_rho, rho_err[:,0])
     
     # Fit the slope
     # M1:
@@ -65,7 +65,7 @@ for i in range(num_bins):
                 label=f'Fit: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun: {num_halo} halos')
     
     # Plot the fitted gradients
-    axs[1].errorbar(slope_radius, slopes, 
+    axs[1].errorbar(slopes_radius, slopes, 
                         #yerr=slopes_errs.T, 
                         fmt='.',
                     label=f'Data: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun: {num_halo} halos')
@@ -95,12 +95,12 @@ if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
 # Plot name and save
-if str(args.bin_start).endswith('0'):
-    start = int(args.bin_start)
-    enda, endb = str(args.bin_end).split('.')
-    end = f'{enda}-{endb}'
-else:
-    starta, startb = str(args.bin_start).split('.')
-    start = f'{starta}-{startb}'
-    end = int(args.bin_end)
+start, end = float_to_str(args.bin_start, args.bin_end)
 plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}'))
+
+# Save data
+save_data = {'profile_radius': radius, 'profile_densities': median_rho, 
+             'profile_radius_fit': result[0], 'profile_densities_fit': result[1],
+             'slopes_radius': slopes_radius, 'slopes': slopes,
+             'slopes_radius_fit': slopes_fits_r, 'slopes_fit': slopes_fits}
+np.save(os.path.join(save_dir, f'Bins_{start}_to_{end}'), save_data)
