@@ -28,4 +28,4 @@ missing_number = 0
 for i, halo_idx in enumerate(subset_idx):
     if not os.path.exists(f'result/DMhalo_density_profiles/sim_{args.boxsize}_{args.res}/snap_{snapnum}/densities/halo_{halo_idx}.npy'):
         missing_number += 1
-print(f'Not all halos within this range are computed. {missing_number} halos missing.')
+print(f'{missing_number} halos missing.')
