@@ -20,6 +20,9 @@ for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
 print('')
 
+# Compute the critical density
+
+
 # Create mass bins
 bin_width = 0.5
 num_bins = int((args.bin_end-args.bin_start)/bin_width)
@@ -38,7 +41,10 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 15))
 # Iteration over mass bins
 for i in range(num_bins):
     # Compute median density profiles
-    radius, median_rho, rho_err, num_halo = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
+    profiles = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
+    radius, median_rho, rho_err = profiles[0], profiles[1], profiles[2]
+    num_halo, R200_median = profiles[3], profiles[4]
+    
     # Compute fitted median density profiles
     result = fit_profile_parametric(radius, median_rho, rho_err[:,0], 1)
     
@@ -77,7 +83,7 @@ for i in range(num_bins):
     # General settings
     axs[0].set_xscale('log')
     axs[0].set_yscale('log')
-    axs[0].set_ylabel("density [M$_{\odot}$/kpc$^3$]")
+    axs[0].set_ylabel(r"$\rho$/$\rho_c$")
     axs[0].legend()
     axs[0].set_title(f'Stacked density profiles')
 
@@ -102,5 +108,6 @@ plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}'))
 save_data = {'profile_radius': radius, 'profile_densities': median_rho, 
              'profile_radius_fit': result[0], 'profile_densities_fit': result[1],
              'slopes_radius': slopes_radius, 'slopes': slopes,
-             'slopes_radius_fit': slopes_fits_r, 'slopes_fit': slopes_fits}
+             'slopes_radius_fit': slopes_fits_r, 'slopes_fit': slopes_fits,
+             'R200_median': R200_median}
 np.save(os.path.join(save_dir, f'Bins_{start}_to_{end}'), save_data)

@@ -26,10 +26,13 @@ def compt_density_profile(coordinates, haloCM, halo_R_Mean200,
 def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     
     import numpy as np
+    # from scipy.constants import G
+    from unyt import Msun, G, second, megaparsec, km
     
     # Initialize the output
     density_profiles = []
     radii = []
+    R200 = []
     ### Load all density profile data ###
     # Iterate over halos
     for file in file_list:
@@ -41,11 +44,22 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
         if (halo_M_Mean200 >= 10**mass_criteria[0]) & (halo_M_Mean200 < 10**mass_criteria[1]):
             # radius profile
             radii = data['radial_bins'] / data['halo_R_Mean200']
+            R200.append(data['halo_R_Mean200'])
+            
+            # Compute the critical density
+            H = data['h'] * 100 * km / megaparsec / second
+            rho_c = 3 * H**2 / (8*np.pi*G) 
+            rho_c.convert_to_units('Msun/kiloparsec**3')
+            
             # density profile
-            density_profiles.append(data['densities'])
+            density_profiles.append(data['densities']/rho_c)
+           
         else:
             pass 
     
+    # Compute median R200
+    R200_median = np.median(R200)
+    del R200
     # Get the number of DM halos
     num_halo = np.array(density_profiles).shape[0]
     if num_halo == 0:
@@ -73,10 +87,11 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
         errors = np.percentile(density_profiles, [16,84], axis=1).T # shape: (N radii, 2)
     
     ### Compute radii centers
-    radii = np.insert(radii, 0, 0.001)
-    radial_centers = 10**( (np.log10(radii[1:])+np.log10(radii[:-1]))/2 )
-
-    return radial_centers, medians, errors, num_halo
+    radial_centers = radii
+    # radii = np.insert(radii, 0, 0)
+    # radial_centers = 10**( (np.log10(radii[1:])+np.log10(radii[:-1]))/2 )
+    
+    return (radial_centers, medians, errors, num_halo, R200_median)
 
 def bootstrap(x, statfunc, Nboots=32):
     import numpy as np
@@ -98,9 +113,9 @@ def gradient(r, rho, rho_err=None):
     slopes, errs = [], []
     for i in range(r.shape[0]):
         if i >= 4:
-            slope = (1/12 * np.log(rho[i-4]) - 2/3 * np.log(rho[i-3]) + 
-                2/3 * np.log(rho[i-1]) - 1/12 * np.log(rho[i])) / (
-                    np.log(r[i]) - np.log(r[i-4]))
+            slope = (1/12 * np.log10(rho[i-4]) - 2/3 * np.log10(rho[i-3]) + 
+                2/3 * np.log10(rho[i-1]) - 1/12 * np.log10(rho[i])) / (
+                    np.log10(r[i]) - np.log10(r[i-4]))
             slopes.append(slope)
             # Compute errs
             if isinstance(rho_err, np.ndarray):

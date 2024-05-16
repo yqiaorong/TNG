@@ -51,18 +51,20 @@ colours = [cmap(i / len(file_list)) for i in range(len(file_list))]
 
 # Load data
 for file, snap, c in zip(file_list, snap_list, colours):
+
     data = np.load(file, allow_pickle=True).item()
+    R200_median = data['R200_median']
     
-    pr = data['profile_radius']
+    pr = data['profile_radius'] * R200_median
     pd = data['profile_densities']
 
-    prf = data['profile_radius_fit']
+    prf = data['profile_radius_fit'] * R200_median
     pdf = data['profile_densities_fit']
     
-    sr = data['slopes_radius']
+    sr = data['slopes_radius'] * R200_median
     s = data['slopes']
 
-    srf = data['slopes_radius_fit']
+    srf = data['slopes_radius_fit'] * R200_median
     sf = data['slopes_fit']
     
     # Plot the density profile
@@ -76,12 +78,12 @@ for file, snap, c in zip(file_list, snap_list, colours):
 # General settings
 axs[0].set_xscale('log')
 axs[0].set_yscale('log')
-axs[0].set_ylabel("density [M$_{\odot}$/kpc$^3$]")
+axs[0].set_ylabel(r"$\rho$/$\rho_c$")
 axs[0].legend()
 # axs[0].set_title(f'Stacked density profiles')
 
 axs[1].set_xscale('log')
-axs[1].set_xlabel("r/R200")
+axs[1].set_xlabel("r [kpc]")
 axs[1].set_ylabel("Slope")
 axs[1].legend()
 # axs[1].set_title('Finding splashback radius')

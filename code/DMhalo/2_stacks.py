@@ -5,14 +5,19 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',default=205,type=int)
 parser.add_argument('--res',default=1250,type=int)
-parser.add_argument('--snapnum', default=99, type=int)
 args = parser.parse_args()
 
-bins = [3.5, 4, 4.5]
+snaps = [25, 33, 40, 50, 67, 78, 99]
 
+### Bin 3 - 3.5
 # Single stack
-for i in range(len(bins)-1):
-    os.system(f'python3 code/DMhalo/stacked_density_profiles.py --boxsize {args.boxsize} --res {args.res} --snap {args.snapnum} --bin_start {bins[i]} --bin_end {bins[i+1]}')
+for s in snaps:
+    os.system(f'python3 code/DMhalo/stacked_density_profiles.py --boxsize {args.boxsize} --res {args.res} --snap {s} --bin_start 3 --bin_end 3.5')
+# Profile time evolution
+os.system(f'python3 code/DMhalo/profiles_time_evolution.py --boxsize {args.boxsize} --res {args.res} --bin_start 3 --bin_end 3.5')
 
-# All stacks together
-os.system(f'python3 code/DMhalo/stacked_density_profiles.py --boxsize {args.boxsize} --res {args.res} --snap {args.snapnum} --bin_start {bins[0]} --bin_end {bins[-1]}')
+### Bin 3.5 - 4
+for s in snaps[1:]:
+    os.system(f'python3 code/DMhalo/stacked_density_profiles.py --boxsize {args.boxsize} --res {args.res} --snap {s} --bin_start 3.5 --bin_end 4')
+# Profile time evolution
+os.system(f'python3 code/DMhalo/profiles_time_evolution.py --boxsize {args.boxsize} --res {args.res} --bin_start 3.5 --bin_end 4')

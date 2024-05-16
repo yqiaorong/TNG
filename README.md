@@ -16,8 +16,8 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 * check_halo_number.py --boxsize --res --snapnum --mass_range
 
-* 2_stacks.py ---boxsize --res -snapnum
+* 2_stacks.py ---boxsize --res 
 
   * stacked_density_profiles.py --boxsize --res --snapnum --bin_start --bin_end 
 
-* profiles_time_evolution.py --boxsize --res --bin_start --bin_end 
+  * profiles_time_evolution.py --boxsize --res --bin_start --bin_end 
