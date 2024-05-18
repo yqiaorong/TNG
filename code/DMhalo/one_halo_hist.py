@@ -6,7 +6,7 @@ import numpy as np
 import argparse
 import h5py
 from tqdm import tqdm
-from func import compt_density_profile
+from func import compt_density_profile_hist, compt_density_profile
 
 # Input arguments
 parser = argparse.ArgumentParser()
@@ -22,6 +22,7 @@ parser.add_argument('--z', default=0,  type=float) # [ckpc/h]
 parser.add_argument('--M', default=0,  type=float) # [10^10 Msun/h]
 parser.add_argument('--R', default=0,  type=float) # [ckpc/h]
 
+parser.add_argument('--method', default='hist',  type=str)
 parser.add_argument('--save_root_dir', default='/DMhalo_density_profiles/',  type=str)
 args = parser.parse_args()
 
@@ -57,7 +58,6 @@ with h5py.File(il.snapshot.snapPath(basePath, snapnum), 'r') as f:
     h = header['HubbleParam']
     DMmass = header['MassTable'][1] * 10**10 # [MSun / h]
 
-        
 
 # Select DM halo
 groupnum       = args.groupnum
@@ -72,6 +72,9 @@ save_dict = {'halo_R_Mean200': halo_R_Mean200, # [ckpc / h]
              'DMmass': DMmass                  # [MSun / h]
              }
 
+
+
+
 # Set halo spatial boundary
 edge = 5 # as a multiple of hal0_R_Mean200
 xmin, xmax = haloPos[0] - edge * halo_R_Mean200, haloPos[0] + edge * halo_R_Mean200
@@ -85,8 +88,9 @@ load_dir = os.path.join(basePath, f'snapdir_{snapnum:03d}')
 load_list = os.listdir(load_dir)
 load_list = [fname for fname in load_list if fname.endswith('hdf5')]
 
-# Compute density profile
-rho_bins, r_bins = [], []
+# Density profiles
+densities_bins = []
+
 for idx, file in enumerate(tqdm(load_list)):
     
     # Load coordinates
@@ -98,16 +102,22 @@ for idx, file in enumerate(tqdm(load_list)):
         
         sub_coords = coords[mask]
         del coords, mask
-    
+        
     # Compute the density profile
     if sub_coords.shape[0] != 0:
-        rho, r_bins = compt_density_profile(sub_coords, haloPos, halo_R_Mean200)
-        rho_bins.append(rho * DMmass) # [(Msun/h)/(ckpc/h)^3]
-    del sub_coords
-    
-rho_bins = np.array(rho_bins)
-# Get the final density profile
-densities = np.sum(rho_bins, axis=0) # [(Msun/h)/(ckpc/h)^3]
+        if args.method == 'hist':
+            radial_bins = np.logspace(np.log10(0.01*halo_R_Mean200), 
+                                      np.log10(5*halo_R_Mean200), 85) # [ckpc/h]
+            DM_masses = [DMmass] * sub_coords.shape[0] # [Msun/h]
+            densities = compt_density_profile_hist(sub_coords, DM_masses, haloPos, radial_bins)
+        elif args.method == 'old':
+            densities, radial_bins = compt_density_profile(sub_coords, haloPos, halo_R_Mean200)
+            densities = densities * DMmass
+        densities_bins.append(densities) 
+        
+densities_bins = np.array(densities_bins)
+sum_densities_bins = np.sum(densities_bins, axis=0) # [Msun/h / (ckpc/h)^3]
+del densities_bins
 
 
 
@@ -125,9 +135,11 @@ save_plt_dir = os.path.join(save_dir, 'profiles')
 if not os.path.exists(save_plt_dir):
     os.makedirs(save_plt_dir)
     
+    
+    
 # Save data
-save_dict['radial_bins'] = r_bins  # [ckpc/h]
-save_dict['densities'] = densities # [(Msun/h)/(ckpc/h)^3]
+save_dict['radial_bins'] = radial_bins  # [ckpc/h]
+save_dict['densities'] = sum_densities_bins # [(Msun/h)/(ckpc/h)^3]
 np.save(os.path.join(save_data_dir, f'halo_{groupnum}'), save_dict)
 
 
@@ -137,7 +149,7 @@ plt.figure(figsize=(5,5))
 gs = matplotlib.gridspec.GridSpec(1,1,width_ratios=[1],height_ratios=[1],hspace=0,wspace=0)
 ax = plt.subplot(gs[0])
 ax.plot([halo_R_Mean200, halo_R_Mean200], [0, 10**10], linestyle='--')
-ax.loglog(r_bins, densities)
+ax.loglog(radial_bins, sum_densities_bins)
 ax.set_xlabel('radius [ckpc/h]')
 ax.set_ylabel(r'density [(M$_{\odot}$/h)/(ckpc/h)$^3$]')
 plt.savefig(os.path.join(save_plt_dir, f'halo_{groupnum}.pdf'))

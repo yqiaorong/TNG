@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import illustris_python as il
 import argparse
 import numpy as np
@@ -11,7 +10,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',default=205,   type=int)
 parser.add_argument('--res',     default=2500, type=int)
 parser.add_argument('--snapnum', default=99,   type=int)
-parser.add_argument('--mass_range',default=3.5,type=float) # [10^{10+x} Msun]
+parser.add_argument('--mass_range',default=3.5,type=float) # [10^{10+x} Msun/h]
+
+parser.add_argument('--method', default='hist',type=str)
+parser.add_argument('--save_root_dir',default=None,type=str)
 args = parser.parse_args()
 
 print('')
@@ -61,28 +63,16 @@ with h5py.File(f'data/halo_data_res{args.res}_snap{args.snapnum}.hdf5', 'r') as 
     
     # Iterate over DM halos
     for idx in subset_idx:
-        path = f'result/test_res{res}_snap{snapnum}/'+f'sim_{args.boxsize}_{res}/snap_{snapnum}/densities/halo_{HaloIndices[idx]}.npy'
+        path = f'result/{args.save_root_dir}/'+f'sim_{args.boxsize}_{res}/snap_{snapnum}/densities/halo_{HaloIndices[idx]}.npy'
         if not os.path.exists(path):
             # Round values 
             x, y, z = np.round(GroupPos[idx, 0].item(), 0), np.round(GroupPos[idx, 1].item(), 0), np.round(GroupPos[idx, 2].item(), 0)
             R = np.round(Group_R_Mean200[idx].item(), 0)
-            os.system(f'python3 code/DMhalo/one_halo_test.py'+
-                f' --boxsize {args.boxsize} --res {res} --snapnum {snapnum}'+
-                f' --groupnum {HaloIndices[idx]}'+
+            # Run the script
+            os.system(f'python3 code/DMhalo/one_halo_hist.py'+
+                f' --boxsize {args.boxsize} --res {res} --snapnum {snapnum} --groupnum {HaloIndices[idx]}'+
                 f' --x {x} --y {y} --z {z}'+
                 f' --M {Group_M_Mean200[idx].item()} --R {R}'+
-                f' --save_root_dir /test_res{res}_snap{snapnum}/')
+                f' --save_root_dir {args.save_root_dir} --method {args.method}')
 
     print(f'All DM halos in the subset at snap {snapnum} are finished.')
-    
-    
-    
-# Histogram of raw halos mass
-plt.figure()
-hist_values = plt.hist(Group_M_Mean200, bins=np.logspace(3, 5, 50))[0]
-plt.xlabel('Mass [10^10 MSun]')
-plt.ylabel('Frequency')
-plt.yscale('log')
-plt.xscale('log')
-plt.title("DM halos' mass histogram")
-plt.savefig('result/DM halos mass histogram/test_mass_hist')

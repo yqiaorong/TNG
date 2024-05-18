@@ -37,13 +37,20 @@ def compt_density_profile(coordinates, haloCM, halo_R_Mean200,
     
     return density_bins, radius_bins
 
+def compt_density_profile_hist(coordinates, mass_weights, haloPos, radial_bins):
+    
+    radii = np.sqrt(np.sum(coordinates-haloPos, axis=1)**2) # [ckpc/h]
+    radial_volumes = 4/3*np.pi * (radial_bins[1:]**3 - radial_bins[:-1]**3) # [(ckpc/h)^3]
+    densities = np.histogram(radii,radial_bins,weights=mass_weights)[0] / radial_volumes # [Msun/h / (ckpc/h)^3]
+    return densities
+
 def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     """The function computes the stacked density profiles.
     
     INPUT:
     
     file_list: list of filepaths without subfolders!
-    mass_criteria:  list [a, b]                 [10^10MSun/h]
+    mass_criteria:  list [a, b]                 [10^(10+a) MSun/h]
         
     RETURN:
     (   
@@ -57,7 +64,7 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     
     import numpy as np
     # from scipy.constants import G
-    from unyt import Msun, G, second, megaparsec, km
+    from unyt import G, second, megaparsec, km
     
     # Initialize the output
     density_profiles = [] # [dimensionless]
@@ -121,10 +128,13 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
         medians = np.percentile(density_profiles, 50, axis=1) # shape: (N radii, 1)
         errors = np.percentile(density_profiles, [16,84], axis=1).T # shape: (N radii, 2)
     
-    ### Compute radii centers
+    # Compute radii centers
     radial_centers = np.array(radii)
 
-    
+    # check the return radial_centers and medians shape
+    if radial_centers.shape != medians.shape:
+        radial_centers = radial_centers[1:]
+        
     return (radial_centers, medians, errors, num_halo, R200_median)
 
 def bootstrap(x, statfunc, Nboots=32):

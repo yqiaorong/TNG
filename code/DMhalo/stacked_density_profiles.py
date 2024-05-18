@@ -43,7 +43,7 @@ for i in range(num_bins):
     profiles = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
     radius, median_rho, rho_err = profiles[0], profiles[1], profiles[2] # [dimensionless]
     num_halo, R200_median = profiles[3], profiles[4]                    # [ckpc/h]
-    
+    print(radius, radius.shape)
     # Compute fitted median density profiles
     result = fit_profile_parametric(radius, median_rho, rho_err[:,0], 1)
     
@@ -98,10 +98,7 @@ for i in range(num_bins):
 plt.tight_layout()
 
 # Save directory
-if args.root_dir == 'test_res2500_snap99':
-    save_dir = f'result/{args.root_dir}/stacked_profiles'
-else:
-    save_dir = f'result/Stacked_density_profiles/sim_{args.boxsize}_{args.res}/snap_{args.snapnum}'
+save_dir = f'result/Stacked_{args.root_dir}/sim_{args.boxsize}_{args.res}/snap_{args.snapnum}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
