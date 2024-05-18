@@ -41,20 +41,20 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 15))
 for i in range(num_bins):
     # Compute median density profiles
     profiles = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
-    radius, median_rho, rho_err = profiles[0], profiles[1], profiles[2]
-    num_halo, R200_median = profiles[3], profiles[4]
+    radius, median_rho, rho_err = profiles[0], profiles[1], profiles[2] # [dimensionless]
+    num_halo, R200_median = profiles[3], profiles[4]                    # [ckpc/h]
     
     # Compute fitted median density profiles
     result = fit_profile_parametric(radius, median_rho, rho_err[:,0], 1)
     
     # Calculate d log rho / d log r
     grad_result = gradient(radius, median_rho, rho_err[:,0])
-    slopes_radius, slopes, slopes_errs = grad_result[0], grad_result[1], grad_result[2]
+    slopes_radius, slopes, slopes_errs = grad_result[0], grad_result[1], grad_result[2] # [dimensionless]
    
     # Fit the slope
     # M1:
-    grad_result2 = gradient(result[0], result[1])
-    slopes_fits_r, slopes_fits = grad_result2[0], grad_result2[1]
+    grad_result2 = gradient(result[0], result[1]) 
+    slopes_fits_r, slopes_fits = grad_result2[0], grad_result2[1] # [dimensionless]
     # M2:
     # slope_rhos = median_rho[2:-2]
     # slope_rhos_errs = rho_err[2:-2, 0]
@@ -110,9 +110,9 @@ start, end = float_to_str(args.bin_start, args.bin_end)
 plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}'))
 
 # Save data
-save_data = {'profile_radius': radius,           'profile_densities': median_rho, 
-             'profile_radius_fit': result[0],    'profile_densities_fit': result[1],
-             'slopes_radius': slopes_radius,     'slopes': slopes,
-             'slopes_radius_fit': slopes_fits_r, 'slopes_fit': slopes_fits,
-             'R200_median': R200_median}
+save_data = {'profile_radius': radius,           'profile_densities': median_rho,    # [dimensionless]
+             'profile_radius_fit': result[0],    'profile_densities_fit': result[1], # [dimensionless]
+             'slopes_radius': slopes_radius,     'slopes': slopes,                   # [dimensionless]
+             'slopes_radius_fit': slopes_fits_r, 'slopes_fit': slopes_fits,          # [dimensionless]
+             'R200_median': R200_median}                                             # [ckpc/h]
 np.save(os.path.join(save_dir, f'Bins_{start}_to_{end}'), save_data)
