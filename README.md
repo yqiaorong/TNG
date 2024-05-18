@@ -10,6 +10,8 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 * mass_hist.py --boxsize --res
 
+* 1_subset_test.py --boxsize --res --snapnum --mass_range --method --save_root_dir
+
 * 1_subset.py --boxsize --res --snapnum --mass_range --method --save_root_dir
 
   * one_halo_hist.py 

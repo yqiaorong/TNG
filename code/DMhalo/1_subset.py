@@ -1,78 +1,66 @@
 import illustris_python as il
+import os
 import argparse
 import numpy as np
-import os
-import h5py
-from unyt import Msun, g, cm, kiloparsec
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--boxsize',default=205,   type=int)
-parser.add_argument('--res',     default=2500, type=int)
-parser.add_argument('--snapnum', default=99,   type=int)
-parser.add_argument('--mass_range',default=3.5,type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--boxsize',default=205, type=int)
+parser.add_argument('--res',default=1250,    type=int)
+parser.add_argument('--snapnum',default=99,  type=int)
+parser.add_argument('--mass_range',default=5,type=float) # [10^{10+x} Msun/h]
 
 parser.add_argument('--method', default='hist',type=str)
-parser.add_argument('--save_root_dir',default=None,type=str)
+parser.add_argument('--save_root_dir',default='DMhalo_density_profiles',type=str)
 args = parser.parse_args()
 
 print('')
-print(f'>>> Test DM halo density profiles subset <<<')
+print(f'>>> DM halo density profiles subset <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
 print('')
 
-snapnum = args.snapnum
 
-# Directory where TNG data is stored
+
+# Specify the snapshot
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-# Need to pick the box size: 35, 75, or 205 Mpc/h
+basePath = data_path + 'L%dn%dTNG/output'%(args.boxsize,args.res)
+snapnum = args.snapnum
 boxsize = args.boxsize
-# Need to pick the resolution level: 540, 1080, or 2160 for the 35Mpc/h box
-#                                    455, 910,  or 1820 for the 75Mpc/h box
-#                                    625, 1250, or 2500 for the 205Mpc/h box
-res = args.res
-# Path to the output files for the relevant box size and resolution:
-basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
+res     = args.res
 
 
 
-# Load params
-with h5py.File(il.snapshot.snapPath(basePath, snapnum), 'r') as f:
-    header = dict(f['Header'].attrs.items())
-    scale_factor = header['Time']
-    h = header['HubbleParam'] # unit [100 * km / megaparsec / second]
-    BoxSize = header['BoxSize'] # [ckpc/h]
+# Select a subset of DM halos from groupcat
+group_fields = ['GroupPos', 'Group_M_Mean200', 'Group_R_Mean200']
+Halos = il.groupcat.loadHalos(basePath, snapnum, fields=group_fields)
 
-    
+GroupPos        = Halos['GroupPos']        # [ckpc/h]
+Group_M_Mean200 = Halos['Group_M_Mean200'] # [10^10 MSun/h]
+Group_R_Mean200 = Halos['Group_R_Mean200'] # [ckpc/h]
 
-with h5py.File(f'data/halo_data_res{args.res}_snap{args.snapnum}.hdf5', 'r') as f:
-    HaloIndices = f['HaloIndices']
-    
-    # Raw mass table
-    Group_M_Mean200 = f['HaloM200mean'] * g / (10**10 * Msun) * h # unit [10^10 MSun/h]
-    subset_idx = [idx for idx, mass in enumerate(Group_M_Mean200)
-                if mass >= 10**args.mass_range and mass < 10**(args.mass_range+0.5)]
-    print(f'Number of halos in the subset: {len(subset_idx)}')
+# Using physical mass to select subset
+subset_idx = np.where((Group_M_Mean200 >= 10**args.mass_range) & 
+                      (Group_M_Mean200 < 10**(args.mass_range+0.5)))[0]
+Ngroups_subset = subset_idx.shape[0]
+print(f'In total, {Ngroups_subset} DM halos with mass 10^{args.mass_range+10} ~ 10^{args.mass_range+10.5} MSun in at snap {snapnum}')
 
-    # Scaled table
-    Group_R_Mean200 = f['HaloR200mean'] * cm / kiloparsec * h / scale_factor # unit [ckpc/h]
-    GroupPos        = f['HaloPositions'] * cm / kiloparsec * h / scale_factor  # unit [ckpc/h]
 
-    
-    # Iterate over DM halos
-    for idx in subset_idx:
-        path = f'result/{args.save_root_dir}/'+f'sim_{args.boxsize}_{res}/snap_{snapnum}/densities/halo_{HaloIndices[idx]}.npy'
-        if not os.path.exists(path):
-            # Round values 
-            x, y, z = np.round(GroupPos[idx, 0].item(), 0), np.round(GroupPos[idx, 1].item(), 0), np.round(GroupPos[idx, 2].item(), 0)
-            R = np.round(Group_R_Mean200[idx].item(), 0)
-            # Run the script
-            os.system(f'python3 code/DMhalo/one_halo_hist.py'+
-                f' --boxsize {args.boxsize} --res {res} --snapnum {snapnum} --groupnum {HaloIndices[idx]}'+
-                f' --x {x} --y {y} --z {z}'+
-                f' --M {Group_M_Mean200[idx].item()} --R {R}'+
-                f' --save_root_dir {args.save_root_dir} --method {args.method}')
 
-    print(f'All DM halos in the subset at snap {snapnum} are finished.')
+# Iterate over DM halos
+for i, idx in enumerate(subset_idx):
+    if not os.path.exists(f'result/{args.save_root_dir}/sim_{args.boxsize}_{args.res}/snap_{snapnum}/densities/halo_{idx}.npy'):
+        # Round values 
+        x, y, z = np.round(GroupPos[idx, 0].item(), 0), np.round(GroupPos[idx, 1].item(), 0), np.round(GroupPos[idx, 2].item(), 0)
+        R = np.round(Group_R_Mean200[idx].item(), 0)
+        # Run the script
+        os.system(f'python3 code/DMhalo/one_halo_hist.py'+
+            f' --boxsize {boxsize} --res {res} --snapnum {snapnum} --groupnum {idx}'+
+            f' --x {x} --y {y} --z {z}'+
+            f' --M {Group_M_Mean200[idx]} --R {R}'+
+            f' --save_root_dir {args.save_root_dir} --method {args.method}')
+    else:
+        print(f'At snap {snapnum}, DM halo local index {i+1}/{Ngroups_subset} already exists.')
+
+print(f'All DM halos in the subset at snap {snapnum} are finished.')
