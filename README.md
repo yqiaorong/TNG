@@ -12,7 +12,7 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 * 1_subset_halos.py --boxsize --res --snapnum --mass_range
 
-  * one_halo.py --boxsize --res --snapnum --groupnum
+  * one_halo.py --boxsize --res --snapnum --groupnum --test_or_not
 
 * check_halo_number.py --boxsize --res --snapnum --mass_range
 

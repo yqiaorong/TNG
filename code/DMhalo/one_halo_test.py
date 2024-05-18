@@ -1,10 +1,11 @@
 import illustris_python as il
 import matplotlib.pyplot as plt
 import matplotlib
-import numpy as np
 import os
+import numpy as np
 import argparse
 import h5py
+from tqdm import tqdm
 from func import compt_density_profile
 
 # Input arguments
@@ -12,8 +13,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize', default=205, type=int)
 parser.add_argument('--res',     default=1250,type=int)
 parser.add_argument('--snapnum', default=99,  type=int)
-parser.add_argument('--groupnum',default=0,   type=int)
-parser.add_argument('--test_or_not',default=False,type=bool)
+parser.add_argument('--groupnum', default=0,  type=int)
+# HaloPos
+parser.add_argument('--x', default=0,  type=float) # [ckpc/h]
+parser.add_argument('--y', default=0,  type=float) # [ckpc/h]
+parser.add_argument('--z', default=0,  type=float) # [ckpc/h]
+# Halo mass and radius
+parser.add_argument('--M', default=0,  type=float) # [10^10 Msun/h]
+parser.add_argument('--R', default=0,  type=float) # [ckpc/h]
+
+parser.add_argument('--save_root_dir', default='/DMhalo_density_profiles/',  type=str)
 args = parser.parse_args()
 
 print('')
@@ -46,41 +55,22 @@ with h5py.File(il.snapshot.snapPath(basePath, snapnum), 'r') as f:
     header = dict(f['Header'].attrs.items())
     scale_factor = header['Time']
     h = header['HubbleParam']
-    DMmass = header['MassTable'][1] * 10**10 # unit [MSun/h]
+    DMmass = header['MassTable'][1] * 10**10 # [MSun / h]
 
-    BoxSize = header['BoxSize'] # [ckpc/h]
-
-
-if args.test_or_not == False:
-    # Load Halos from groupcat
-    group_fields = ['GroupPos', 'Group_M_Mean200', 'Group_R_Mean200']
-    Halos = il.groupcat.loadHalos(basePath, snapnum, fields=group_fields)
-
-    GroupPos        = Halos['GroupPos']        / h * scale_factor
-    Group_M_Mean200 = Halos['Group_M_Mean200'] / h 
-    Group_R_Mean200 = Halos['Group_R_Mean200'] / h * scale_factor
-    del Halos
-    
-else:
-    with h5py.File(f'data/halo_data_res{res}_snap{snapnum}.hdf5', 'r') as f:
-        from unyt import Msun, g, m, kiloparsec
-        Group_M_Mean200 = f['HaloM200mean'] * g / (10**10 * Msun) / h # unit [10^10 MSun in kg]
-        Group_R_Mean200 = f['HaloR200mean'] * m / (10**3 * kiloparsec) / h * scale_factor # unit [kpc]
-        GroupPos        = f['HaloPositions'] * m / (10**3 * kiloparsec) / h * scale_factor # unit [kpc]
-        # The number matches with paper
         
 
 # Select DM halo
 groupnum       = args.groupnum
-haloPos        = GroupPos[groupnum]
-halo_M_Mean200 = Group_M_Mean200[groupnum]
-halo_R_Mean200 = Group_R_Mean200[groupnum]
-del GroupPos, Group_M_Mean200, Group_R_Mean200
-print(haloPos, halo_M_Mean200, halo_R_Mean200)
-
+haloPos        = [args.x, args.y, args.z] # [ckpc / h]
+halo_M_Mean200 = args.M                   # [10^10 Msun / h]
+halo_R_Mean200 = args.R                   # [ckpc / h]
+       
 # Save data
-save_dict = {'halo_R_Mean200': halo_R_Mean200, 'halo_M_Mean200': halo_M_Mean200,
-             'h': h, 'scale_factor': scale_factor, 'DMmass': DMmass}
+save_dict = {'halo_R_Mean200': halo_R_Mean200, # [ckpc / h]
+             'halo_M_Mean200': halo_M_Mean200, # [10^10 Msun / h]
+             'h': h, 'scale_factor': scale_factor, 
+             'DMmass': DMmass                  # [MSun / h]
+             }
 
 # Set halo spatial boundary
 edge = 5 # as a multiple of hal0_R_Mean200
@@ -88,21 +78,22 @@ xmin, xmax = haloPos[0] - edge * halo_R_Mean200, haloPos[0] + edge * halo_R_Mean
 ymin, ymax = haloPos[1] - edge * halo_R_Mean200, haloPos[1] + edge * halo_R_Mean200
 zmin, zmax = haloPos[2] - edge * halo_R_Mean200, haloPos[2] + edge * halo_R_Mean200
 
-# Load Halos coordinates from snapshot
-# Coordinates = il.snapshot.loadSubset(basePath, snapNum, 'dm', ['Coordinates'], float32=True)
 
+
+# Load Halos coordinates from snapshot
 load_dir = os.path.join(basePath, f'snapdir_{snapnum:03d}')
 load_list = os.listdir(load_dir)
 load_list = [fname for fname in load_list if fname.endswith('hdf5')]
 
+# Compute density profile
 rho_bins, r_bins = [], []
-for idx, file in enumerate(load_list):
+for idx, file in enumerate(tqdm(load_list)):
     
     # Load coordinates
     snap_path = os.path.join(load_dir, file)
     with h5py.File(snap_path, 'r') as f:
 
-        coords = np.array(f['PartType1/Coordinates']) / h * scale_factor
+        coords = np.array(f['PartType1/Coordinates']) # [ckpc/h]
         mask = (coords[:,0] >= xmin) & (coords[:,0] <= xmax) & (coords[:,1] >= ymin) & (coords[:,1] <= ymax) & (coords[:,2] >= zmin) & (coords[:,2] <= zmax)
         
         sub_coords = coords[mask]
@@ -111,22 +102,17 @@ for idx, file in enumerate(load_list):
     # Compute the density profile
     if sub_coords.shape[0] != 0:
         rho, r_bins = compt_density_profile(sub_coords, haloPos, halo_R_Mean200)
-        rho_bins.append(rho * DMmass)
+        rho_bins.append(rho * DMmass) # [(Msun/h)/(ckpc/h)^3]
     del sub_coords
     
 rho_bins = np.array(rho_bins)
 # Get the final density profile
-densities = np.sum(rho_bins, axis=0)
+densities = np.sum(rho_bins, axis=0) # [(Msun/h)/(ckpc/h)^3]
 
 
 
 # Save directory
-if args.test_or_not == False:
-    root_dir = 'result/DMhalo_density_profiles'
-else:
-    root_dir = f'result/test_res{res}_snap{snapnum}/profiles'
-
-save_dir = root_dir+f'/sim_{args.boxsize}_{args.res}/snap_{snapnum}'
+save_dir = 'result'+args.save_root_dir+f'sim_{args.boxsize}_{res}/snap_{snapnum}'
 
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
@@ -140,9 +126,11 @@ if not os.path.exists(save_plt_dir):
     os.makedirs(save_plt_dir)
     
 # Save data
-save_dict['radial_bins'] = r_bins
-save_dict['densities'] = densities
+save_dict['radial_bins'] = r_bins  # [ckpc/h]
+save_dict['densities'] = densities # [(Msun/h)/(ckpc/h)^3]
 np.save(os.path.join(save_data_dir, f'halo_{groupnum}'), save_dict)
+
+
 
 # Plot the density profiles    
 plt.figure(figsize=(5,5))
@@ -150,7 +138,7 @@ gs = matplotlib.gridspec.GridSpec(1,1,width_ratios=[1],height_ratios=[1],hspace=
 ax = plt.subplot(gs[0])
 ax.plot([halo_R_Mean200, halo_R_Mean200], [0, 10**10], linestyle='--')
 ax.loglog(r_bins, densities)
-ax.set_xlabel('radius [kpc]')
-ax.set_ylabel(r'density [M$_{\odot}$/kpc$^3$]')
+ax.set_xlabel('radius [ckpc/h]')
+ax.set_ylabel(r'density [(M$_{\odot}$/h)/(ckpc/h)$^3$]')
 plt.savefig(os.path.join(save_plt_dir, f'halo_{groupnum}.pdf'))
 plt.close()

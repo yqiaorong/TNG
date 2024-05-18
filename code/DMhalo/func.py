@@ -1,5 +1,19 @@
 def compt_density_profile(coordinates, haloCM, halo_R_Mean200, 
                           radius_range=[0.01, 5], number_of_bins=85):
+    """This function computes the density profile of halos.
+    
+    INPUT:
+    coordinates:    2D array with shape (N, 3)              [free unit]
+    haloCM:         1D array with shape (3,)                [free unit]
+    halo_R_Mean200: float
+    radius_range:   list with two fractional radius         [dimensionless]
+    number_of_bins: float                       
+    
+    RETURN:
+    density_bins:   1D array with shape (number of bins,)   [input unit^(-3)]
+    radius_bins:    1D array with shape (number of bins,)   [input unit]
+    """
+    
     import numpy as np
     radial_coordinates = np.linalg.norm(coordinates - haloCM, axis=1) 
     
@@ -24,42 +38,63 @@ def compt_density_profile(coordinates, haloCM, halo_R_Mean200,
     return density_bins, radius_bins
 
 def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
+    """The function computes the stacked density profiles.
+    
+    INPUT:
+    
+    file_list: list of filepaths without subfolders!
+    mass_criteria:  list [a, b]                 [10^10MSun/h]
+        
+    RETURN:
+    (   
+    radial_centers: 1D array with shape (N,)    [dimensionless]
+    medians:        1D array with shape (N,)    [dimensionless]
+    errors:         2D array with shape (N, 2)  [dimensionless]
+    num_halo:       int
+    R200_median:    float                       [ckpc/h]
+    )
+    """
     
     import numpy as np
     # from scipy.constants import G
     from unyt import Msun, G, second, megaparsec, km
     
     # Initialize the output
-    density_profiles = []
-    radii = []
-    R200 = []
+    density_profiles = [] # [dimensionless]
+    radii = []            # [dimensionless]
+    R200 = []             # [ckpc/h]
+    
     ### Load all density profile data ###
     # Iterate over halos
     for file in file_list:
-        # load data
+        # Load data
         data = np.load(file, allow_pickle=True).item()
-        h = data['h']
-        halo_M_Mean200 = data['halo_M_Mean200'] * h
-        # apply the mass criteria 
+        h = data['h'] # unit [100 * km / megaparsec / second]
+        scale_factor = data['scale_factor']
+        halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 MSun/h]
+        
+        # Apply the mass criteria 
         if (halo_M_Mean200 >= 10**mass_criteria[0]) & (halo_M_Mean200 < 10**mass_criteria[1]):
             # radius profile
-            radii = data['radial_bins'] / data['halo_R_Mean200']
+            radii = [item / data['halo_R_Mean200'] for item in data['radial_bins']] 
             R200.append(data['halo_R_Mean200'])
             
             # Compute the critical density
-            H = data['h'] * 100 * km / megaparsec / second
-            rho_c = 3 * H**2 / (8*np.pi*G) 
-            rho_c.convert_to_units('Msun/kiloparsec**3')
+            Hubble = data['h'] * 100 * km / megaparsec / second
+            rho_c = 3 * Hubble**2 / (8*np.pi*G) 
+            rho_c.convert_to_units('Msun/kiloparsec**3') 
+            rho_c = rho_c * scale_factor**3 / h**2 # [(MSun/h)/(ckpc/h)**3]
             
             # density profile
-            density_profiles.append(data['densities']/rho_c)
+            density_profiles.append(data['densities'] / rho_c) 
            
         else:
             pass 
     
     # Compute median R200
-    R200_median = np.median(R200)
+    R200_median = np.median(R200) # [ckpc/h]
     del R200
+    
     # Get the number of DM halos
     num_halo = np.array(density_profiles).shape[0]
     if num_halo == 0:
@@ -87,9 +122,8 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
         errors = np.percentile(density_profiles, [16,84], axis=1).T # shape: (N radii, 2)
     
     ### Compute radii centers
-    radial_centers = radii
-    # radii = np.insert(radii, 0, 0)
-    # radial_centers = 10**( (np.log10(radii[1:])+np.log10(radii[:-1]))/2 )
+    radial_centers = np.array(radii)
+
     
     return (radial_centers, medians, errors, num_halo, R200_median)
 
@@ -108,6 +142,23 @@ def bootstrap(x, statfunc, Nboots=32):
     return resampled_stat
 
 def gradient(r, rho, rho_err=None):
+    """This function computes the density profile gradient based on Equation 6 in
+    O'Neil et al. 2021.
+    
+    INPUT:
+    r:       1D array with shape (N,)     [free unit]
+    rho:     1D array with shape (N,)     [free unit]
+    rho_err: 1D array with shape (N,)     [free unit]
+    
+    RETURN:
+    (
+    r:       1D array with shape (N-4,)   [input unit]
+    slopes:  1D array with shape (N-4,)   [dimensionless]
+    errs:    1D array with shape (N-4,)   [dimensionless]
+    )
+    
+    """
+    
     import numpy as np
     
     slopes, errs = [], []
@@ -125,7 +176,7 @@ def gradient(r, rho, rho_err=None):
                             (rho_err[i]/rho[i])*(1/12)) 
                 errs.append(err)
 
-    return r[2:-2], np.array(slopes), np.array(errs)
+    return (r[2:-2], np.array(slopes), np.array(errs))
 
 def float_to_str(bin_start, bin_end):
     if str(bin_start).endswith('0'):
