@@ -43,7 +43,7 @@ for i in range(num_bins):
     profiles = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
     radius, median_rho, rho_err = profiles[0], profiles[1], profiles[2] # [dimensionless]
     num_halo, R200_median = profiles[3], profiles[4]                    # [ckpc/h]
-    print(radius, radius.shape)
+    
     # Compute fitted median density profiles
     result = fit_profile_parametric(radius, median_rho, rho_err[:,0], 1)
     
@@ -91,7 +91,7 @@ for i in range(num_bins):
     axs[1].set_xscale('log')
     axs[1].set_xlabel("r/R200")
     axs[1].set_ylabel("Slope")
-    # axs[1].set_ylim(-1,0)
+    # axs[1].set_ylim(-1.2,-0.2)
     axs[1].legend()
     axs[1].set_title('Finding splashback radius')
 
