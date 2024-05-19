@@ -1,7 +1,9 @@
 import argparse
 import numpy as np
 import os
+import h5py
 from func import float_to_str
+import illustris_python as il
 from matplotlib import pyplot as plt
 
 # Input arguments
@@ -51,22 +53,38 @@ axs[0].set_title(f'Mass bin 10^{args.bin_start+10} ~ 10^{args.bin_end+10} (Msun/
 cmap = plt.cm.get_cmap('hsv')
 colours = [cmap(i / len(file_list)) for i in range(len(file_list))]
 
-# Load data
-for file, snap, c in zip(file_list, snap_list, colours):
 
+
+# BasePath
+data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
+boxsize = args.boxsize
+res = args.res
+basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
+
+
+
+for file, snap, c in zip(file_list, snap_list, colours):
+    
+    # load hubble param and scale factor
+    with h5py.File(il.snapshot.snapPath(basePath, snap[-2:]), 'r') as f:
+        header = dict(f['Header'].attrs.items())
+        scale_factor = header['Time']
+        h = header['HubbleParam']
+
+    # Load data
     data = np.load(file, allow_pickle=True).item()
     R200_median = data['R200_median'] # [ckpc/h]
     
-    pr = data['profile_radius'] * R200_median
+    pr = data['profile_radius'] * R200_median * scale_factor / h # [kpc]
     pd = data['profile_densities']
 
-    prf = data['profile_radius_fit'] * R200_median
+    prf = data['profile_radius_fit'] * R200_median * scale_factor / h # [kpc]
     pdf = data['profile_densities_fit']
     
-    sr = data['slopes_radius'] * R200_median
+    sr = data['slopes_radius'] * R200_median * scale_factor / h # [kpc]
     s = data['slopes']
 
-    srf = data['slopes_radius_fit'] * R200_median
+    srf = data['slopes_radius_fit'] * R200_median * scale_factor / h # [kpc]
     sf = data['slopes_fit']
     
     # Plot the density profile
@@ -85,7 +103,7 @@ axs[0].legend()
 # axs[0].set_title(f'Stacked density profiles')
 
 axs[1].set_xscale('log')
-axs[1].set_xlabel("r [ckpc/h]")
+axs[1].set_xlabel("r [kpc]")
 axs[1].set_ylabel("Slope")
 axs[1].legend()
 # axs[1].set_title('Finding splashback radius')
