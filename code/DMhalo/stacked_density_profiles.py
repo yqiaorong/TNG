@@ -11,7 +11,8 @@ parser.add_argument('--res',       default=1250, type=int)
 parser.add_argument('--snapnum',   default=99,   type=int)
 parser.add_argument('--bin_start', default=3.5,  type=float)
 parser.add_argument('--bin_end',   default=4,    type=float)
-parser.add_argument('--root_dir',  default='DMhalo_density_profiles', type=str)
+
+parser.add_argument('--root_dir',  default=None, type=str)
 args = parser.parse_args()
 
 print('')
@@ -91,11 +92,13 @@ for i in range(num_bins):
     axs[1].set_xscale('log')
     axs[1].set_xlabel("r/R200")
     axs[1].set_ylabel("Slope")
-    # axs[1].set_ylim(-1.2,-0.2)
+    # axs[1].set_ylim(-1.1,-0.2)
     axs[1].legend()
     axs[1].set_title('Finding splashback radius')
 
 plt.tight_layout()
+
+
 
 # Save directory
 save_dir = f'result/Stacked_{args.root_dir}/sim_{args.boxsize}_{args.res}/snap_{args.snapnum}'

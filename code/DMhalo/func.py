@@ -174,8 +174,8 @@ def gradient(r, rho, rho_err=None):
     slopes, errs = [], []
     for i in range(r.shape[0]):
         if i >= 4:
-            slope = (1/12 * np.log10(rho[i-4]) - 2/3 * np.log10(rho[i-3]) + 
-                2/3 * np.log10(rho[i-1]) - 1/12 * np.log10(rho[i])) / (
+            slope = ((1/12) * np.log10(rho[i-4]) - (2/3) * np.log10(rho[i-3]) + 
+                (2/3) * np.log10(rho[i-1]) - (1/12) * np.log10(rho[i])) / (
                     np.log10(r[i]) - np.log10(r[i-4]))
             slopes.append(slope)
             # Compute errs

@@ -5,12 +5,12 @@ import numpy as np
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--boxsize',default=205, type=int)
-parser.add_argument('--res',default=1250,    type=int)
-parser.add_argument('--snapnum',default=99,  type=int)
-parser.add_argument('--mass_range',default=5,type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--boxsize',default=205,   type=int)
+parser.add_argument('--res',default=1250,      type=int)
+parser.add_argument('--snapnum',default=99,    type=int)
+parser.add_argument('--mass_range',default=3.5,type=float) # [10^{10+x} Msun/h]
 
-parser.add_argument('--method', default='hist',type=str)
+parser.add_argument('--method', default=None,  type=str)
 parser.add_argument('--save_root_dir',default='DMhalo_density_profiles',type=str)
 args = parser.parse_args()
 
@@ -32,6 +32,11 @@ res     = args.res
 
 
 
+# Save root dir
+save_root_dir = args.save_root_dir +'_'+args.method
+    
+    
+
 # Select a subset of DM halos from groupcat
 group_fields = ['GroupPos', 'Group_M_Mean200', 'Group_R_Mean200']
 Halos = il.groupcat.loadHalos(basePath, snapnum, fields=group_fields)
@@ -50,7 +55,7 @@ print(f'In total, {Ngroups_subset} DM halos with mass 10^{args.mass_range+10} ~ 
 
 # Iterate over DM halos
 for i, idx in enumerate(subset_idx):
-    if not os.path.exists(f'result/{args.save_root_dir}/sim_{args.boxsize}_{args.res}/snap_{snapnum}/densities/halo_{idx}.npy'):
+    if not os.path.exists(f'result/{save_root_dir}/sim_{boxsize}_{res}/snap_{snapnum}/densities/halo_{idx}.npy'):
         # Round values 
         x, y, z = np.round(GroupPos[idx, 0].item(), 0), np.round(GroupPos[idx, 1].item(), 0), np.round(GroupPos[idx, 2].item(), 0)
         R = np.round(Group_R_Mean200[idx].item(), 0)
@@ -59,7 +64,7 @@ for i, idx in enumerate(subset_idx):
             f' --boxsize {boxsize} --res {res} --snapnum {snapnum} --groupnum {idx}'+
             f' --x {x} --y {y} --z {z}'+
             f' --M {Group_M_Mean200[idx]} --R {R}'+
-            f' --save_root_dir {args.save_root_dir} --method {args.method}')
+            f' --save_root_dir {save_root_dir} --method {args.method}')
     else:
         print(f'At snap {snapnum}, DM halo local index {i+1}/{Ngroups_subset} already exists.')
 

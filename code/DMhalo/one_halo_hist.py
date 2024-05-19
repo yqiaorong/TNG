@@ -22,8 +22,8 @@ parser.add_argument('--z', default=0,  type=float) # [ckpc/h]
 parser.add_argument('--M', default=0,  type=float) # [10^10 Msun/h]
 parser.add_argument('--R', default=0,  type=float) # [ckpc/h]
 
-parser.add_argument('--method', default='hist',  type=str)
-parser.add_argument('--save_root_dir', default='/DMhalo_density_profiles/',  type=str)
+parser.add_argument('--method', default=None,  type=str)
+parser.add_argument('--save_root_dir', default=None,  type=str)
 args = parser.parse_args()
 
 print('')
@@ -122,7 +122,7 @@ del densities_bins
 
 
 # Save directory
-save_dir = 'result'+args.save_root_dir+f'sim_{args.boxsize}_{res}/snap_{snapnum}'
+save_dir = 'result/'+args.save_root_dir+f'/sim_{boxsize}_{res}/snap_{snapnum}'
 
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)

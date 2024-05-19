@@ -10,6 +10,8 @@ parser.add_argument('--boxsize',default=205,type=int)
 parser.add_argument('--res',    default=1250,type=int)
 parser.add_argument('--bin_start', default=3.5, type=float)
 parser.add_argument('--bin_end',   default=4, type=float)
+
+parser.add_argument('--root_dir',  default=None, type=str)
 args = parser.parse_args()
 
 print('')
@@ -23,7 +25,7 @@ print('')
 bin_start, bin_end = float_to_str(args.bin_start, args.bin_end)
 
 # Load dir
-load_dir = f'result/Stacked_density_profiles/sim_{args.boxsize}_{args.res}'
+load_dir = f'result/Stacked_{args.root_dir}/sim_{args.boxsize}_{args.res}'
 
 # Walk through the directory
 file_list = []
@@ -43,7 +45,7 @@ snap_list = [s for s in snaps if any(s in fpath for fpath in file_list)]
 
 # Set up the final plot
 fig, axs = plt.subplots(2, 1, figsize=(10, 15))
-axs[0].set_title(f'Mass bin 10^{args.bin_start+10} ~ 10^{args.bin_end+10} Msun time evolution')
+axs[0].set_title(f'Mass bin 10^{args.bin_start+10} ~ 10^{args.bin_end+10} (Msun/h) time evolution')
 
 # Set up the colour range
 cmap = plt.cm.get_cmap('hsv')
@@ -53,7 +55,7 @@ colours = [cmap(i / len(file_list)) for i in range(len(file_list))]
 for file, snap, c in zip(file_list, snap_list, colours):
 
     data = np.load(file, allow_pickle=True).item()
-    R200_median = data['R200_median']
+    R200_median = data['R200_median'] # [ckpc/h]
     
     pr = data['profile_radius'] * R200_median
     pd = data['profile_densities']
@@ -83,7 +85,7 @@ axs[0].legend()
 # axs[0].set_title(f'Stacked density profiles')
 
 axs[1].set_xscale('log')
-axs[1].set_xlabel("r [kpc]")
+axs[1].set_xlabel("r [ckpc/h]")
 axs[1].set_ylabel("Slope")
 axs[1].legend()
 # axs[1].set_title('Finding splashback radius')
@@ -91,7 +93,7 @@ axs[1].legend()
 plt.tight_layout()
     
 # Save directory
-save_dir = f'result/Profiles_time_evolution/sim_{args.boxsize}_{args.res}'
+save_dir = f'result/Evolution_{args.root_dir}/sim_{args.boxsize}_{args.res}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 plt.savefig(os.path.join(save_dir, f'Evolution_{bin_start}_to_{bin_end}'))

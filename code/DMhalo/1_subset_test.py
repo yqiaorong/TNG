@@ -12,8 +12,8 @@ parser.add_argument('--res',     default=2500, type=int)
 parser.add_argument('--snapnum', default=99,   type=int)
 parser.add_argument('--mass_range',default=3.5,type=float) # [10^{10+x} Msun/h]
 
-parser.add_argument('--method', default='hist',type=str)
-parser.add_argument('--save_root_dir',default=None,type=str)
+parser.add_argument('--method', default=None,  type=str)
+parser.add_argument('--save_root_dir',default='test_res2500_snap99',type=str)
 args = parser.parse_args()
 
 print('')
@@ -22,6 +22,8 @@ print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
 print('')
+
+
 
 snapnum = args.snapnum
 
@@ -35,6 +37,11 @@ boxsize = args.boxsize
 res = args.res
 # Path to the output files for the relevant box size and resolution:
 basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
+
+
+
+# Save root dir
+save_root_dir = args.save_root_dir+'_'+args.method
 
 
 
@@ -63,7 +70,7 @@ with h5py.File(f'data/halo_data_res{res}_snap{snapnum}.hdf5', 'r') as f:
     
     # Iterate over DM halos
     for idx in subset_idx:
-        path = f'result/{args.save_root_dir}/'+f'sim_{boxsize}_{res}/snap_{snapnum}/densities/halo_{HaloIndices[idx]}.npy'
+        path = f'result/{save_root_dir}/'+f'sim_{boxsize}_{res}/snap_{snapnum}/densities/halo_{HaloIndices[idx]}.npy'
         if not os.path.exists(path):
             # Round values 
             x, y, z = np.round(GroupPos[idx, 0].item(), 0), np.round(GroupPos[idx, 1].item(), 0), np.round(GroupPos[idx, 2].item(), 0)
@@ -73,6 +80,6 @@ with h5py.File(f'data/halo_data_res{res}_snap{snapnum}.hdf5', 'r') as f:
                 f' --boxsize {boxsize} --res {res} --snapnum {snapnum} --groupnum {HaloIndices[idx]}'+
                 f' --x {x} --y {y} --z {z}'+
                 f' --M {Group_M_Mean200[idx].item()} --R {R}'+
-                f' --save_root_dir {args.save_root_dir} --method {args.method}')
+                f' --save_root_dir {save_root_dir} --method {args.method}')
 
     print(f'All DM halos in the subset at snap {snapnum} are finished.')
