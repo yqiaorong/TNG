@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 import os
 from func import *
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  
 
 # Input arguments
 parser = argparse.ArgumentParser()
@@ -45,43 +45,41 @@ for i in range(num_bins):
     radius, median_rho, rho_err = profiles[0], profiles[1], profiles[2] # [dimensionless]
     num_halo, R200_median = profiles[3], profiles[4]                    # [ckpc/h]
     
-    # Compute fitted median density profiles
-    result = fit_profile_parametric(radius, median_rho, rho_err[:,0], 1)
-    
     # Calculate d log rho / d log r
-    grad_result = gradient(radius, median_rho, rho_err[:,0])
-    slopes_radius, slopes, slopes_errs = grad_result[0], grad_result[1], grad_result[2] # [dimensionless]
+    # grad_result = gradient(radius, median_rho, rho_err[:,0])
+    # slopes_radius, slopes, slopes_errs = grad_result[0], grad_result[1], grad_result[2] 
+    slopes = num_deriv(np.log(radius), np.log(median_rho))              # [dimensionless]
+    slopes_radius = radius                                              # [dimensionless]
+    slopes_err = num_deriv_err(radius, median_rho, rho_err)
+    
+    # Fit the median density profiles
+    result = fit_profile_parametric(radius, median_rho, rho_err[:,0], 1)
+    new_radius, new_rho = result[0], result[1]
    
     # Fit the slope
-    # M1:
-    grad_result2 = gradient(result[0], result[1]) 
-    slopes_fits_r, slopes_fits = grad_result2[0], grad_result2[1] # [dimensionless]
-    # M2:
-    # slope_rhos = median_rho[2:-2]
-    # slope_rhos_errs = rho_err[2:-2, 0]
-    # slope_result = fit_gradient_parametric(slope_radius, slope_rhos, slope_rhos_errs, slopes, slopes_errs, 1)
-    # slopes_fits_r, slopes_fits = slope_result[0], slope_result[1]
+    # grad_result2 = gradient(result[0], result[1]) 
+    # slopes_fits_r, slopes_fits = grad_result2[0], grad_result2[1] # [dimensionless]
+    slopes_fits = num_deriv(np.log(new_radius), np.log(new_rho))
+    slopes_fits_r = new_radius
     
     # Plot the density profile
-    axs[0].errorbar(radius, median_rho, 
-                    #yerr = rho_err.T, 
-                    fmt='.', 
-                label=f'Data: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
-    axs[0].errorbar(result[0], result[1], 
-                    #yerr = rho_err.T, 
-                    fmt='.', 
+    axs[0].scatter(radius, median_rho, s=1, color='b',
+                   label=f'Data: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
+    axs[0].fill_between(radius, median_rho-rho_err[:,0], median_rho+rho_err[:,1], alpha = 0.2, color = 'b',
+                        label=f'Errorbar: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
+    axs[0].plot(new_radius, new_rho, lw=0.5, color='salmon',
                 label=f'Fit: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
     
     # Plot the fitted gradients
-    axs[1].errorbar(slopes_radius, slopes, 
-                        #yerr=slopes_errs.T, 
-                        fmt='.',
-                    label=f'Data: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
-    axs[1].errorbar(slopes_fits_r, slopes_fits, 
-                        #yerr=slopes_errs.T, 
-                        fmt='.',
-                    label=f'Theory: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
-      
+    axs[1].scatter(slopes_radius, slopes, s=1, color='b',
+                   label=f'Data: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
+    axs[1].fill_between(slopes_radius, slopes-slopes_err[:,0], slopes+slopes_err[:,1], alpha = 0.2, color = 'b',
+                        label=f'Errorbar: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
+    axs[1].plot(slopes_fits_r, slopes_fits, lw=0.5, color='salmon',
+                label=f'Theory: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
+    
+    
+
     # General settings
     axs[0].set_xscale('log')
     axs[0].set_yscale('log')
@@ -92,7 +90,7 @@ for i in range(num_bins):
     axs[1].set_xscale('log')
     axs[1].set_xlabel("r/R200")
     axs[1].set_ylabel("Slope")
-    # axs[1].set_ylim(-1.1,-0.2)
+    axs[1].set_ylim(-6,-0)
     axs[1].legend()
     axs[1].set_title('Finding splashback radius')
 
@@ -111,8 +109,10 @@ plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}'))
 
 # Save data
 save_data = {'profile_radius': radius,           'profile_densities': median_rho,    # [dimensionless]
-             'profile_radius_fit': result[0],    'profile_densities_fit': result[1], # [dimensionless]
+             'profile_radius_fit': new_radius,   'profile_densities_fit': new_rho,   # [dimensionless]
              'slopes_radius': slopes_radius,     'slopes': slopes,                   # [dimensionless]
              'slopes_radius_fit': slopes_fits_r, 'slopes_fit': slopes_fits,          # [dimensionless]
-             'R200_median': R200_median}                                             # [ckpc/h]
+             'R200_median': R200_median, # [ckpc/h]
+             'density_err': rho_err,             'slope_err': slopes_err             # [dimensionless]
+             }                                             
 np.save(os.path.join(save_dir, f'Bins_{start}_to_{end}'), save_data)

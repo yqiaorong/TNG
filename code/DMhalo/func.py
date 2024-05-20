@@ -151,6 +151,30 @@ def bootstrap(x, statfunc, Nboots=32):
     
     return resampled_stat
 
+def num_deriv(lgR, lgP):
+     result = np.zeros(len(lgR))
+     result[2:-2] = ( 1./12.*lgP[0:-4] - 2./3.*lgP[1:-3] + 2./3.*lgP[3:-1] - 1./12.*lgP[4:] ) / (lgR[3:-1] - lgR[2:-2])
+     result[0]    = (lgP[1] - lgP[0]) / (lgR[1] - lgR[0])
+     result[1]    = (lgP[2] - lgP[0]) / (lgR[2] - lgR[0])
+     result[-1]   = (lgP[-1] - lgP[-2]) / (lgR[-1] - lgR[-2])
+     result[-2]   = (lgP[-3] - lgP[-1]) / (lgR[-3] - lgR[-1])
+     return result
+ 
+def num_deriv_err_single(x,y,yerr):
+    # Compute log y error
+    lgy_err = abs(yerr / y)
+    # Compute d log y / d log x error
+    lgx, lgy = np.log10(x), np.log10(y)
+    slope = num_deriv(lgx, lgy)
+    err = abs(slope * lgy_err / lgy)
+    return err
+
+def num_deriv_err(x,y,yerrs):
+    errs = np.empty((x.shape[0], 2))
+    errs[:,0] = num_deriv_err_single(x,y, yerrs[:,0])
+    errs[:,1] = num_deriv_err_single(x,y, yerrs[:,1])
+    return errs
+
 def gradient(r, rho, rho_err=None):
     """This function computes the density profile gradient based on Equation 6 in
     O'Neil et al. 2021.

@@ -77,23 +77,28 @@ for file, snap, c in zip(file_list, snap_list, colours):
     
     pr = data['profile_radius'] * R200_median * scale_factor / h # [kpc]
     pd = data['profile_densities']
+    pde = data['density_err']
 
     prf = data['profile_radius_fit'] * R200_median * scale_factor / h # [kpc]
     pdf = data['profile_densities_fit']
     
     sr = data['slopes_radius'] * R200_median * scale_factor / h # [kpc]
     s = data['slopes']
+    se = data['slope_err']
 
     srf = data['slopes_radius_fit'] * R200_median * scale_factor / h # [kpc]
     sf = data['slopes_fit']
     
     # Plot the density profile
-    axs[0].errorbar(pr, pd, fmt='.', color=c, label=f'{snap} data')
-    axs[0].errorbar(prf, pdf, color=c, label=f'{snap} fit')
+    axs[0].scatter(pr, pd, s=1, color=c)
+    axs[0].fill_between(pr, pd-pde[:,0], pd-pde[:,1], alpha=0.2, color=c)
+    axs[0].plot(prf, pdf, lw=0.5, color=c, label=snap)
     
     # Plot the fitted gradients
-    axs[1].errorbar(sr, s, fmt='.', color=c, label=f'{snap} data')
-    axs[1].errorbar(srf, sf, color=c, label=f'{snap} theory')
+    axs[1].scatter(sr, s, s=1, color=c)
+    axs[1].fill_between(sr, s-se[:,0], s+se[:,1], alpha=0.2, color=c)
+    axs[1].plot(srf, sf, lw=0.5, color=c, label=snap)
+    
     
 # General settings
 axs[0].set_xscale('log')
@@ -105,6 +110,7 @@ axs[0].legend()
 axs[1].set_xscale('log')
 axs[1].set_xlabel("r [kpc]")
 axs[1].set_ylabel("Slope")
+axs[1].set_ylim(-4.5,0)
 axs[1].legend()
 # axs[1].set_title('Finding splashback radius')
 
