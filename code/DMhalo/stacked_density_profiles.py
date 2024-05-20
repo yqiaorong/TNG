@@ -42,7 +42,7 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 15))
 for i in range(num_bins):
     # Compute median density profiles
     profiles = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
-    radius, median_rho, rho_err = profiles[0], profiles[1], profiles[2] # [dimensionless]
+    radius, median_rho, rho_err = profiles[0][1:], profiles[1][1:], profiles[2][1:] # [dimensionless]
     num_halo, R200_median = profiles[3], profiles[4]                    # [ckpc/h]
     
     # Calculate d log rho / d log r

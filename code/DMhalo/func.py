@@ -119,8 +119,8 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
             median_with_error = np.percentile(resampled_median_rho_data_at_r, [16, 50, 84])
             # Append new data to the lists
             medians.append(median_with_error[1])
-            errors.append([median_with_error[1]-median_with_error[0], 
-                           median_with_error[2]-median_with_error[1]])
+            errors.append([abs(median_with_error[1]-median_with_error[0]), 
+                           abs(median_with_error[2]-median_with_error[1])])
         # Convert the list to array
         medians = np.array(medians) # shape: (N radii, 1)
         errors = np.array(errors) # shape: (N radii, 2)
@@ -151,6 +151,8 @@ def bootstrap(x, statfunc, Nboots=32):
     
     return resampled_stat
 
+# Compute d log rho / d log r
+
 def num_deriv(lgR, lgP):
      result = np.zeros(len(lgR))
      result[2:-2] = ( 1./12.*lgP[0:-4] - 2./3.*lgP[1:-3] + 2./3.*lgP[3:-1] - 1./12.*lgP[4:] ) / (lgR[3:-1] - lgR[2:-2])
@@ -175,42 +177,42 @@ def num_deriv_err(x,y,yerrs):
     errs[:,1] = num_deriv_err_single(x,y, yerrs[:,1])
     return errs
 
-def gradient(r, rho, rho_err=None):
-    """This function computes the density profile gradient based on Equation 6 in
-    O'Neil et al. 2021.
+# def gradient(r, rho, rho_err=None):
+#     """This function computes the density profile gradient based on Equation 6 in
+#     O'Neil et al. 2021.
     
-    INPUT:
-    r:       1D array with shape (N,)     [free unit]
-    rho:     1D array with shape (N,)     [free unit]
-    rho_err: 1D array with shape (N,)     [free unit]
+#     INPUT:
+#     r:       1D array with shape (N,)     [free unit]
+#     rho:     1D array with shape (N,)     [free unit]
+#     rho_err: 1D array with shape (N,)     [free unit]
     
-    RETURN:
-    (
-    r:       1D array with shape (N-4,)   [input unit]
-    slopes:  1D array with shape (N-4,)   [dimensionless]
-    errs:    1D array with shape (N-4,)   [dimensionless]
-    )
+#     RETURN:
+#     (
+#     r:       1D array with shape (N-4,)   [input unit]
+#     slopes:  1D array with shape (N-4,)   [dimensionless]
+#     errs:    1D array with shape (N-4,)   [dimensionless]
+#     )
     
-    """
+#     """
     
-    import numpy as np
+#     import numpy as np
     
-    slopes, errs = [], []
-    for i in range(r.shape[0]):
-        if i >= 4:
-            slope = ((1/12) * np.log10(rho[i-4]) - (2/3) * np.log10(rho[i-3]) + 
-                (2/3) * np.log10(rho[i-1]) - (1/12) * np.log10(rho[i])) / (
-                    np.log10(r[i]) - np.log10(r[i-4]))
-            slopes.append(slope)
-            # Compute errs
-            if isinstance(rho_err, np.ndarray):
-                err = abs(slope) * ((rho_err[i-4]/rho[i-4])*(1/12) + 
-                            (rho_err[i-3]/rho[i-3])*(2/3) + 
-                            (rho_err[i-2]/rho[i-1])*(2/3) + 
-                            (rho_err[i]/rho[i])*(1/12)) 
-                errs.append(err)
-
-    return (r[2:-2], np.array(slopes), np.array(errs))
+#     slopes, errs = [], []
+#     for i in range(r.shape[0]):
+#         if i >= 4:
+#             slope = ((1/12) * np.log10(rho[i-4]) - (2/3) * np.log10(rho[i-3]) + 
+#                 (2/3) * np.log10(rho[i-1]) - (1/12) * np.log10(rho[i])) / (
+#                     np.log10(r[i]) - np.log10(r[i-4]))
+#             slopes.append(slope)
+#             # Compute errs
+#             if isinstance(rho_err, np.ndarray):
+#                 err = abs(slope) * ((rho_err[i-4]/rho[i-4])*(1/12) + 
+#                             (rho_err[i-3]/rho[i-3])*(2/3) + 
+#                             (rho_err[i-2]/rho[i-1])*(2/3) + 
+#                             (rho_err[i]/rho[i])*(1/12)) 
+#                 errs.append(err)
+#
+#    return (r[2:-2], np.array(slopes), np.array(errs))
 
 def float_to_str(bin_start, bin_end):
     if str(bin_start).endswith('0'):

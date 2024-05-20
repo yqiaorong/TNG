@@ -91,7 +91,7 @@ for file, snap, c in zip(file_list, snap_list, colours):
     
     # Plot the density profile
     axs[0].scatter(pr, pd, s=1, color=c)
-    axs[0].fill_between(pr, pd-pde[:,0], pd-pde[:,1], alpha=0.2, color=c)
+    axs[0].fill_between(pr, pd-pde[:,0], pd+pde[:,1], alpha=0.2, color=c)
     axs[0].plot(prf, pdf, lw=0.5, color=c, label=snap)
     
     # Plot the fitted gradients
