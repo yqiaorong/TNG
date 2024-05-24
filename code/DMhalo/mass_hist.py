@@ -2,6 +2,7 @@ import illustris_python as il
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import h5py
 import argparse
 
 # Input arguments
@@ -26,6 +27,15 @@ snapnum = args.snapnum
 # Load Halos from groupcat
 Group_M_Mean200 = il.groupcat.loadHalos(basePath, snapnum, fields='Group_M_Mean200')
 
+
+# load hubble param and scale factor
+with h5py.File(il.snapshot.snapPath(basePath, snapnum), 'r') as f:
+    header = dict(f['Header'].attrs.items())
+    scale_factor = header['Time']
+    z = np.round( 1 / scale_factor - 1, 3)
+    
+        
+
 # Save directory
 save_dir = f'result/DM halos mass histogram/sim_{args.boxsize}_{args.res}'
 if os.path.isdir(save_dir) == False:
@@ -38,7 +48,7 @@ plt.xlabel('Mass [10^10 MSun / h]')
 plt.ylabel('Frequency')
 plt.yscale('log')
 plt.xscale('log')
-plt.title(f"DM halos' mass histogram at snap {snapnum}")
+plt.title(f"DM halos' mass histogram at z = {z}")
 plt.savefig(os.path.join(save_dir, f'snap_{snapnum}'))
 
 # Print numbers in each bin

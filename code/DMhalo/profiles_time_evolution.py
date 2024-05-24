@@ -69,6 +69,7 @@ for file, snap, c in zip(file_list, snap_list, colours):
     with h5py.File(il.snapshot.snapPath(basePath, snap[-2:]), 'r') as f:
         header = dict(f['Header'].attrs.items())
         scale_factor = header['Time']
+        z = np.round( 1 / scale_factor - 1, 3)
         h = header['HubbleParam']
 
     # Load data
@@ -92,12 +93,12 @@ for file, snap, c in zip(file_list, snap_list, colours):
     # Plot the density profile
     axs[0].scatter(pr, pd, s=1, color=c)
     axs[0].fill_between(pr, pd-pde[:,0], pd+pde[:,1], alpha=0.2, color=c)
-    axs[0].plot(prf, pdf, lw=0.5, color=c, label=snap)
+    axs[0].plot(prf, pdf, lw=0.5, color=c, label=f'z = {z}')
     
     # Plot the fitted gradients
-    axs[1].scatter(sr, s, s=1, color=c)
-    axs[1].fill_between(sr, s-se[:,0], s+se[:,1], alpha=0.2, color=c)
-    axs[1].plot(srf, sf, lw=0.5, color=c, label=snap)
+    # axs[1].scatter(sr, s, s=1, color=c)
+    # axs[1].fill_between(sr, s-se[:,0], s+se[:,1], alpha=0.2, color=c)
+    axs[1].plot(srf, sf, lw=1, color=c, label=f'z = {z}')
     
     
 # General settings
