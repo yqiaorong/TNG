@@ -7,14 +7,12 @@ import numpy as np
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',default=205,type=int)
 parser.add_argument('--res',    default=1250,type=int)
-parser.add_argument('--snapnum',default=99,type=int)
-parser.add_argument('--mass_range',default=3,type=float)
+parser.add_argument('--mass_range',default=2,type=float)
 args = parser.parse_args()
 
 # Specify the snapshot
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
 basePath = data_path + 'L%dn%dTNG/output'%(args.boxsize,args.res)
-snapnum = args.snapnum
 
 # Select a subset of DM halos
 snaps = [17, 21, 25, 33, 40, 50, 67, 78, 99]
