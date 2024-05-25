@@ -147,13 +147,13 @@ np.save(os.path.join(save_data_dir, f'halo_{groupnum}'), save_dict)
 
 
 
-# Plot the density profiles    
-plt.figure(figsize=(5,5))
-gs = matplotlib.gridspec.GridSpec(1,1,width_ratios=[1],height_ratios=[1],hspace=0,wspace=0)
-ax = plt.subplot(gs[0])
-ax.plot([halo_R_Mean200, halo_R_Mean200], [0, 10**10], linestyle='--')
-ax.loglog(radial_bins, sum_densities_bins)
-ax.set_xlabel('radius [ckpc/h]')
-ax.set_ylabel(r'density [(M$_{\odot}$/h)/(ckpc/h)$^3$]')
-plt.savefig(os.path.join(save_plt_dir, f'halo_{groupnum}.pdf'))
-plt.close()
+# # Plot the density profiles    
+# plt.figure(figsize=(5,5))
+# gs = matplotlib.gridspec.GridSpec(1,1,width_ratios=[1],height_ratios=[1],hspace=0,wspace=0)
+# ax = plt.subplot(gs[0])
+# ax.plot([halo_R_Mean200, halo_R_Mean200], [0, 10**10], linestyle='--')
+# ax.loglog(radial_bins, sum_densities_bins)
+# ax.set_xlabel('radius [ckpc/h]')
+# ax.set_ylabel(r'density [(M$_{\odot}$/h)/(ckpc/h)$^3$]')
+# plt.savefig(os.path.join(save_plt_dir, f'halo_{groupnum}.pdf'))
+# plt.close()
