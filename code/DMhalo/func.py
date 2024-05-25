@@ -1,4 +1,4 @@
-def compt_density_profile(coordinates, haloCM, halo_R_Mean200, 
+def compt_density_profile(coordinates, haloCM, halo_R_Mean200, dimension,
                           radius_range=[0.01, 5], number_of_bins=85):
     """This function computes the density profile of halos.
     
@@ -15,7 +15,8 @@ def compt_density_profile(coordinates, haloCM, halo_R_Mean200,
     """
     
     import numpy as np
-    radial_coordinates = np.linalg.norm(coordinates - haloCM, axis=1) 
+    # radial_coordinates = np.linalg.norm(coordinates - haloCM, axis=1) 
+    radial_coordinates = distance(haloCM, coordinates, dimension)
     
     # Create bins
     radius_bins = np.logspace(np.log10(radius_range[0]*halo_R_Mean200), 
@@ -36,6 +37,18 @@ def compt_density_profile(coordinates, haloCM, halo_R_Mean200,
         density_bins[i] = mass_bin / volume_bin
     
     return density_bins, radius_bins
+
+def distance(x0, x1, dimensions):
+    '''
+    find distance between points in a periodic box
+    x0,x1=coordinates or set of coordinates
+    delta = distance between two points assuming no periodicity
+    dimensions = box size *7500 ckpc/h*
+    returns delta if delta<box size, else returns 1-delta as the distance between points
+    '''
+    delta = np.abs(x0 - x1)
+    delta = np.where(delta > 0.5 * dimensions, dimensions - delta, delta)
+    return np.sqrt((delta ** 2).sum(axis=-1))
 
 def compt_density_profile_hist(coordinates, mass_weights, haloPos, radial_bins):
     

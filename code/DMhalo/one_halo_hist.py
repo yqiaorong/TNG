@@ -37,11 +37,11 @@ print('')
 
 # Directory where TNG data is stored
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-# Need to pick the box size: 35, 75, or 205 Mpc/h
+# Need to pick the box size: 35, 75, or 205 cMpc/h
 boxsize = args.boxsize
-# Need to pick the resolution level: 540, 1080, or 2160 for the 35Mpc/h box
-#                                    455, 910,  or 1820 for the 75Mpc/h box
-#                                    625, 1250, or 2500 for the 205Mpc/h box
+# Need to pick the resolution level: 540, 1080, or 2160 for the 35 cMpc/h box
+#                                    455, 910,  or 1820 for the 75 cMpc/h box
+#                                    625, 1250, or 2500 for the 205 cMpc/h box
 res = args.res
 # Path to the output files for the relevant box size and resolution:
 basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
@@ -57,6 +57,8 @@ with h5py.File(il.snapshot.snapPath(basePath, snapnum), 'r') as f:
     scale_factor = header['Time']
     h = header['HubbleParam']
     DMmass = header['MassTable'][1] * 10**10 # [MSun / h]
+    # BoxSize = header['BoxSize'] # [ckpc / h]
+    
 
 
 # Select DM halo
@@ -111,7 +113,8 @@ for idx, file in enumerate(tqdm(load_list)):
             DM_masses = [DMmass] * sub_coords.shape[0] # [Msun/h]
             densities = compt_density_profile_hist(sub_coords, DM_masses, haloPos, radial_bins)
         elif args.method == 'old':
-            densities, radial_bins = compt_density_profile(sub_coords, haloPos, halo_R_Mean200)
+            densities, radial_bins = compt_density_profile(sub_coords, haloPos, halo_R_Mean200,
+                                                           boxsize*1000)
             densities = densities * DMmass
         densities_bins.append(densities) 
         
