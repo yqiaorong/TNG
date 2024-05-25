@@ -93,7 +93,7 @@ load_list = [fname for fname in load_list if fname.endswith('hdf5')]
 # Density profiles
 densities_bins = []
 
-for idx, file in enumerate(tqdm(load_list)):
+for idx, file in enumerate(load_list):
     
     # Load coordinates
     snap_path = os.path.join(load_dir, file)
