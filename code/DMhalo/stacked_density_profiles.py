@@ -40,42 +40,50 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 15))
         
 # Iteration over mass bins
 for i in range(num_bins):
+    
     # Compute median density profiles
-    profiles = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
-    radius, median_rho, rho_err = profiles[0][1:], profiles[1][1:], profiles[2][1:] # [dimensionless]
-    num_halo, R200_median = profiles[3], profiles[4]                    # [ckpc/h]
+    raw_profiles = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
+    radius, rho, rho_err = raw_profiles[0][1:], raw_profiles[1][1:], raw_profiles[2][1:] # [dimensionless]
+    num_halo, R200_median = raw_profiles[3], raw_profiles[4]                    # [ckpc/h]
+    del raw_profiles
     
     # Calculate d log rho / d log r
     # grad_result = gradient(radius, median_rho, rho_err[:,0])
     # slopes_radius, slopes, slopes_errs = grad_result[0], grad_result[1], grad_result[2] 
-    slopes = num_deriv(np.log(radius), np.log(median_rho))              # [dimensionless]
-    slopes_radius = radius                                              # [dimensionless]
-    slopes_err = num_deriv_err(radius, median_rho, rho_err)
+    slopes = num_deriv(np.log(radius), np.log(rho))              # [dimensionless]
+    slopes_err = num_deriv_err(radius, rho, rho_err)
+
+
+
+    # Fit the density profiles
+    fit_profiles = fit_profile_parametric(radius, rho, np.mean(rho_err, axis=1), 1)
+    new_radius, new_rho = fit_profiles[0], fit_profiles[1]
+    del fit_profiles
     
-    # Fit the median density profiles
-    result = fit_profile_parametric(radius, median_rho, rho_err[:,0], 1)
-    new_radius, new_rho = result[0], result[1]
-   
-    # Fit the slope
-    # grad_result2 = gradient(result[0], result[1]) 
-    # slopes_fits_r, slopes_fits = grad_result2[0], grad_result2[1] # [dimensionless]
-    slopes_fits = num_deriv(np.log(new_radius), np.log(new_rho))
-    slopes_fits_r = new_radius
+    # Fit the slope 
+    fit_results = fit_gradient_parametric(radius, rho, np.mean(rho_err, axis=1),
+                                          slopes, np.mean(slopes_err, axis=1), 1)
+    # slopes_fits = num_deriv(np.log(new_radius), np.log(new_rho))      # [dimensionless]
+    # slopes_fits_r = new_radius                                        # [dimensionless]
+    slopes_fit_r, slopes_fit = fit_results[0], fit_results[1]
+    del fit_results
+    
+    
     
     # Plot the density profile
-    axs[0].scatter(radius, median_rho, s=1, color='b',
+    axs[0].scatter(radius, rho, s=1, color='b',
                    label=f'Data: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
-    axs[0].fill_between(radius, median_rho-rho_err[:,0], median_rho+rho_err[:,1], alpha = 0.2, color = 'b',
+    axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, color = 'b',
                         label=f'Errorbar: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
     axs[0].plot(new_radius, new_rho, lw=0.5, color='salmon',
                 label=f'Fit: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
     
     # Plot the fitted gradients
-    axs[1].scatter(slopes_radius, slopes, s=1, color='b',
+    axs[1].scatter(radius, slopes, s=1, color='b',
                    label=f'Data: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
-    axs[1].fill_between(slopes_radius, slopes-slopes_err[:,0], slopes+slopes_err[:,1], alpha = 0.2, color = 'b',
+    axs[1].fill_between(radius, slopes-slopes_err[:,0], slopes+slopes_err[:,1], alpha = 0.2, color = 'b',
                         label=f'Errorbar: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
-    axs[1].plot(slopes_fits_r, slopes_fits, lw=0.5, color='salmon',
+    axs[1].plot(slopes_fit_r, slopes_fit, lw=0.5, color='salmon',
                 label=f'Theory: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')
     
     
@@ -108,10 +116,10 @@ start, end = float_to_str(args.bin_start, args.bin_end)
 plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}'))
 
 # Save data
-save_data = {'profile_radius': radius,           'profile_densities': median_rho,    # [dimensionless]
+save_data = {'profile_radius': radius,           'profile_densities': rho,    # [dimensionless]
              'profile_radius_fit': new_radius,   'profile_densities_fit': new_rho,   # [dimensionless]
-             'slopes_radius': slopes_radius,     'slopes': slopes,                   # [dimensionless]
-             'slopes_radius_fit': slopes_fits_r, 'slopes_fit': slopes_fits,          # [dimensionless]
+             'slopes_radius': radius,            'slopes': slopes,                   # [dimensionless]
+             'slopes_radius_fit': slopes_fit_r,  'slopes_fit': slopes_fit,           # [dimensionless]
              'R200_median': R200_median, # [ckpc/h]
              'density_err': rho_err,             'slope_err': slopes_err             # [dimensionless]
              }                                             

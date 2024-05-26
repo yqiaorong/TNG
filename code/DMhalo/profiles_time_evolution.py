@@ -98,8 +98,8 @@ for file, snap, c in zip(file_list, snap_list, colours):
     # Plot the fitted gradients
     # axs[1].scatter(sr, s, s=1, color=c)
     # axs[1].fill_between(sr, s-se[:,0], s+se[:,1], alpha=0.2, color=c)
-    axs[1].plot(srf, sf, lw=1, color=c, label=f'z = {z}')
-    
+    # axs[1].plot(srf, sf, lw=1, color=c, label=f'z = {z}')
+    axs[1].plot(sr, s, lw=1, color=c, label=f'z = {z}')
     
 # General settings
 axs[0].set_xscale('log')

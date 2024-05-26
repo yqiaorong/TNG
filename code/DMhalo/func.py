@@ -75,6 +75,7 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     )
     """
     
+    import os
     import numpy as np
     # from scipy.constants import G
     from unyt import G, second, megaparsec, km
@@ -119,6 +120,10 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     num_halo = np.array(density_profiles).shape[0]
     if num_halo == 0:
         print('no halos')
+        os.exit()
+    elif num_halo < 10:
+        print(f'num of halos: {num_halo}, too few')
+        os.exit()
     else:
         print(f'num of halos: {num_halo}')
         
@@ -632,7 +637,7 @@ def fit_gradient_parametric(bin_centers, densities, density_errors, gradient, gr
         wrapped_outer,
         r[outer_mask],
         log_rho[outer_mask],
-        p0=(            10 ** log_rho[-1],
+        p0=(10 ** log_rho[-1],
             2.0,
             2.0,),
         sigma=log_rho_error[outer_mask],
@@ -708,7 +713,7 @@ def fit_gradient_parametric(bin_centers, densities, density_errors, gradient, gr
         gradient,
         p0=base_p0,
         maxfev=100000,
-        # bounds=[base_lower, base_upper],
+        bounds=[base_lower, base_upper],
         sigma=gradient_errors,
     )
 
