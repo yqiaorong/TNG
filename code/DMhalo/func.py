@@ -120,10 +120,10 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     num_halo = np.array(density_profiles).shape[0]
     if num_halo == 0:
         print('no halos')
-        os.exit()
+        os._exit()
     elif num_halo < 10:
         print(f'num of halos: {num_halo}, too few')
-        os.exit()
+        os._exit()
     else:
         print(f'num of halos: {num_halo}')
         
