@@ -76,6 +76,7 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     """
     
     import os
+    import sys
     import numpy as np
     # from scipy.constants import G
     from unyt import G, second, megaparsec, km
@@ -120,10 +121,10 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     num_halo = np.array(density_profiles).shape[0]
     if num_halo == 0:
         print('no halos')
-        os._exit()
+        sys.exit()
     elif num_halo < 10:
         print(f'num of halos: {num_halo}, too few')
-        os._exit()
+        sys.exit()
     else:
         print(f'num of halos: {num_halo}')
         
