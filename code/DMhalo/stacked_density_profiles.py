@@ -61,15 +61,17 @@ for i in range(num_bins):
     del fit_profiles
     
     # Fit the slope 
-    fit_results = fit_gradient_parametric(radius, rho, np.mean(rho_err, axis=1),
-                                          slopes, np.mean(slopes_err, axis=1), 1)
-    # slopes_fits = num_deriv(np.log(new_radius), np.log(new_rho))      # [dimensionless]
-    # slopes_fits_r = new_radius                                        # [dimensionless]
-    slopes_fit_r, slopes_fit = fit_results[0], fit_results[1]
-    del fit_results
+    # M1
+    # fit_results = fit_gradient_parametric(radius, rho, np.mean(rho_err, axis=1),
+    #                                       slopes, np.mean(slopes_err, axis=1), 1)
+    # slopes_fit_r, slopes_fit = fit_results[0], fit_results[1]
+    # del fit_results
+    # M2
+    slopes_fit = num_deriv(np.log(new_radius), np.log(new_rho))      # [dimensionless]
+    slopes_fit_r = new_radius                                        # [dimensionless]
     
     
-    
+
     # Plot the density profile
     axs[0].scatter(radius, rho, s=1, color='b',
                    label=f'Data: mass bin 10^{mass_bins[i]+10} ~ 10^{mass_bins[i+1]+10} Msun/h: {num_halo} halos')

@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--boxsize',default=205,type=int)
-parser.add_argument('--res',    default=1250,type=int)
+parser.add_argument('--boxsize',   default=205,type=int)
+parser.add_argument('--res',       default=1250,type=int)
 parser.add_argument('--bin_start', default=3.5, type=float)
 parser.add_argument('--bin_end',   default=4, type=float)
 
@@ -96,10 +96,14 @@ for file, snap, c in zip(file_list, snap_list, colours):
     axs[0].plot(prf, pdf, lw=0.5, color=c, label=f'z = {z}')
     
     # Plot the fitted gradients
-    # axs[1].scatter(sr, s, s=1, color=c)
-    # axs[1].fill_between(sr, s-se[:,0], s+se[:,1], alpha=0.2, color=c)
-    # axs[1].plot(srf, sf, lw=1, color=c, label=f'z = {z}')
-    axs[1].plot(sr, s, lw=1, color=c, label=f'z = {z}')
+    # M1
+    # axs[1].plot(sr, s, lw=1, color=c, label=f'z = {z}')
+    # M2
+    axs[1].scatter(sr, s, s=1, color=c)
+    axs[1].fill_between(sr, s-se[:,0], s+se[:,1], alpha=0.2, color=c)
+    axs[1].plot(srf, sf, lw=1, color=c, label=f'z = {z}')   
+    
+    
     
 # General settings
 axs[0].set_xscale('log')
