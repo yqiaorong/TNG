@@ -114,7 +114,8 @@ if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
 # Plot name and save
-start, end = float_to_str(args.bin_start, args.bin_end)
+# start, end = float_to_str(args.bin_start, args.bin_end)
+start, end = float_to_int(args.bin_start, args.bin_end)
 plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}'))
 
 # Save data

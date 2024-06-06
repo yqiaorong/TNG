@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 import os
 import h5py
-from func import float_to_str
+from func import float_to_int
 import illustris_python as il
 from matplotlib import pyplot as plt
 
@@ -24,7 +24,7 @@ for key, val in vars(args).items():
 print('')
 
 # Change bins from floats to strings
-bin_start, bin_end = float_to_str(args.bin_start, args.bin_end)
+bin_start, bin_end = float_to_int(args.bin_start, args.bin_end)
 
 # Load dir
 load_dir = f'result/Stacked_{args.root_dir}/sim_{args.boxsize}_{args.res}'
@@ -122,7 +122,7 @@ axs[1].legend()
 plt.tight_layout()
     
 # Save directory
-save_dir = f'result/Evolution_{args.root_dir}/sim_{args.boxsize}_{args.res}'
+save_dir = f'result/Evolution_{args.root_dir}/sim_{boxsize}_{res}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 plt.savefig(os.path.join(save_dir, f'Evolution_{bin_start}_to_{bin_end}'))

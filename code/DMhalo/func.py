@@ -196,43 +196,6 @@ def num_deriv_err(x,y,yerrs):
     errs[:,1] = num_deriv_err_single(x,y, yerrs[:,1])
     return errs
 
-# def gradient(r, rho, rho_err=None):
-#     """This function computes the density profile gradient based on Equation 6 in
-#     O'Neil et al. 2021.
-    
-#     INPUT:
-#     r:       1D array with shape (N,)     [free unit]
-#     rho:     1D array with shape (N,)     [free unit]
-#     rho_err: 1D array with shape (N,)     [free unit]
-    
-#     RETURN:
-#     (
-#     r:       1D array with shape (N-4,)   [input unit]
-#     slopes:  1D array with shape (N-4,)   [dimensionless]
-#     errs:    1D array with shape (N-4,)   [dimensionless]
-#     )
-    
-#     """
-    
-#     import numpy as np
-    
-#     slopes, errs = [], []
-#     for i in range(r.shape[0]):
-#         if i >= 4:
-#             slope = ((1/12) * np.log10(rho[i-4]) - (2/3) * np.log10(rho[i-3]) + 
-#                 (2/3) * np.log10(rho[i-1]) - (1/12) * np.log10(rho[i])) / (
-#                     np.log10(r[i]) - np.log10(r[i-4]))
-#             slopes.append(slope)
-#             # Compute errs
-#             if isinstance(rho_err, np.ndarray):
-#                 err = abs(slope) * ((rho_err[i-4]/rho[i-4])*(1/12) + 
-#                             (rho_err[i-3]/rho[i-3])*(2/3) + 
-#                             (rho_err[i-2]/rho[i-1])*(2/3) + 
-#                             (rho_err[i]/rho[i])*(1/12)) 
-#                 errs.append(err)
-#
-#    return (r[2:-2], np.array(slopes), np.array(errs))
-
 def float_to_str(bin_start, bin_end):
     if str(bin_start).endswith('0'):
         start = int(bin_start)
@@ -243,6 +206,12 @@ def float_to_str(bin_start, bin_end):
         start = f'{starta}-{startb}'
         end = int(bin_end)
     return start, end
+
+def float_to_int(bin_start, bin_end):
+    start = int(bin_start * 10)
+    end = int(bin_end * 10)
+    return start, end
+    
 
 ### External functions ###
 
