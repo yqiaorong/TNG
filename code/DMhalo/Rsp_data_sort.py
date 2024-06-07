@@ -3,7 +3,6 @@ import numpy as np
 import os
 import h5py
 import illustris_python as il
-from matplotlib import pyplot as plt
 
 # Input arguments
 parser = argparse.ArgumentParser()
@@ -37,7 +36,7 @@ file_list = []
 for dirpath, subfolder, fnames in os.walk(load_dir):
     for fname in fnames:
         if fname.endswith('.npy'):
-            file_path = os.path.join(dirpath, fname.replace('-', ''))
+            file_path = os.path.join(dirpath, fname)
             file_list.append(file_path)
 
 # Sort index    
@@ -56,7 +55,7 @@ with h5py.File(os.path.join(data_path,'DMhalo_profiles.hdf5'), 'w') as data_f:
     
     # Iterate over snapshots
     for snap in snap_list:
-        print(snap)
+
         # Create group 
         group = data_f.create_group(snap)
         
@@ -74,7 +73,7 @@ with h5py.File(os.path.join(data_path,'DMhalo_profiles.hdf5'), 'w') as data_f:
         # Iterate over subfiles  
         R200_one_snap, rf_one_snap, pdf_one_snap, sf_one_snap = [], [], [], []
         for file in subfile_list:
-            print(file)
+            
             # Load data
             data = np.load(file, allow_pickle=True).item()
             
@@ -94,4 +93,3 @@ with h5py.File(os.path.join(data_path,'DMhalo_profiles.hdf5'), 'w') as data_f:
         group.create_dataset('radius_fit', data=np.array(rf_one_snap))
         group.create_dataset('densities_fit', data=np.array(pdf_one_snap))
         group.create_dataset('slopes_fit', data=np.array(sf_one_snap))  
-        print('')  

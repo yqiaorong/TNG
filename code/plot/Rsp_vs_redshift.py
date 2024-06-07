@@ -8,6 +8,7 @@ boxsize = 205
 res = 1250
 
 
+
 # Set up the final plot
 fig, axs = plt.subplots(1, 1, figsize=(10, 10))
 axs.set_title(f'Splashback radius vs Redshift')
@@ -16,6 +17,10 @@ axs.set_title(f'Splashback radius vs Redshift')
 
 # Mass bins 
 mass_bins = [12, 12.5, 13, 13.5]
+
+# Set up the colour range
+cmap = plt.cm.get_cmap('hsv')
+colours = [cmap(i / len(mass_bins)) for i in range(len(mass_bins))]
 
 # Read data
 data_path = f'data/{root_dir}/sim_{boxsize}_{res}'
@@ -39,17 +44,15 @@ with h5py.File(os.path.join(data_path,'DMhalo_profiles.hdf5'), 'r') as data_f:
         # Rsp
         Rsp = [data_f[f'{s}/radius_fit'][i, idx] for i, idx in enumerate(indices)] # [kpc]
         Rsp_all.append(Rsp)
-    print(z_all) 
 
 for i in range(len(mass_bins)):
     Rsp_bin = []
     for sublist in Rsp_all:
         if len(sublist) >= i+1:
             Rsp_bin.append(sublist[i])
-    print(Rsp_bin)
     
     # Plot
-    axs.plot(z_all[-len(Rsp_bin):], Rsp_bin, label=f'mass = 10^{mass_bins[i]} MSun/h')
+    axs.plot(z_all[-len(Rsp_bin):], Rsp_bin, color=colours[i], label=f'mass = 10^{mass_bins[i]} MSun/h')
         
 axs.set_xlabel('z')
 axs.set_ylabel(r"$R_{sp}$[kpc]")
