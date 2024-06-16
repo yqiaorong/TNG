@@ -16,7 +16,7 @@ axs.set_title(f'Splashback radius vs Redshift')
 
 
 # Mass bins 
-mass_bins = [12, 12.5, 13, 13.5]
+mass_bins = [11.5, 12, 12.5, 13, 13.5]
 
 # Set up the colour range
 cmap = plt.cm.get_cmap('hsv')
@@ -27,10 +27,6 @@ data_path = f'data/{root_dir}/sim_{boxsize}_{res}'
 with h5py.File(os.path.join(data_path,'DMhalo_profiles.hdf5'), 'r') as data_f:
     
     snaps = data_f.keys()
-    
-    # # Set up the colour range
-    # cmap = plt.cm.get_cmap('hsv')
-    # colours = [cmap(i / len(snaps)) for i in range(len(snaps))]
     
     # Iterate over snapshots
     Rsp_all, z_all = [], []
@@ -56,6 +52,7 @@ for i in range(len(mass_bins)):
         
 axs.set_xlabel('z')
 axs.set_ylabel(r"$R_{sp}$[kpc]")
+axs.set_yscale('log')
 axs.legend()
 plt.tight_layout()
     

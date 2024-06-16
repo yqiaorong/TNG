@@ -47,6 +47,10 @@ for i in range(num_bins):
     num_halo, R200_median = raw_profiles[3], raw_profiles[4]                    # [ckpc/h]
     del raw_profiles
     
+    # Cross check if rho is zero
+    mask = rho != 0
+    radius, rho, rho_err = radius[mask], rho[mask], rho_err[mask]
+    
     # Calculate d log rho / d log r
     # grad_result = gradient(radius, median_rho, rho_err[:,0])
     # slopes_radius, slopes, slopes_errs = grad_result[0], grad_result[1], grad_result[2] 

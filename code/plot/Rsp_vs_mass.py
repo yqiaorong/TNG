@@ -16,7 +16,9 @@ axs.set_title(f'Splashback radius vs Mass')
 
 
 # Mass bins 
-mass_bins = [10**12, 10**12.5, 10**13, 10**13.5]
+mass_bins = [
+    10**11.5, 
+    10**12, 10**12.5, 10**13, 10**13.5]
 
 # Read data
 data_path = f'data/{root_dir}/sim_{boxsize}_{res}'
@@ -37,11 +39,12 @@ with h5py.File(os.path.join(data_path,'DMhalo_profiles.hdf5'), 'r') as data_f:
  
         # Bootstrap the gradients
         num_stacks = slopes_fit.shape[0]
-        boots_grads = np.array([bootstrap(slopes_fit[stack_idx], np.min, 100) 
+        boots_grads = np.array([bootstrap(slopes_fit[stack_idx], np.min, 1000) 
                          for stack_idx in range(num_stacks)])
         # Select 16, 50, 84 percentiles of gradients
         final_grads = np.array([np.percentile(boots_grads[stack_idx], [16, 50, 84]) 
                          for stack_idx in range(num_stacks)])
+
         # Find Rsp with errors [kpc]
         differ = np.array([np.array([np.abs(slopes_fit[stack_idx]-final_grads[stack_idx, i]) 
                             for stack_idx in range(num_stacks)]) for i in range(3)])
@@ -62,6 +65,7 @@ with h5py.File(os.path.join(data_path,'DMhalo_profiles.hdf5'), 'r') as data_f:
 axs.set_xlabel('Mass [MSun/h]')
 axs.set_ylabel(r"$R_{sp}$[kpc]")
 axs.set_xscale('log')
+axs.set_yscale('log')
 axs.legend()
 plt.tight_layout()
     

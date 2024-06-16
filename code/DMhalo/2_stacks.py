@@ -7,8 +7,12 @@ parser.add_argument('--boxsize',default=205,type=int)
 parser.add_argument('--res',default=1250,type=int)
 args = parser.parse_args()
 
-snaps = [17, 21, 25, 33, 40, 50, 67, 78, 99]
-bins = [1.5, 2, 2.5, 3, 3.5]
+snaps = [
+        # 17, 21, 
+        25, 33, 40, 50, 67, 78, 99]
+bins = [1.5,         
+        # 2, 2.5, 3, 3.5
+        ]
 
 for i in range(len(bins)):
     # Single stack
@@ -24,4 +28,4 @@ for i in range(len(bins)):
             f' --root_dir DMhalo_density_profiles_old')
    
 # Sort data
-os.system(f'python3 code/DMhalo/Rsp_data_sort.py --root_dir DMhalo_density_profiles_old')
+os.system(f'python3 code/DMhalo/3_Rsp_data_sort.py --root_dir DMhalo_density_profiles_old')
