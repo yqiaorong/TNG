@@ -16,9 +16,7 @@ axs.set_title(f'Splashback radius vs Mass')
 
 
 # Mass bins 
-mass_bins = [
-    10**11.5, 
-    10**12, 10**12.5, 10**13, 10**13.5]
+mass_bins = [10**11.5, 10**12, 10**12.5, 10**13, 10**13.5]
 
 # Read data
 data_path = f'data/{root_dir}/sim_{boxsize}_{res}'

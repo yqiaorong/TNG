@@ -7,12 +7,8 @@ parser.add_argument('--boxsize',default=205,type=int)
 parser.add_argument('--res',default=1250,type=int)
 args = parser.parse_args()
 
-snaps = [
-        # 17, 21, 
-        25, 33, 40, 50, 67, 78, 99]
-bins = [1.5,         
-        # 2, 2.5, 3, 3.5
-        ]
+snaps = [17, 21, 25, 33, 40, 50, 67, 78, 99]
+bins = [2]
 
 for i in range(len(bins)):
     # Single stack
