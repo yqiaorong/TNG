@@ -58,7 +58,7 @@ for i in range(num_bins):
     slopes_err = num_deriv_err(radius, rho, rho_err)
 
 
-
+    
     # Fit the density profiles
     fit_profiles = fit_profile_parametric(radius, rho, np.mean(rho_err, axis=1), 1)
     new_radius, new_rho = fit_profiles[0], fit_profiles[1]
@@ -66,8 +66,8 @@ for i in range(num_bins):
     
     # Fit the slope 
     # M1
-    # fit_results = fit_gradient_parametric(radius, rho, np.mean(rho_err, axis=1),
-    #                                       slopes, np.mean(slopes_err, axis=1), 1)
+    # fit_results = fit_gradient_parametric(radius[20:], rho[20:], np.mean(rho_err, axis=1)[20:],
+    #                                       slopes[20:], np.mean(slopes_err, axis=1)[20:], 1)
     # slopes_fit_r, slopes_fit = fit_results[0], fit_results[1]
     # del fit_results
     # M2
@@ -123,7 +123,7 @@ start, end = float_to_int(args.bin_start, args.bin_end)
 plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}'))
 
 # Save data
-save_data = {'profile_radius': radius,           'profile_densities': rho,    # [dimensionless]
+save_data = {'profile_radius': radius,           'profile_densities': rho,           # [dimensionless]
              'profile_radius_fit': new_radius,   'profile_densities_fit': new_rho,   # [dimensionless]
              'slopes_radius': radius,            'slopes': slopes,                   # [dimensionless]
              'slopes_radius_fit': slopes_fit_r,  'slopes_fit': slopes_fit,           # [dimensionless]

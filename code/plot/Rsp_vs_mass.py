@@ -52,6 +52,7 @@ with h5py.File(os.path.join(data_path,'DMhalo_profiles.hdf5'), 'r') as data_f:
                                  for stack_idx in range(num_stacks)]) for i in range(3)]).T
         
         # Plot
+        print(Rsp_with_errs[:,1])
         axs.errorbar(mass_bins[:num_stacks], Rsp_with_errs[:,1], 
                      yerr = [abs(Rsp_with_errs[:,1]-Rsp_with_errs[:,0]), 
                              abs(Rsp_with_errs[:,2]-Rsp_with_errs[:,1])], 

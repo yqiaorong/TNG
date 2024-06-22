@@ -57,6 +57,38 @@ def compt_density_profile_hist(coordinates, mass_weights, haloPos, radial_bins):
     densities = np.histogram(radii,radial_bins,weights=mass_weights)[0] / radial_volumes # [Msun/h / (ckpc/h)^3]
     return densities
 
+def select_halos(file_list, bin_start, bin_end):
+    sub_list = []
+    for file in file_list:
+        # Load data
+        data = np.load(file, allow_pickle=True).item()
+        halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 MSun/h]
+        
+        # Apply the mass criteria 
+        if (halo_M_Mean200 >= 10**bin_start) & (halo_M_Mean200 < 10**(bin_end+0.5)):
+            sub_list.append(file)
+    return sub_list
+    
+def count_halos(file_list, bin_start, bin_end):
+    counts = []
+    
+    bin_width = 0.5
+    num_bins = int((bin_end-bin_start)/bin_width)
+    bins = np.arange(bin_start, bin_end, bin_width)
+    
+    for i in range(num_bins):
+        count = 0
+        for file in file_list:
+            # Load data
+            data = np.load(file, allow_pickle=True).item()
+            halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 MSun/h]
+            
+            # Apply the mass criteria 
+            if (halo_M_Mean200 >= 10**bins[i]) & (halo_M_Mean200 < 10**(bins[i]+0.5)):
+                count += 1
+        counts.append(count)
+    return counts
+    
 def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     """The function computes the stacked density profiles.
     
@@ -75,7 +107,6 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     )
     """
     
-    import os
     import sys
     import numpy as np
     # from scipy.constants import G
@@ -121,10 +152,10 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     num_halo = np.array(density_profiles).shape[0]
     if num_halo == 0:
         print('no halos')
-        sys.exit()
+        # sys.exit()
     elif num_halo < 10:
         print(f'num of halos: {num_halo}, too few')
-        sys.exit()
+        # sys.exit()
     else:
         print(f'num of halos: {num_halo}')
         
@@ -211,7 +242,54 @@ def float_to_int(bin_start, bin_end):
     start = int(bin_start * 10)
     end = int(bin_end * 10)
     return start, end
+
+def plot_profile(radius, rho, rho_err, slope, slope_err, 
+                 fitted_radius, fitted_rho, fitted_slope, 
+                 mass_cut, num_halo, save_dir):
     
+    import os
+    from matplotlib import pyplot as plt  
+    
+    fig, axs = plt.subplots(2, 1, figsize=(10, 15))
+    axs[0].scatter(radius, rho, s=1, color='b',
+                label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos')
+    axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, color = 'b',
+                        label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos')
+    axs[0].plot(fitted_radius, fitted_rho, lw=0.5, color='salmon',
+                label=f'Fit: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos')
+    
+    # Plot the fitted gradients
+    axs[1].scatter(radius, slope, s=1, color='b',
+                label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos')
+    axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, color = 'b',
+                        label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos')
+    axs[1].plot(fitted_radius, fitted_slope, lw=0.5, color='salmon',
+                label=f'Theory: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos')
+    
+
+    # General settings
+    axs[0].set_xscale('log')
+    axs[0].set_yscale('log')
+    axs[0].set_ylabel(r"$\rho$/$\rho_c$")
+    axs[0].legend()
+    axs[0].set_title(f'Stacked density profiles')
+
+    axs[1].set_xscale('log')
+    axs[1].set_xlabel("r/R200")
+    axs[1].set_ylabel("Slope")
+    axs[1].set_ylim(-6,-0)
+    axs[1].legend()
+    axs[1].set_title('Finding splashback radius')
+
+    plt.tight_layout()
+    
+    # Save the plot
+    if not os.path.exists(save_dir):
+       os.makedirs(save_dir)
+    start, end = float_to_int(mass_cut[0], mass_cut[1])
+    plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}'))
+
+
 
 ### External functions ###
 
@@ -347,18 +425,18 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
 
     inner_mask = np.logical_and(bin_centers > 0.02, bin_centers < 0.8)
 
-    popt_inner, pcov_inner = curve_fit(
+    popt_inner, _ = curve_fit(
         density_profile_inner,
         r[inner_mask],
         log_rho[inner_mask],
-        p0=(10**log_rho[0], R_200_mean, 0.5),
-        sigma=log_rho_error[inner_mask],
-        # For some reason bounds make this go very wrong.
+        p0=(10**log_rho[0], R_200_mean, 1),
+        # sigma=log_rho_error[inner_mask],
+        # # For some reason bounds make this go very wrong.
         # bounds=(
         #     [1e-10 * 10**log_rho[0], 0.001 * R_200_mean, 0.0],
         #     [np.inf, 10.0 * R_200_mean, 1]
         # ),
-        maxfev=100000,
+        maxfev=1000000,
     )
 
 
@@ -382,19 +460,20 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
     # Using bounds here messes this up because it can no longer
     # use lm, and instead uses trf, unless they are very tight.
     # In particular, our requirement that b_e > 1.0 is required.
-    popt_outer, pcov_outer = curve_fit(
+   
+    popt_outer, _ = curve_fit(
         wrapped_outer,
         r[outer_mask],
         log_rho[outer_mask],
-        p0=(            10 ** log_rho[-1],
+        p0=(10 ** log_rho[-1],
             2.0,
             2.0,),
-        sigma=log_rho_error[outer_mask],
+        # sigma=log_rho_error[outer_mask],
         bounds=(
-            [0.01 * 10 ** log_rho[-1], 0.1, 0.0],
-            [10 * 10 ** log_rho[-1], 5.0, 5.0]
-        ),
-        maxfev=100000,
+               [0.01 * 10 ** log_rho[-1], 1.0, 1.0],
+               [10 * 10 ** log_rho[-1], 5.0, 5.0]
+               ),
+        maxfev=1000000,
     )
 
     # return (
@@ -422,22 +501,20 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
             *popt_outer,
         )
 
-    middle_mask = np.logical_and(
-        bin_centers > 0.5, bin_centers < 2.0
-    )
-
-    popt_ft, pcov_ft = curve_fit(
+    middle_mask = np.logical_and(bin_centers > 0.5, bin_centers < 2.0)
+    
+    popt_ft, _ = curve_fit(
         wrapped_ftrans_only,
         r[middle_mask],
         log_rho[middle_mask],
         p0=(R_200_mean,
-            2.0,
-            4.0,),
-        maxfev=100000,
-        sigma=log_rho_error[middle_mask],
+            2,
+            4,),
+        maxfev=1000000,
+        # sigma=log_rho_error[middle_mask],
         bounds=(
-            [0.01 * R_200_mean, 0.0, 0.0],
-            [10.0 * R_200_mean, 10.0, 5.0]
+            [0.1 * R_200_mean, 1.0, 1.0],
+            [2.0 * R_200_mean, 5.0, 12.0]
         )
     )
 
@@ -445,7 +522,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
         *popt_inner, *popt_ft, *popt_outer,
     )
 
-    change_frac = 4.0
+    change_frac = 1.1
 
     base_lower = [x / change_frac for x in base_p0]
     base_upper = [x * change_frac for x in base_p0]
@@ -454,16 +531,16 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
     # p0 = p0_full if p0_full is not None else base_p0
 
 
-    popt, pcov = curve_fit(
+    popt, _ = curve_fit(
         wrapped_profile,
         bin_centers[global_mask] * R_200_mean,
         log_rho[global_mask],
         p0=base_p0,
         maxfev=100000,
         bounds=[base_lower, base_upper],
-        sigma=log_rho_error[global_mask],
+        # sigma=log_rho_error[global_mask],
     )
-
+    # print(popt)
     def chi_square(p):
         return np.sum(((p[global_mask] - log_rho[global_mask])/ log_rho_error[global_mask])**2) / (len(p[global_mask]) - len(popt))
 
