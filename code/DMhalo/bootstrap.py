@@ -20,7 +20,7 @@ mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x wh
 
 
     
-snap = 78
+snap = 33
 print(f'The current snapshot: {snap}')
 
 # Load redshift values
@@ -82,9 +82,10 @@ while valid_boots < Nboots:
             fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho))      # [dimensionless]
 
             # Plot the profile
-            # plot_profile(radius, rho, rho_err, slope, slope_err, 
-            #             fitted_radius, fitted_rho, fitted_slope, 
-            #             [mass_bins[i], mass_bins[i+1]], num_halo, f'result/bootstrap/snap_{snap}')
+            plot_profile(radius, rho, rho_err, slope, slope_err, 
+                        fitted_radius, fitted_rho, fitted_slope, 
+                        [mass_bins[i], mass_bins[i+1]], num_halo, snap, 
+                        f'result/bootstrap/snap_{snap}')
             
             
             # Compute Rsp
@@ -119,11 +120,11 @@ while valid_boots < Nboots:
             
 final_results = np.percentile(results, [16, 50, 84], axis=2)
 print(f'final_results shape (percentile, bin, type)')
-for i in range(len(mass_bins)):
+for i in range(int(len(mass_bins)-1)):
     print(f'bin {i}: ')
-    print(f'Rsp: {bin[:, i, 0]}')
-    print(f'depth: {bin[:, i, 1]}')
-    print(f'depth: {bin[:, i, 2]}')
+    print(f'Rsp: {final_results[:, i, 0]}')
+    print(f'depth: {final_results[:, i, 1]}')
+    print(f'depth: {final_results[:, i, 2]}')
     print('')
     
 # Save the result

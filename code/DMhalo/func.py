@@ -245,7 +245,7 @@ def float_to_int(bin_start, bin_end):
 
 def plot_profile(radius, rho, rho_err, slope, slope_err, 
                  fitted_radius, fitted_rho, fitted_slope, 
-                 mass_cut, num_halo, save_dir):
+                 mass_cut, num_halo, snap, save_dir):
     
     import os
     from matplotlib import pyplot as plt  
@@ -279,7 +279,7 @@ def plot_profile(radius, rho, rho_err, slope, slope_err,
     axs[1].set_ylabel("Slope")
     axs[1].set_ylim(-6,-0)
     axs[1].legend()
-    axs[1].set_title('Finding splashback radius')
+    axs[1].set_title(f'Finding splashback radius at snap {snap}')
 
     plt.tight_layout()
     
@@ -287,7 +287,7 @@ def plot_profile(radius, rho, rho_err, slope, slope_err,
     if not os.path.exists(save_dir):
        os.makedirs(save_dir)
     start, end = float_to_int(mass_cut[0], mass_cut[1])
-    plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}'))
+    plt.savefig(os.path.join(save_dir, f'Bins_{start}_to_{end}_at_snap_{snap}'))
 
 
 
