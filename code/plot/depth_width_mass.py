@@ -1,4 +1,5 @@
-from matplotlib import pyplot as plt 
+from matplotlib import pyplot as plt
+plt.style.use('code/plot/style.mplstyle') 
 import numpy as np
 import os
 import h5py 
@@ -20,7 +21,7 @@ if not os.path.exists(save_dir):
 
 
 snaps = [33, 40, 50, 67, 78, 99]
-mass_cut = [10**12.5, 10**13, 10**13.5]
+mass_cut = [10**12, 10**12.5, 10**13, 10**13.5]
 
 # Plot 1 Rsp vs mass
 fig, axs = plt.subplots(2, 1, figsize=(10, 12))
@@ -28,8 +29,8 @@ axs[0].set_title(f'Splashback features (Depth) vs Mass')
 axs[1].set_title(f'Splashback features (Width) vs Mass')
 
 # Set up the colour range
-cmap = plt.cm.get_cmap('hsv')
-colours = [cmap(i / len(snaps)) for i in range(len(snaps))]
+# cmap = plt.cm.get_cmap('hsv')
+# colours = [cmap(i / len(snaps)) for i in range(len(snaps))]
 
 z = []
 for i, snap in enumerate(snaps):
@@ -46,7 +47,8 @@ for i, snap in enumerate(snaps):
     axs[0].errorbar(mass_cut, data[1, :, depth_idx], 
                  yerr = [np.abs(data[0, :, depth_idx]-data[1, :, depth_idx]),  # Lower bound
                          np.abs(data[2, :, depth_idx]-data[1, :, depth_idx])], # Upper bound
-                 color=colours[i], label=f'z = {np.round(z[i], 3)}')
+                 # color=colours[i], 
+                 label=f'z = {np.round(z[i], 3)}')
     # axs[0].plot(mass_cut, data[1, :, depth_idx], color=colours[i], label=f'z = {np.round(z[i], 3)}')
     # axs[0].fill_between(mass_cut, data[2, :, depth_idx], data[0, :, depth_idx], alpha=0.2, 
     #                  color=colours[i], 
@@ -57,7 +59,8 @@ for i, snap in enumerate(snaps):
     axs[1].errorbar(mass_cut, data[1, :, width_idx], 
                  yerr = [np.abs(data[0, :, width_idx]-data[1, :, width_idx]),  # Lower bound
                          np.abs(data[2, :, width_idx]-data[1, :, width_idx])], # Upper bound
-                 color=colours[i], label=f'z = {np.round(z[i], 3)}')  
+                 # color=colours[i], 
+                 label=f'z = {np.round(z[i], 3)}')  
     # axs[1].plot(mass_cut, data[1, :, width_idx], color=colours[i], label=f'z = {np.round(z[i], 3)}')
     # axs[1].fill_between(mass_cut, data[0, :, width_idx], data[2, :, width_idx], alpha=0.2, 
     #                  color=colours[i], 
@@ -66,7 +69,7 @@ for i, snap in enumerate(snaps):
     
     
     
-axs[1].set_xlabel('Mass [MSun/h]')
+axs[1].set_xlabel('Mass [$M_\\odot$/h]')
 axs[0].set_ylabel('Depth')
 axs[1].set_ylabel('Width')
 

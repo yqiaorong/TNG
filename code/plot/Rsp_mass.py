@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt 
+plt.style.use('code/plot/style.mplstyle')
 import numpy as np
 import os
 import h5py 
@@ -20,15 +21,15 @@ if not os.path.exists(save_dir):
 
 
 snaps = [33, 40, 50, 67, 78, 99]
-mass_cut = [10**12.5, 10**13, 10**13.5]
+mass_cut = [10**12, 10**12.5, 10**13, 10**13.5]
 
 # Plot 1 Rsp vs mass
 fig, axs = plt.subplots(1, 1, figsize=(10, 10))
 axs.set_title(f'Splashback radius vs Mass')
 
 # Set up the colour range
-cmap = plt.cm.get_cmap('hsv')
-colours = [cmap(i / len(snaps)) for i in range(len(snaps))]
+# cmap = plt.cm.get_cmap('hsv')
+# colours = [cmap(i / len(snaps)) for i in range(len(snaps))]
 
 z = []
 for i, snap in enumerate(snaps):
@@ -44,16 +45,17 @@ for i, snap in enumerate(snaps):
     #              yerr = [np.abs(data[0, :, 0]-data[1, :, 0]), 
     #                      np.abs(data[2, :, 0]-data[1, :, 0])],
     #              color=colours[i], label=f'z = {np.round(z[i], 3)}')
-    axs.plot(mass_cut, data[1, :, 0], color=colours[i], label=f'z = {np.round(z[i], 3)}')
+    axs.plot(mass_cut, data[1, :, 0], 
+             # color=colours[i], 
+             label=f'z = {np.round(z[i], 3)}')
     axs.fill_between(mass_cut, data[2, :, 0], data[0, :, 0], alpha=0.2, 
-                     color=colours[i], 
-                     # label=f'z = {np.round(z[i], 3)}'
+                     # color=colours[i], 
                      )
     
-axs.set_xlabel('Mass [MSun/h]')
+axs.set_xlabel('Mass [$M_\\odot$/h]')
 axs.set_ylabel(r"$R_{sp}$ [kpc]")
 axs.set_xscale('log')
 axs.set_yscale('log')
 axs.legend()
-plt.tight_layout()
+# plt.tight_layout() # incompatible with pltstyle
 plt.savefig(os.path.join(save_dir, f'Rsp_vs_mass'))

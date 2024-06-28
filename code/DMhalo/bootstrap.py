@@ -1,9 +1,25 @@
 import h5py
 import os
 import numpy as np
-from matplotlib import pyplot as plt
 from func import *
 import illustris_python as il
+import argparse
+
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--snapnum',default=99,type=int)
+# parser.add_argument('--bin_start',default=2,type=float)
+# parser.add_argument('--bin_end',default=4,type=float)
+args = parser.parse_args()
+
+print('')
+print(f'>>> Bootstrap Rsp <<<')
+print('\nInput arguments:')
+for key, val in vars(args).items():
+	print('{:16} {}'.format(key, val))
+print('')
+
+
 
 root_dir = 'DMhalo_density_profiles_old'
 boxsize = 205
@@ -20,8 +36,7 @@ mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x wh
 
 
     
-snap = 33
-print(f'The current snapshot: {snap}')
+snap = args.snapnum
 
 # Load redshift values
 with h5py.File(il.snapshot.snapPath(basePath, snap), 'r') as f:
@@ -55,12 +70,13 @@ while valid_boots < Nboots:
     indices = np.random.randint(0, len(halos_list), Nsample)
     sub_list = np.array(halos_list)[indices]
     print(f'Cross check: the number of selected halos: {len(sub_list)}')
+    del indices
     
     # Calculating the number of halos in each cut
     num_halos = count_halos(sub_list, bin_start, bin_end)
     print(num_halos)
     
-    if all(x > 10 for x in num_halos):
+    if all(x > 1 for x in num_halos):
         
         for i in range(num_bins):
             # Select halos in the cut and compute density profiles
@@ -85,8 +101,8 @@ while valid_boots < Nboots:
             plot_profile(radius, rho, rho_err, slope, slope_err, 
                         fitted_radius, fitted_rho, fitted_slope, 
                         [mass_bins[i], mass_bins[i+1]], num_halo, snap, 
-                        f'result/bootstrap/snap_{snap}')
-            
+                        f'result/bootstrap/snap_{snap}', f'boots_{valid_boots}',
+                        save_data=True)
             
             # Compute Rsp
             physical_fitted_radius = fitted_radius * R200_median * scale_factor / h
@@ -112,6 +128,9 @@ while valid_boots < Nboots:
             
             # Append results
             results[i, :, valid_boots] = Rsp, depth, width
+        del sub_list
+        
+        
             
         # Updata counts
         valid_boots += 1
@@ -127,9 +146,20 @@ for i in range(int(len(mass_bins)-1)):
     print(f'depth: {final_results[:, i, 2]}')
     print('')
     
+# Check the index of median value
+for i, cut in enumerate(results):
+    np.argsort(cut[0,:]) # Rsp
+    median_sorted_idx = int(Nboots/2)
+    print(median_sorted_idx)
+    median_data = cut[0, median_sorted_idx] 
+    original_idx = np.where(cut[0] == median_data)
+    print(f'cut {mass_bins[i]}: median boots idx = {original_idx}')
+    
+    
 # Save the result
 save_dir = f'result/bootstrap/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
 np.save(save_dir+f'snap_{snap}_Rsp_stats', final_results)
+np.save(save_dir+f'snap_{snap}_Rsp_stats_all', results)

@@ -1,0 +1,43 @@
+# Line Properties
+lines.linewidth: 1.5
+# Font options
+font.size: 10
+font.family: STIXGeneral
+mathtext.fontset: stix
+# Label options
+axes.labelsize: 12
+axes.labelpad : 1
+# Automatically make the plots look nice
+figure.constrained_layout.use: True
+figure.constrained_layout.h_pad: 0.005
+figure.constrained_layout.w_pad: 0.005
+figure.constrained_layout.hspace: 0.005
+figure.constrained_layout.wspace: 0.005
+# LaTeX options
+text.usetex: False
+text.latex.preamble : r"\usepackage{amsmath}"
+# Legend options
+legend.frameon: False
+legend.fontsize: 9
+legend.labelspacing: .1
+# Figure options for publications
+figure.dpi: 300
+figure.figsize: 3.65, 3.0 # Correct width for MNRAS
+# Histogram options
+hist.bins: auto
+# Ticks inside plots; more space devoted to plot.
+xtick.direction: in
+ytick.direction: in
+ytick.right : True
+xtick.top : True
+# Tick options
+#xtick.major.pad : 2
+#ytick.major.pad : 2
+xtick.major.size : 4
+xtick.minor.size : 2
+ytick.major.size : 4
+ytick.minor.size : 2
+xtick.minor.visible : False
+ytick.minor.visible : False
+# Use a colourful default colour map
+image.cmap: plasma
