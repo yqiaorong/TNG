@@ -263,7 +263,7 @@ def plot_profile(radius, rho, rho_err, slope, slope_err,
     
     fig, axs = plt.subplots(2, 1, figsize=(10, 15))
     axs[0].scatter(radius, rho, s=1, # color='b', 
-                   label=r'mass = $10^{{{mass_cut[0]+10:.1f}}}$'+' ~ '+r'$10^{{{mass_cut[1]+10:.1f}}}$'+f'$ M_\\odot$/h'
+                   label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot/h$".format(mass_cut[0]+10, mass_cut[1]+10)
                    # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                    )
     axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, # color = 'b',
@@ -275,7 +275,7 @@ def plot_profile(radius, rho, rho_err, slope, slope_err,
     
     # Plot the fitted gradients
     axs[1].scatter(radius, slope, s=1, # color='b',
-                   label=r'mass = $10^{{{mass_cut[0]+10:.1f}}}$'+' ~ '+r'$10^{{{mass_cut[1]+10:.1f}}}$'+f'$ M_\\odot$/h'
+                   label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot/h$".format(mass_cut[0]+10, mass_cut[1]+10)
                    # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                    )
     axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, # color = 'b',

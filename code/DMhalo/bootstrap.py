@@ -33,7 +33,7 @@ basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 bin_start, bin_end, bin_width = 2.5, 4, 0.5
 num_bins = int((bin_end-bin_start)/bin_width)
 mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun/h
-
+print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun/h')
 
     
 snap = args.snapnum
@@ -141,8 +141,8 @@ while valid_boots < Nboots:
         print(f'Nboots: {valid_boots}')
         print('')
             
-final_results = np.percentile(results, [16, 50, 84], axis=2)
-print(f'final_results shape (percentile, bin, type)')
+final_results = np.percentile(results, [16, 50, 84], axis=2).transpose(1,2,0)
+print(f'final_results shape (bin, type, percentile): {final_results.shape}')
 for i in range(int(len(mass_bins)-1)):
     print(f'bin {i}: ')
     print(f'Rsp: {final_results[:, i, 0]}')
@@ -151,19 +151,23 @@ for i in range(int(len(mass_bins)-1)):
     print('')
     
 # Check the index of median value
+origin_indices = []
 for i, cut in enumerate(results):
-    np.argsort(cut[0,:]) # Rsp
-    median_sorted_idx = int(Nboots/2)
-    print(median_sorted_idx)
-    median_data = cut[0, median_sorted_idx] 
-    original_idx = np.where(cut[0] == median_data)
-    print(f'cut {mass_bins[i]}: median boots idx = {original_idx}')
+    old_cut = cut[0,:].copy()      # Rsp
+    new_cut = np.argsort(cut[0,:]) # Rsp
+    
+    median_data = new_cut[int(Nboots/2)] 
+    origin_idx = np.where(old_cut == median_data)
+    print(f'cut {mass_bins[i]}: median boots idx = {origin_idx}')
+    origin_indices.append(origin_idx)
     
     
 # Save the result
 save_dir = f'result/bootstrap/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
-
-np.save(save_dir+f'snap_{snap}_Rsp_stats', final_results)
-np.save(save_dir+f'snap_{snap}_Rsp_stats_all', results)
+    
+save_data = {'full_results': results, 
+             'final_results': final_results, 
+             'median_idx_in_boots': origin_indices}
+np.save(save_dir+f'snap_{snap}_Rsp_stats', save_data)
