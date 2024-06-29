@@ -47,40 +47,44 @@ with h5py.File(il.snapshot.snapPath(basePath, snap), 'r') as f:
     
     
 
-# Load halos 
+### Load halos ###
+
+# Halos data root dir
 halos_dir = f'result/{root_dir}/sim_{boxsize}_{res}/snap_{snap}/densities'
-halos_list = [os.path.join(halos_dir, fname) for fname in os.listdir(halos_dir)]
+
+# First round of rough selection of halos based on M200
+Group_M_Mean200 = il.groupcat.loadHalos(basePath, snap, fields='Group_M_Mean200')
+subset_idx = np.where((Group_M_Mean200 >= 10**bin_start) & (Group_M_Mean200 < 10**bin_end))[0]
+halos_list = [f'halo_{idx}.npy' for idx in subset_idx]
 print(f'The total halo numbers: {len(halos_list)}')
-
-# First round of rough selection of halos
-halos_list = select_halos(halos_list, bin_start, bin_end)
-print(f'The total halo numbers: {len(halos_list)}')
+del Group_M_Mean200
 
 
+
+### Bootstrap ###
 
 # Bootstrap setup
 Nsample, Nboots = 1000, 32
 results = np.empty((num_bins, 3, Nboots))
 
-# Bootstrap
 valid_boots = 0
 while valid_boots < Nboots: 
     
     # Select halos
     indices = np.random.randint(0, len(halos_list), Nsample)
-    sub_list = np.array(halos_list)[indices]
-    print(f'Cross check: the number of selected halos: {len(sub_list)}')
+    boots_halo_list = np.array(halos_list)[indices]
+    print(f'Cross check: the number of selected halos in bootstrap: {len(boots_halo_list)}')
     del indices
     
     # Calculating the number of halos in each cut
-    num_halos = count_halos(sub_list, bin_start, bin_end)
+    num_halos = count_halos(halos_dir, boots_halo_list, bin_start, bin_end)
     print(num_halos)
     
     if all(x > 1 for x in num_halos):
         
         for i in range(num_bins):
             # Select halos in the cut and compute density profiles
-            raw_profiles = stacked_density_profile(sub_list, [mass_bins[i], mass_bins[i+1]])
+            raw_profiles = stacked_density_profile(halos_dir, boots_halo_list, [mass_bins[i], mass_bins[i+1]])
             radius, rho, rho_err = raw_profiles[0][1:], raw_profiles[1][1:], raw_profiles[2][1:] # [dimensionless]
             num_halo, R200_median = raw_profiles[3], raw_profiles[4]                             # [ckpc/h]
             del raw_profiles
@@ -128,7 +132,7 @@ while valid_boots < Nboots:
             
             # Append results
             results[i, :, valid_boots] = Rsp, depth, width
-        del sub_list
+        del boots_halo_list
         
         
             

@@ -73,6 +73,8 @@ start_idx_per_core = comm.scatter(data, root=0)
 # Apply the computation
 comm.Barrier()
 
+
+
 # Iterate over DM halos
 for i, idx in enumerate(subset_idx[start_idx_per_core:]):
     if not os.path.exists(f'result/{save_root_dir}/sim_{boxsize}_{res}/snap_{snapnum}/densities/halo_{idx}.npy'):

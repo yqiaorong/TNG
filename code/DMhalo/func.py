@@ -58,6 +58,9 @@ def compt_density_profile_hist(coordinates, mass_weights, haloPos, radial_bins):
     return densities
 
 def select_halos(file_list, bin_start, bin_end):
+    
+    import numpy as np
+    
     sub_list = []
     for file in file_list:
         # Load data
@@ -69,18 +72,23 @@ def select_halos(file_list, bin_start, bin_end):
             sub_list.append(file)
     return sub_list
     
-def count_halos(file_list, bin_start, bin_end):
+def count_halos(root_dir, fnames, bin_start, bin_end):
+    
+    import os
+    import numpy as np
+    # import illustris_python as il
+    
     counts = []
     
     bin_width = 0.5
     num_bins = int((bin_end-bin_start)/bin_width)
     bins = np.arange(bin_start, bin_end, bin_width)
-    
+
     for i in range(num_bins):
         count = 0
-        for file in file_list:
+        for fname in fnames:
             # Load data
-            data = np.load(file, allow_pickle=True).item()
+            data = np.load(os.path.join(root_dir, fname), allow_pickle=True).item()
             halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 MSun/h]
             
             # Apply the mass criteria 
@@ -89,12 +97,13 @@ def count_halos(file_list, bin_start, bin_end):
         counts.append(count)
     return counts
     
-def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
+def stacked_density_profile(root_dir, fnames, mass_criteria, use_bootstrap=True):
     """The function computes the stacked density profiles.
     
     INPUT:
     
-    file_list: list of filepaths without subfolders!
+    root_dir
+    fnames: list of filepaths without subfolders!
     mass_criteria:  list [a, b]                 [10^(10+a) MSun/h]
         
     RETURN:
@@ -107,9 +116,9 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     )
     """
     
+    import os
     import sys
     import numpy as np
-    # from scipy.constants import G
     from unyt import G, second, megaparsec, km
     
     # Initialize the output
@@ -119,9 +128,9 @@ def stacked_density_profile(file_list, mass_criteria, use_bootstrap=True):
     
     ### Load all density profile data ###
     # Iterate over halos
-    for file in file_list:
+    for fname in fnames:
         # Load data
-        data = np.load(file, allow_pickle=True).item()
+        data = np.load(os.path.join(root_dir, fname), allow_pickle=True).item()
         h = data['h'] # unit [100 * km / megaparsec / second]
         scale_factor = data['scale_factor']
         halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 MSun/h]
@@ -297,6 +306,7 @@ def plot_profile(radius, rho, rho_err, slope, slope_err,
     if not os.path.exists(plt_dir):
         os.makedirs(plt_dir)
     plt.savefig(os.path.join(plt_dir, fname))
+    plt.close()
     
     # Save data
     if save_data == True:
@@ -324,7 +334,8 @@ def density_profile_inner(
         rho_s,
         r_s,
         alpha,
-    ):
+    ):  
+        
         return np.log10(rho_s * np.exp(-(2.0 / alpha) * (np.power(r / r_s, alpha) - 1.0)))
 
 def density_profile_outer(
@@ -456,7 +467,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
         #     [1e-10 * 10**log_rho[0], 0.001 * R_200_mean, 0.0],
         #     [np.inf, 10.0 * R_200_mean, 1]
         # ),
-        maxfev=1000000,
+        maxfev=100000,
     )
 
 
@@ -493,7 +504,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                [0.01 * 10 ** log_rho[-1], 1.0, 1.0],
                [10 * 10 ** log_rho[-1], 5.0, 5.0]
                ),
-        maxfev=1000000,
+        maxfev=100000,
     )
 
     # return (
@@ -530,7 +541,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
         p0=(R_200_mean,
             2,
             4,),
-        maxfev=1000000,
+        maxfev=100000,
         # sigma=log_rho_error[middle_mask],
         bounds=(
             [0.1 * R_200_mean, 1.0, 1.0],
