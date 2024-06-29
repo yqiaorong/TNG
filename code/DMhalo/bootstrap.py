@@ -153,13 +153,11 @@ for i in range(int(len(mass_bins)-1)):
 # Check the index of median value
 origin_indices = []
 for i, cut in enumerate(results):
-    old_cut = cut[0,:].copy()      # Rsp
-    new_cut = np.argsort(cut[0,:]) # Rsp
-    
-    median_data = new_cut[int(Nboots/2)] 
-    origin_idx = np.where(old_cut == median_data)
+    indices = np.argsort(cut[0,:]) # Rsp
+    origin_idx = np.where(indices == int(Nboots/2))[0][0]
     print(f'cut {mass_bins[i]}: median boots idx = {origin_idx}')
     origin_indices.append(origin_idx)
+    
     
     
 # Save the result
