@@ -30,7 +30,7 @@ basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 
 
 # Make mass cuts
-bin_start, bin_end, bin_width = 2.5, 4, 0.5
+bin_start, bin_end, bin_width = 2, 4, 0.5
 num_bins = int((bin_end-bin_start)/bin_width)
 mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun/h
 print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun/h')
@@ -143,11 +143,11 @@ while valid_boots < Nboots:
             
 final_results = np.percentile(results, [16, 50, 84], axis=2).transpose(1,2,0)
 print(f'final_results shape (bin, type, percentile): {final_results.shape}')
-for i in range(int(len(mass_bins)-1)):
+for i in range(num_bins):
     print(f'bin {i}: ')
-    print(f'Rsp: {final_results[:, i, 0]}')
-    print(f'depth: {final_results[:, i, 1]}')
-    print(f'depth: {final_results[:, i, 2]}')
+    print(f'Rsp: {final_results[i, 0]}')
+    print(f'depth: {final_results[i, 1]}')
+    print(f'depth: {final_results[i, 2]}')
     print('')
     
 # Check the index of median value

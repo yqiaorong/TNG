@@ -555,8 +555,8 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
 
     change_frac = 1.1
 
-    base_lower = [x / change_frac for x in base_p0]
-    base_upper = [x * change_frac for x in base_p0]
+    base_lower = [x / change_frac if x >=0 else x * change_frac for x in base_p0]
+    base_upper = [x * change_frac if x >=0 else x / change_frac for x in base_p0]
 
 
     # p0 = p0_full if p0_full is not None else base_p0
