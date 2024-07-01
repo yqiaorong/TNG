@@ -40,30 +40,31 @@ for i, snap in enumerate(snaps):
         scale_factor = header['Time']
         z.append(1 / scale_factor - 1)
     # Load data
-    data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy')
+    data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+    data = data ['final_results']
     
     depth_idx, width_idx = 1, 2
     # Plot 1: depth
-    axs[0].errorbar(mass_cut, data[1, :, depth_idx], 
-                 yerr = [np.abs(data[0, :, depth_idx]-data[1, :, depth_idx]),  # Lower bound
-                         np.abs(data[2, :, depth_idx]-data[1, :, depth_idx])], # Upper bound
-                 # color=colours[i], 
+    # M1
+    axs[0].errorbar(mass_cut, data[:, depth_idx, 1], 
+                 yerr = [np.abs(data[:, depth_idx, 0]-data[:, depth_idx, 1]),  # Lower bound
+                         np.abs(data[:, depth_idx, 2]-data[:, depth_idx, 1])], # Upper bound 
                  label=f'z = {np.round(z[i], 3)}')
-    # axs[0].plot(mass_cut, data[1, :, depth_idx], color=colours[i], label=f'z = {np.round(z[i], 3)}')
-    # axs[0].fill_between(mass_cut, data[2, :, depth_idx], data[0, :, depth_idx], alpha=0.2, 
-    #                  color=colours[i], 
+    # M2
+    # axs[0].plot(mass_cut, data[:, depth_idx, 1], label=f'z = {np.round(z[i], 3)}')
+    # axs[0].fill_between(mass_cut, data[:, depth_idx, 2], data[:, depth_idx, 0], alpha=0.2,  
     #                  # label=f'z = {np.round(z[i], 3)}'
     #                  )
 
     # Plot 2: width
-    axs[1].errorbar(mass_cut, data[1, :, width_idx], 
-                 yerr = [np.abs(data[0, :, width_idx]-data[1, :, width_idx]),  # Lower bound
-                         np.abs(data[2, :, width_idx]-data[1, :, width_idx])], # Upper bound
-                 # color=colours[i], 
-                 label=f'z = {np.round(z[i], 3)}')  
-    # axs[1].plot(mass_cut, data[1, :, width_idx], color=colours[i], label=f'z = {np.round(z[i], 3)}')
-    # axs[1].fill_between(mass_cut, data[0, :, width_idx], data[2, :, width_idx], alpha=0.2, 
-    #                  color=colours[i], 
+    # M1
+    axs[1].errorbar(mass_cut, data[:, width_idx, 1], 
+                 yerr = [np.abs(data[:, width_idx, 0]-data[:, width_idx, 1]),  # Lower bound
+                         np.abs(data[:, width_idx, 0]-data[:, width_idx, 2])], # Upper bound
+                 label=f'z = {np.round(z[i], 3)}') 
+    # M2 
+    # axs[1].plot(mass_cut, data[:, width_idx, 1], label=f'z = {np.round(z[i], 3)}')
+    # axs[1].fill_between(mass_cut, data[:, width_idx, 0], data[:, width_idx, 2], alpha=0.2,  
     #                  # label=f'z = {np.round(z[i], 3)}'
     #                  )
     
@@ -78,5 +79,5 @@ axs[1].set_xscale('log')
 
 axs[0].legend(loc='best')
 axs[1].legend(loc='best')
-plt.tight_layout()
 plt.savefig(os.path.join(save_dir, f'Rsp_features'))
+plt.close()

@@ -40,7 +40,8 @@ for i, snap in enumerate(snaps):
         z.append(1 / scale_factor - 1)
         
     # Load data
-    data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy')
+    data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+    data = data ['final_results']
     all_data.append(data)
 all_data = np.array(all_data)
 
@@ -49,10 +50,10 @@ for i in range(len(mass_cut)):
     #              yerr = [np.abs(all_data[:, 0, i, 0]-all_data[:, 1, i, 0]), 
     #                      np.abs(all_data[:, 2, i, 0]-all_data[:, 1, i, 0])],
     #              color=colours[i], label=f'mass = 10^{mass_cut[i]} MSun/h')
-    axs.plot(z, all_data[:, 1, i, 0], 
+    axs.plot(z, all_data[:, i, 0, 1], 
              # color=colours[i], 
              label=r'mass = $10^{%.1f}$ '%mass_cut[i]+f'$M_\\odot$/h')
-    axs.fill_between(z, all_data[:, 0, i, 0], all_data[:, 2, i, 0], alpha=0.2, 
+    axs.fill_between(z, all_data[:, i, 0, 0], all_data[:, i, 0, 2], alpha=0.2, 
                      # color=colours[i], 
                      )
     
@@ -62,3 +63,4 @@ axs.set_yscale('log')
 axs.legend()
 # plt.tight_layout() # incompatible with pltstyle
 plt.savefig(os.path.join(save_dir, f'Rsp_vs_redshift'))
+plt.close()

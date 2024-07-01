@@ -39,16 +39,17 @@ for i, snap in enumerate(snaps):
         scale_factor = header['Time']
         z.append(1 / scale_factor - 1)
     # Load data
-    data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy')
+    data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy', allow_pickle = True).item()
+    data = data ['final_results']
     
     # axs.errorbar(mass_cut, data[1, :, 0], 
     #              yerr = [np.abs(data[0, :, 0]-data[1, :, 0]), 
     #                      np.abs(data[2, :, 0]-data[1, :, 0])],
     #              color=colours[i], label=f'z = {np.round(z[i], 3)}')
-    axs.plot(mass_cut, data[1, :, 0], 
+    axs.plot(mass_cut, data[:, 0, 1], 
              # color=colours[i], 
              label=f'z = {np.round(z[i], 3)}')
-    axs.fill_between(mass_cut, data[2, :, 0], data[0, :, 0], alpha=0.2, 
+    axs.fill_between(mass_cut, data[:, 0, 2], data[:, 0, 0], alpha=0.2, 
                      # color=colours[i], 
                      )
     
@@ -59,3 +60,4 @@ axs.set_yscale('log')
 axs.legend()
 # plt.tight_layout() # incompatible with pltstyle
 plt.savefig(os.path.join(save_dir, f'Rsp_vs_mass'))
+plt.close()
