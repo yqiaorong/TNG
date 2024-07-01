@@ -24,7 +24,9 @@ snaps = [33, 40, 50, 67, 78, 99]
 mass_cut = [10**12, 10**12.5, 10**13, 10**13.5]
 
 # Plot 1 Rsp vs mass
-fig, axs = plt.subplots(2, 1, figsize=(10, 12))
+fig, axs = plt.subplots(2, 1, dpi=400,
+                        # figsize=(10, 12)
+                        )
 axs[0].set_title(f'Splashback features (Depth) vs Mass')
 axs[1].set_title(f'Splashback features (Width) vs Mass')
 
@@ -67,8 +69,6 @@ for i, snap in enumerate(snaps):
     # axs[1].fill_between(mass_cut, data[:, width_idx, 0], data[:, width_idx, 2], alpha=0.2,  
     #                  # label=f'z = {np.round(z[i], 3)}'
     #                  )
-    
-    
     
 axs[1].set_xlabel('Mass [$M_\\odot$/h]')
 axs[0].set_ylabel('Depth')
