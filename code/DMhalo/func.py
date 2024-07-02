@@ -252,7 +252,7 @@ def float_to_int(bin_start, bin_end):
     end = int(bin_end * 10)
     return start, end
 
-def plot_profile(radius, rho, rho_err, slope, slope_err, 
+def plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
                  fitted_radius, fitted_rho, fitted_slope, 
                  mass_cut, num_halo, snap, save_dir, fname,
                  save_data = False):
@@ -312,12 +312,13 @@ def plot_profile(radius, rho, rho_err, slope, slope_err,
     if save_data == True:
         data = {'radius': radius, 'rho': rho, 'rho_err': rho_err,
                 'slope': slope, 'slope_err': slope_err, 
-                'fitted_radius': fitted_radius, 'fitted_rho': fitted_rho, 'fitted_slope': fitted_slope}
+                'fitted_radius': fitted_radius, 'fitted_rho': fitted_rho, 'fitted_slope': fitted_slope,
+                'R200_median': R200_median}
         
         data_dir = save_dir + f'/data/mass_cut_{start}'
         if not os.path.exists(data_dir):
            os.makedirs(data_dir)
-        np.save(os.path.join(plt_dir, fname), data)
+        np.save(os.path.join(data_dir, fname), data)
 
 
 

@@ -7,8 +7,7 @@ import illustris_python as il
 
 boxsize = 205
 res = 1250
-data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
+basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/' + 'L%dn%dTNG/output'%(boxsize,res)
 
 
 

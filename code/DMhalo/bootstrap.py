@@ -102,7 +102,7 @@ while valid_boots < Nboots:
             fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho))      # [dimensionless]
 
             # Plot the profile
-            plot_profile(radius, rho, rho_err, slope, slope_err, 
+            plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
                         fitted_radius, fitted_rho, fitted_slope, 
                         [mass_bins[i], mass_bins[i+1]], num_halo, snap, 
                         f'result/bootstrap/snap_{snap}', f'boots_{valid_boots}',
