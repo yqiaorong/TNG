@@ -43,14 +43,14 @@ for i, snap in enumerate(snaps):
         
     # Load data
     data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy', allow_pickle = True).item()
-    Rsp = data['final_results'][mass_cut_idx, 0, 1] * h / scale_factor / profile['R200_median'] # dimensionless
     median_idx = data['median_idx_in_boots']
-    del data
     
     # select median data
     profile = np.load(f'result/bootstrap/snap_{snap}/data'+
             f'/mass_cut_{mass_cut[mass_cut_idx]}/boots_{median_idx[mass_cut_idx]}.npy',
             allow_pickle=True).item()
+    Rsp = data['final_results'][mass_cut_idx, 0, 1] * h / scale_factor / profile['R200_median'] # dimensionless
+    del data
 
     # density profile
     ax0 = axs[0, i]
@@ -60,6 +60,7 @@ for i, snap in enumerate(snaps):
     ax1 = axs[1, i]
     ax1.errorbar(profile['radius'], profile['slope'], yerr = profile['slope_err'].T, color='r') # dimensionless radius
     ax1.plot(profile['fitted_radius'], profile['fitted_slope'])                                 # dimensionless radius
+    ax1.axvline(x=Rsp, color='b', linestyle='--', linewidth=1)                                  # dimensionless radius
     
     # general settings
     ax0.set_yscale('log')

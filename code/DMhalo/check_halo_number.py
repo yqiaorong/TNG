@@ -7,8 +7,17 @@ import numpy as np
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',default=205,type=int)
 parser.add_argument('--res',    default=1250,type=int)
-parser.add_argument('--mass_range',default=2,type=float)
+parser.add_argument('--mass_range',default=1.5,type=float)
 args = parser.parse_args()
+
+print('')
+print(f'>>> Check halo number <<<')
+print('\nInput arguments:')
+for key, val in vars(args).items():
+	print('{:16} {}'.format(key, val))
+print('')
+
+
 
 # Specify the snapshot
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
