@@ -32,13 +32,13 @@ if not os.path.exists(save_dir):
     
 
 # Redshift data
-z = []
+# z = []
 for i, snap in enumerate(snaps):
     # Load redshifts
     with h5py.File(il.snapshot.snapPath(basePath, snap), 'r') as f:
         header = dict(f['Header'].attrs.items())
         scale_factor = header['Time']
-        z.append(1 / scale_factor - 1)
+        z = 1 / scale_factor - 1
         h = header['HubbleParam']
         
     # Load data
@@ -54,25 +54,30 @@ for i, snap in enumerate(snaps):
 
     # density profile
     ax0 = axs[0, i]
-    ax0.errorbar(profile['radius'], profile['rho'], yerr = profile['rho_err'].T, color='r') # dimensionless radius
+    ax0.errorbar(profile['radius'], profile['rho'], yerr = profile['rho_err'].T, color='r',
+                 label=f'z={np.round(z, 3)}') # dimensionless radius
     ax0.axvline(x=Rsp, color='b', linestyle='--', linewidth=1)                              # dimensionless radius
     # gradient profile
     ax1 = axs[1, i]
-    ax1.errorbar(profile['radius'], profile['slope'], yerr = profile['slope_err'].T, color='r') # dimensionless radius
+    ax1.errorbar(profile['radius'], profile['slope'], yerr = profile['slope_err'].T, color='r',
+                 label=f'z={np.round(z, 3)}') # dimensionless radius
     ax1.plot(profile['fitted_radius'], profile['fitted_slope'])                                 # dimensionless radius
     ax1.axvline(x=Rsp, color='b', linestyle='--', linewidth=1)                                  # dimensionless radius
     
     # general settings
     ax0.set_yscale('log')
     ax0.set_ylabel(r"Mass density$\rho$/$\rho_c$")
+    ax0.legend(loc='best')
     ax1.set_ylabel(r'd log \rho / d \og r')
     ax1.set_ylim(-4,-0)
+    ax1.legend(loc='best')
 
 for ax in fig.get_axes():
     ax.set_xlabel(r"Radius r/$R_{200}$")
     ax.set_xscale('log')
     ax.label_outer()
-    
+
+
 plt.savefig(f'result/bootstrap/sim_{boxsize}_{res}/mass_cut_{mass_cut[mass_cut_idx]}_profiles')
 plt.close
     
