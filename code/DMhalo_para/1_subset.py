@@ -62,7 +62,7 @@ print(f'size: {size}, rank: {rank}')
 
 # Define initial data (the data you want to split) on the root MPI process
 if rank == 0:
-    data = np.linspace(0, Ngroups_subset, size).astype(int)
+    data = np.linspace(0, Ngroups_subset, size+1).astype(int)[:-1]
 else:
     data = None
 print(f'scatter data: {data}')
@@ -70,13 +70,16 @@ print(f'scatter data: {data}')
 # Scatter data to all MPI processes
 start_idx_per_core = comm.scatter(data, root=0)
 
+# Debugging: print the indices received by each process
+print(f'Process {rank} received start_idx_per_core: {start_idx_per_core}')
+
 # Apply the computation
 comm.Barrier()
 
 
 
 # Iterate over DM halos
-for i, idx in enumerate(subset_idx[start_idx_per_core:]):
+for idx in subset_idx[start_idx_per_core:]:
     if not os.path.exists(f'result/{save_root_dir}/sim_{boxsize}_{res}/snap_{snapnum}/densities/halo_{idx}.npy'):
         # Round values 
         x, y, z = np.round(GroupPos[idx, 0].item(), 0), np.round(GroupPos[idx, 1].item(), 0), np.round(GroupPos[idx, 2].item(), 0)
@@ -88,7 +91,7 @@ for i, idx in enumerate(subset_idx[start_idx_per_core:]):
             f' --M {Group_M_Mean200[idx]} --R {R}'+
             f' --save_root_dir {save_root_dir} --method {args.method}')
     else:
-        print(f'At snap {snapnum}, DM halo local index {i+1}/{Ngroups_subset} already exists.')
+        print(f'Processor {rank}: At snap {snapnum}, DM halo local index {idx}/{Ngroups_subset-1} already exists.')
 
 print(f'All DM halos in the subset at snap {snapnum} are finished.')
 
