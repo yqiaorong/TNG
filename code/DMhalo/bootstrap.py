@@ -62,7 +62,7 @@ del Group_M_Mean200
 ### Bootstrap ###
 
 # Bootstrap setup
-Nsample, Nboots = 2000, 32
+Nsample, Nboots = 5000, 32
 results = np.empty((num_bins, 3, Nboots))
 
 valid_boots = 0
