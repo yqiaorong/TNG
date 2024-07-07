@@ -8,8 +8,6 @@ import argparse
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--snapnum',default=99,type=int)
-# parser.add_argument('--bin_start',default=2,type=float)
-# parser.add_argument('--bin_end',default=4,type=float)
 args = parser.parse_args()
 
 print('')
@@ -30,7 +28,7 @@ basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 
 
 # Make mass cuts
-bin_start, bin_end, bin_width = 2, 4, 0.5
+bin_start, bin_end, bin_width = 1.5, 4, 0.5
 num_bins = int((bin_end-bin_start)/bin_width)
 mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun/h
 print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun/h')
@@ -64,7 +62,7 @@ del Group_M_Mean200
 ### Bootstrap ###
 
 # Bootstrap setup
-Nsample, Nboots = 1000, 32
+Nsample, Nboots = 2000, 32
 results = np.empty((num_bins, 3, Nboots))
 
 valid_boots = 0
