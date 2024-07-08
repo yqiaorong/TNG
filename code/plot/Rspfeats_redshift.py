@@ -19,9 +19,9 @@ if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
 
-
+# Inputs
 snaps = [33, 40, 50, 67, 78, 99]
-mass_cut = [12, 12.5, 13, 13.5]
+mass_cut = [11.5, 12, 12.5, 13, 13.5]
 
 
 # feature index [Rsp = 0, depth = 1, width = 2]

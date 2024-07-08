@@ -212,14 +212,23 @@ def bootstrap(x, statfunc, Nboots=32):
 
 # Compute d log rho / d log r
 
+def filter_profile(x, y, yerr):
+    """
+    x: shape (N,)
+    y: shape (N,)
+    yerr: shape (2, N,)"""
+
+    start_idx = next((i for i, x in enumerate(y) if x != 0), 0)
+    return x[start_idx:], y[start_idx:], yerr[start_idx:]
+    
 def num_deriv(lgR, lgP):
-     result = np.zeros(len(lgR))
-     result[2:-2] = ( 1./12.*lgP[0:-4] - 2./3.*lgP[1:-3] + 2./3.*lgP[3:-1] - 1./12.*lgP[4:] ) / (lgR[3:-1] - lgR[2:-2])
-     result[0]    = (lgP[1] - lgP[0]) / (lgR[1] - lgR[0])
-     result[1]    = (lgP[2] - lgP[0]) / (lgR[2] - lgR[0])
-     result[-1]   = (lgP[-1] - lgP[-2]) / (lgR[-1] - lgR[-2])
-     result[-2]   = (lgP[-3] - lgP[-1]) / (lgR[-3] - lgR[-1])
-     return result
+    result = np.zeros(len(lgR))
+    result[2:-2] = ( 1./12.*lgP[0:-4] - 2./3.*lgP[1:-3] + 2./3.*lgP[3:-1] - 1./12.*lgP[4:] ) / (lgR[3:-1] - lgR[2:-2])
+    result[0]    = (lgP[1] - lgP[0]) / (lgR[1] - lgR[0])
+    result[1]    = (lgP[2] - lgP[0]) / (lgR[2] - lgR[0])
+    result[-1]   = (lgP[-1] - lgP[-2]) / (lgR[-1] - lgR[-2])
+    result[-2]   = (lgP[-3] - lgP[-1]) / (lgR[-3] - lgR[-1])
+    return result
  
 def num_deriv_err_single(x,y,yerr):
     # Compute log y error
@@ -556,9 +565,13 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
 
     change_frac = 1.1
 
-    base_lower = [x / change_frac if x >=0 else x * change_frac for x in base_p0]
-    base_upper = [x * change_frac if x >=0 else x / change_frac for x in base_p0]
-
+    # base_lower = [x / change_frac if x >=0 else x * change_frac for x in base_p0]
+    # base_upper = [x * change_frac if x >=0 else x / change_frac for x in base_p0]
+    
+    base_lower = [x / change_frac if x > 0 else (-0.1 if x == 0 else x * change_frac) for x in base_p0]
+    base_upper = [x * change_frac if x > 0 else (0.1 if x == 0 else x / change_frac) for x in base_p0]
+    # print(base_lower)
+    # print(base_upper)
 
     # p0 = p0_full if p0_full is not None else base_p0
 

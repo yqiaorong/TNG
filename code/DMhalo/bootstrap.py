@@ -88,8 +88,9 @@ while valid_boots < Nboots:
             del raw_profiles
             
             # Compute the slope
-            slope = num_deriv(np.log(radius), np.log(rho))                            # [dimensionless]
-            slope_err = num_deriv_err(radius, rho, rho_err)
+            radius, rho, rho_err = filter_profile(radius, rho, rho_err) # Remove zero densities in the centre
+            slope = num_deriv(np.log(radius), np.log(rho))                                      # [dimensionless]
+            slope_err = num_deriv_err(radius, rho, rho_err)                                     # [dimensionless]
             
             # Fit the density profiles
             fit_profiles = fit_profile_parametric(radius, rho, np.mean(rho_err, axis=1), 1)
