@@ -4,6 +4,21 @@ import numpy as np
 import os
 import h5py 
 import illustris_python as il
+import argparse
+
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--feat_idx',default=0,type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
+args = parser.parse_args()
+
+print('')
+print(f'>>> Plot Rsp feats vs redshift <<<')
+print('\nInput arguments:')
+for key, val in vars(args).items():
+	print('{:16} {}'.format(key, val))
+print('')
+
+
 
 boxsize = 205
 res = 1250
@@ -24,18 +39,13 @@ snaps = [33, 40, 50, 67, 78, 99]
 mass_cut = [11.5, 12, 12.5, 13, 13.5]
 
 
-# feature index [Rsp = 0, depth = 1, width = 2]
-feats_idx = 2
+
+feats_idx = args.feat_idx
 feats = ['Rsp', 'depth', 'width']
+print(feats[feats_idx])
 
-
-# Plot 1 Rsp vs mass
+# Plot 
 fig, axs = plt.subplots(1, 1, dpi=500)
-# axs.set_title(f'Splashback radius vs Redshift')
-
-# Set up the colour range
-# cmap = plt.cm.get_cmap('hsv')
-# colours = [cmap(i / len(mass_cut)) for i in range(len(mass_cut))]
 
 z, all_data = [], []
 for i, snap in enumerate(snaps):

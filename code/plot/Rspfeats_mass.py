@@ -4,6 +4,19 @@ import numpy as np
 import os
 import h5py 
 import illustris_python as il
+import argparse
+
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--feat_idx',default=0,type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
+args = parser.parse_args()
+
+print('')
+print(f'>>> Plot Rsp feats vs mass <<<')
+print('\nInput arguments:')
+for key, val in vars(args).items():
+	print('{:16} {}'.format(key, val))
+print('')
 
 boxsize = 205
 res = 1250
@@ -22,19 +35,15 @@ if not os.path.exists(save_dir):
 snaps = [33, 40, 50, 67, 78, 99]
 mass_cut = [10**11.5, 10**12, 10**12.5, 10**13, 10**13.5]
 
-# Feature index [Rsp = 0, depth = 1, width = 2]
-feats_idx = 2
-feats = ['Rsp', 'depth', 'width']
 
-# Plot 1 Rsp vs mass
+feats_idx = args.feat_idx
+feats = ['Rsp', 'depth', 'width']
+print(feats[feats_idx])
+
+# Plot 
 fig, axs = plt.subplots(1, 1, 
                         # figsize=(10, 8), 
                         dpi=500)
-# axs.set_title(f'Splashback radius vs Mass')
-
-# Set up the colour range
-# cmap = plt.cm.get_cmap('hsv')
-# colours = [cmap(i / len(snaps)) for i in range(len(snaps))]
 
 z = []
 for i, snap in enumerate(snaps):
@@ -46,13 +55,13 @@ for i, snap in enumerate(snaps):
     # Load data
     data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy', allow_pickle = True).item()
     data = data ['final_results']
-    print(data.shape)
+    # print(data.shape)
     # axs.errorbar(mass_cut, data[1, :, 0], 
     #              yerr = [np.abs(data[0, :, 0]-data[1, :, 0]), 
     #                      np.abs(data[2, :, 0]-data[1, :, 0])],
     #              color=colours[i], label=f'z = {np.round(z[i], 3)}')
-    # axs.plot(mass_cut, data[:, feats_idx, 1], label=f'z = {np.round(z[i], 3)}')
-    # axs.fill_between(mass_cut, data[:, feats_idx, 2], data[:, feats_idx, 0], alpha=0.2)
+    axs.plot(mass_cut, data[:, feats_idx, 1], label=f'z = {np.round(z[i], 3)}')
+    axs.fill_between(mass_cut, data[:, feats_idx, 2], data[:, feats_idx, 0], alpha=0.2)
     
 axs.set_xlabel('Mass [$M_\\odot$/h]')
 axs.set_ylabel(r"$R_{sp}$ [kpc]")
@@ -60,5 +69,5 @@ axs.set_xscale('log')
 axs.set_yscale('log')
 axs.legend()
 # plt.tight_layout() # incompatible with pltstyle
-# plt.savefig(os.path.join(save_dir, f'dm_{feats[feats_idx]}_vs_mass_TNG300'))
+plt.savefig(os.path.join(save_dir, f'dm_{feats[feats_idx]}_vs_mass_TNG300'))
 plt.close()
