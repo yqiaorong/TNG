@@ -31,10 +31,8 @@ for s in snaps:
                         (Halos < 10**(args.mass_range+0.5)))[0]
     Ngroups_subset = subset_idx.shape[0]
     print(f'In total, {Ngroups_subset} DM halos with mass 10^{args.mass_range+10} ~ 10^{args.mass_range+10.5} MSun/h in at snap {s}')
-
-    # Iterate over DM halos
-    missing_number = 0
-    for i, halo_idx in enumerate(subset_idx):
-        if not os.path.exists(f'result/DMhalo_density_profiles_old/sim_{args.boxsize}_{args.res}/snap_{s}/densities/halo_{halo_idx}.npy'):
-            missing_number += 1
-    print(f'{missing_number} halos missing.')
+    
+    halos_set = set(os.listdir(f'result/DMhalo_density_profiles_old/sim_{args.boxsize}_{args.res}/snap_{s}/densities'))
+    subset_idx_set = {f'halo_{idx}.npy' for idx in subset_idx}
+    num_missing = len(subset_idx_set.difference(halos_set))
+    print(f'{num_missing} halos missing.')
