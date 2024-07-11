@@ -36,7 +36,7 @@ if not os.path.exists(save_dir):
 
 # Inputs
 snaps = [33, 40, 50, 67, 78, 99]
-mass_cut = [11.5, 12, 12.5, 13, 13.5]
+mass_cut = [11, 11.5, 12, 12.5, 13, 13.5, 14]
 
 
 
@@ -61,13 +61,13 @@ for i, snap in enumerate(snaps):
     all_data.append(data)
 all_data = np.array(all_data)
 
-for i in range(len(mass_cut)):
+for i in range(len(mass_cut)-1):
     # axs.errorbar(z, all_data[:, 1, i, 0], 
     #              yerr = [np.abs(all_data[:, 0, i, 0]-all_data[:, 1, i, 0]), 
     #                      np.abs(all_data[:, 2, i, 0]-all_data[:, 1, i, 0])],
     #              color=colours[i], label=f'mass = 10^{mass_cut[i]} MSun/h')
     axs.plot(z, all_data[:, i, feats_idx, 1], 
-             label=r'mass = $10^{%.1f}$ '%mass_cut[i]+f'$M_\\odot$/h')
+             label=r'mass = $10^{%.1f}$'%mass_cut[i]+'~'+r'$10^{%.1f}$ '%mass_cut[i+1]+f'$M_\\odot$/h')
     axs.fill_between(z, all_data[:, i, feats_idx, 0], all_data[:, i, feats_idx, 2], alpha=0.2)
     
 axs.set_xlabel('z')

@@ -13,8 +13,8 @@ basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/' + 'L%dn%dTNG/out
 
 
 snaps = [33, 40, 50, 67, 78, 99]
-mass_cut = ['2', '2-5', '3', '3-5']
-mass_cut_idx = 0
+mass_cut = ['1', '1.5', '2', '2-5', '3', '3-5']
+mass_cut_idx = 2 # input
 
 
 
