@@ -10,6 +10,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',default=205,type=int)
 parser.add_argument('--res',default=1250,type=int)
 parser.add_argument('--snapnum',default=99,type=int)
+parser.add_argument('--bin_start',default=0,type=float) # 10^{10+x} MSun/h
+parser.add_argument('--bin_end',default=6,type=float) # 10^{10+x} MSun/h
 args = parser.parse_args()
 
 print('')
@@ -43,7 +45,9 @@ if os.path.isdir(save_dir) == False:
     
 # Histogram of halos mass
 plt.figure()
-hist_values = plt.hist(Group_M_Mean200, bins=np.logspace(0.01, 6, 60))[0]
+bin_start, bin_end = args.bin_start, args.bin_end
+num_bin = int((bin_end-bin_start)*10)
+hist_values = plt.hist(Group_M_Mean200, bins=np.logspace(bin_start, bin_end, num_bin))[0]
 plt.xlabel('Mass [10^10 MSun / h]')
 plt.ylabel('Frequency')
 plt.yscale('log')
@@ -53,7 +57,7 @@ plt.savefig(os.path.join(save_dir, f'snap_{snapnum}'))
 
 # Print numbers in each bin
 sums = []
-for i in range(0, len(hist_values), 5):
+for i in range(0, num_bin, 5):
     sum_of_five = sum(hist_values[i:i+5])
     sums.append(sum_of_five)
 print(sums)
