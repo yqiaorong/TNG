@@ -33,7 +33,6 @@ load_dir = 'result/'+args.root_dir+f'/sim_{args.boxsize}_{args.res}/snap_{args.s
 
 # Load density profile data
 file_list = os.listdir(load_dir)
-file_list = [os.path.join(load_dir, fname) for fname in file_list] 
 
 # Set up the final plot
 fig, axs = plt.subplots(2, 1, figsize=(10, 15))
@@ -42,7 +41,7 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 15))
 for i in range(num_bins):
     
     # Compute median density profiles
-    raw_profiles = stacked_density_profile(file_list, [mass_bins[i], mass_bins[i+1]])
+    raw_profiles = stacked_density_profile(load_dir, file_list, [mass_bins[i], mass_bins[i+1]])
     radius, rho, rho_err = raw_profiles[0][1:], raw_profiles[1][1:], raw_profiles[2][1:] # [dimensionless]
     num_halo, R200_median = raw_profiles[3], raw_profiles[4]                    # [ckpc/h]
     del raw_profiles

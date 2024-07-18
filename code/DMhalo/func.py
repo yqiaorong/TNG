@@ -103,8 +103,8 @@ def stacked_density_profile(root_dir, fnames, mass_criteria, use_bootstrap=True)
     
     INPUT:
     
-    root_dir
-    fnames: list of filepaths without subfolders!
+    root_dir:       str
+    fnames:         list of filepaths without subfolders!
     mass_criteria:  list [a, b]                 [10^(10+a) MSun/h]
         
     RETURN:
