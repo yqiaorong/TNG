@@ -110,7 +110,6 @@ for i in range(num_bins):
 plt.tight_layout()
 
 
-
 # Save directory
 save_dir = f'result/Stacked_{args.root_dir}/sim_{args.boxsize}_{args.res}/snap_{args.snapnum}'
 if not os.path.exists(save_dir):
