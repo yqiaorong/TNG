@@ -6,6 +6,7 @@ def compt_density_profile(coordinates, haloCM, halo_R_Mean200, dimension,
     coordinates:    2D array with shape (N, 3)              [free unit]
     haloCM:         1D array with shape (3,)                [free unit]
     halo_R_Mean200: float
+    dimension:      float                                   [ckpc^3/h]
     radius_range:   list with two fractional radius         [dimensionless]
     number_of_bins: float                       
     
