@@ -1,6 +1,6 @@
 # TNG - TNG
 
-The codes in this branch are designed for simulation [TNG](https://www.tng-project.org/)
+The codes in this branch are designed for simulation [TNG](https://www.tng-project.org/).
 
 ## code
 
