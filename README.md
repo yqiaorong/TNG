@@ -26,14 +26,14 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 ../code/DMhalo_para
 
-* 1_subset.py --boxsize --res --snapnum --mass_range --method --save_root_dir
+* 1_subset.py --boxsize --res --snapnum --bin_start --bin_end --method --save_root_dir
 
 ### plot
 
 * mass_hist.py
 
-* Rspfeats_mass.py --feat_idx
+* Rspfeats_mass.py --feat_idx --bin_start --bin_end
 
-* Rspfeats_redshift.py --feat_idx
+* Rspfeats_redshift.py --feat_idx --bin_start --bin_end
 
 * median_profiles.py
