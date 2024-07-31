@@ -35,7 +35,8 @@ if not os.path.exists(save_dir):
 
 
 # Inputs
-snaps = [33, 40, 50, 67, 78, 99]
+snaps = [# 8, 11, 13, 17, 21, 25, 
+         33, 40, 50, 67, 78, 99]
 mass_cut = [11, 11.5, 12, 12.5, 13, 13.5, 14]
 
 
@@ -48,7 +49,7 @@ print(feats[feats_idx])
 fig, axs = plt.subplots(1, 1, dpi=500)
 
 z, all_data = [], []
-for i, snap in enumerate(snaps):
+for i, snap in enumerate(snaps): # from high z to low z (present)
     # Load redshifts
     with h5py.File(il.snapshot.snapPath(basePath, snap), 'r') as f:
         header = dict(f['Header'].attrs.items())
@@ -61,14 +62,16 @@ for i, snap in enumerate(snaps):
     all_data.append(data)
 all_data = np.array(all_data)
 
-for i in range(len(mass_cut)-1):
-    # axs.errorbar(z, all_data[:, 1, i, 0], 
+for i in range(len(mass_cut)-1): # from low cut to high cut
+    num_z = all_data.shape[0]
+    
+    # axs.errorbar(z[:num_z], all_data[:, 1, i, 0], 
     #              yerr = [np.abs(all_data[:, 0, i, 0]-all_data[:, 1, i, 0]), 
     #                      np.abs(all_data[:, 2, i, 0]-all_data[:, 1, i, 0])],
     #              color=colours[i], label=f'mass = 10^{mass_cut[i]} MSun/h')
-    axs.plot(z, all_data[:, i, feats_idx, 1], 
+    axs.plot(z[:num_z], all_data[:, i, feats_idx, 1], 
              label=r'mass = $10^{%.1f}$'%mass_cut[i]+'~'+r'$10^{%.1f}$ '%mass_cut[i+1]+f'$M_\\odot$/h')
-    axs.fill_between(z, all_data[:, i, feats_idx, 0], all_data[:, i, feats_idx, 2], alpha=0.2)
+    axs.fill_between(z[:num_z], all_data[:, i, feats_idx, 0], all_data[:, i, feats_idx, 2], alpha=0.2)
     
 axs.set_xlabel('z')
 if args.feat_idx == 0:
