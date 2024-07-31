@@ -64,9 +64,13 @@ for i, snap in enumerate(snaps):
     axs.fill_between(mass_cut, data[:, feats_idx, 2], data[:, feats_idx, 0], alpha=0.2)
     
 axs.set_xlabel('Mass [$M_\\odot$/h]')
-axs.set_ylabel(r"$R_{sp}$ [kpc]")
+if args.feat_idx == 0:
+    axs.set_ylabel(r"$R_{sp}$ [kpc]")
+else:
+    axs.set_ylabel(feats[feats_idx])
 axs.set_xscale('log')
-axs.set_yscale('log')
+if args.feat_idx == 0:
+    axs.set_yscale('log')
 axs.legend()
 # plt.tight_layout() # incompatible with pltstyle
 plt.savefig(os.path.join(save_dir, f'dm_{feats[feats_idx]}_vs_mass_TNG300'))

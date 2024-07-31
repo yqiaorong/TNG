@@ -71,8 +71,12 @@ for i in range(len(mass_cut)-1):
     axs.fill_between(z, all_data[:, i, feats_idx, 0], all_data[:, i, feats_idx, 2], alpha=0.2)
     
 axs.set_xlabel('z')
-axs.set_ylabel(r"$R_{sp}$ [kpc]")
-axs.set_yscale('log')
+if args.feat_idx == 0:
+    axs.set_ylabel(r"$R_{sp}$ [kpc]")
+else:
+    axs.set_ylabel(feats[feats_idx])
+if args.feat_idx == 0:
+    axs.set_yscale('log')
 axs.legend()
 # plt.tight_layout() # incompatible with pltstyle
 plt.savefig(os.path.join(save_dir, f'dm_{feats[feats_idx]}_vs_redshift_TNG300'))

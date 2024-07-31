@@ -6,11 +6,11 @@ from mpi4py import MPI
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--boxsize',default=205,   type=int)
-parser.add_argument('--res',default=1250,      type=int)
-parser.add_argument('--snapnum',default=99,    type=int)
-parser.add_argument('--mass_range',default=1,  type=float) # [10^{10+x} Msun/h]
-
+parser.add_argument('--boxsize',  default=205,  type=int)
+parser.add_argument('--res',      default=1250, type=int)
+parser.add_argument('--snapnum',  default=99,   type=int)
+parser.add_argument('--bin_start',default=1,    type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--bin_end',  default=3.5,  type=float) # [10^{10+x} Msun/h]
 parser.add_argument('--method', default='old',  type=str)
 parser.add_argument('--save_root_dir',default='DMhalo_density_profiles',type=str)
 args = parser.parse_args()
@@ -47,10 +47,9 @@ Group_M_Mean200 = Halos['Group_M_Mean200'] # [10^10 MSun/h]
 Group_R_Mean200 = Halos['Group_R_Mean200'] # [ckpc/h]
 
 # Using physical mass to select subset
-subset_idx = np.where((Group_M_Mean200 >= 10**args.mass_range) & 
-                      (Group_M_Mean200 < 10**(args.mass_range+0.5)))[0]
+subset_idx = np.where((Group_M_Mean200 >= 10**args.bin_start) & (Group_M_Mean200 < 10**args.bin_end))[0]
 Ngroups_subset = subset_idx.shape[0]
-print(f'In total, {Ngroups_subset} DM halos with mass 10^{args.mass_range+10} ~ 10^{args.mass_range+10.5} MSun in at snap {snapnum}')
+print(f'In total, {Ngroups_subset} DM halos with mass 10^{args.bin_start+10} ~ 10^{args.bin_end+10} MSun in at snap {snapnum}')
 
 
 
