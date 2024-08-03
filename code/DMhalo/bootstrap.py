@@ -7,10 +7,8 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--snapnum',default=99,   type=int)
-parser.add_argument('--Nsample',default=10000,type=int)
-parser.add_argument('--bin_start',default=1,type=int)
-parser.add_argument('--bin_end',  default=4,type=int)
+parser.add_argument('--snapnum',default=99,     type=int)
+parser.add_argument('--Nsample',default=10000,  type=int)
 args = parser.parse_args()
 
 print('')
@@ -31,7 +29,18 @@ basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 
 
 # Make mass cuts
-bin_start, bin_end, bin_width = args.bin_start, args.bin_end, 0.5
+if args.snapnum == 8:
+    bin_start, bin_end = 1, 2
+elif args.snapnum == 13:
+    bin_start, bin_end = 1, 2.5
+elif args.snapnum == 17:
+    bin_start, bin_end  = 1, 3
+elif args.snapnum == 25:
+    bin_start, bin_end = 1, 3.5
+else:
+    bin_start, bin_end = 1, 4
+
+bin_width = 0.5
 num_bins = int((bin_end-bin_start)/bin_width)
 mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun/h
 print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun/h')
@@ -94,7 +103,7 @@ while valid_boots < Nboots:
             radius, rho, rho_err = filter_profile(radius, rho, rho_err) # Remove zero densities in the centre
             slope = num_deriv(np.log(radius), np.log(rho))                                      # [dimensionless]
             slope_err = num_deriv_err(radius, rho, rho_err)                                     # [dimensionless]
-            
+
             # Fit the density profiles
             fit_profiles = fit_profile_parametric(radius, rho, np.mean(rho_err, axis=1), 1)
             fitted_radius, fitted_rho = fit_profiles[0], fit_profiles[1]

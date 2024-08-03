@@ -32,7 +32,8 @@ if not os.path.exists(save_dir):
 
 
 # Input
-snaps = [# 8, 11, 13, 17, 21, 25, 
+snaps = [8, 
+         # 11, 13, 17, 21, 25, 
          33, 40, 50, 67, 78, 99]
 mass_cut = [10**11, 10**11.5, 10**12, 10**12.5, 10**13, 10**13.5]
 
@@ -58,12 +59,12 @@ for i, snap in enumerate(snaps): # from high z to low z
     data = data['final_results']
     num_cut = data.shape[0]
     
-    # axs.errorbar(mass_cut[:num_cut], data[1, :, 0], 
-    #              yerr = [np.abs(data[0, :, 0]-data[1, :, 0]), 
-    #                      np.abs(data[2, :, 0]-data[1, :, 0])],
-    #              color=colours[i], label=f'z = {np.round(z[i], 3)}')
+    # axs.errorbar(mass_cut[:num_cut], data[:, feats_idx, 1], 
+    #              yerr = [np.abs(data[:, feats_idx, 1]-data[:, feats_idx, 0]), 
+    #                      np.abs(data[:, feats_idx, 1]-data[:, feats_idx, 2])],
+    #              label=f'z = {np.round(z[i], 3)}')
     axs.plot(mass_cut[:num_cut], data[:, feats_idx, 1], label=f'z = {np.round(z[i], 3)}')
-    axs.fill_between(mass_cut[:num_cut], data[:, feats_idx, 2], data[:, feats_idx, 0], alpha=0.2)
+    axs.fill_between(mass_cut[:num_cut], data[:, feats_idx, 0], data[:, feats_idx, 2], alpha=0.2)
     
 axs.set_xlabel('Mass [$M_\\odot$/h]')
 if args.feat_idx == 0:

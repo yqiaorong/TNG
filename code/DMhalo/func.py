@@ -219,7 +219,12 @@ def filter_profile(x, y, yerr):
     y: shape (N,)
     yerr: shape (2, N,)"""
 
-    start_idx = next((i for i, x in enumerate(y) if x != 0), 0)
+    for i in range(len(x)):
+        if all(item != 0 for item in y[i:]):
+            start_idx = i
+            break
+
+    # start_idx = next((i for i, x in enumerate(y) if x != 0), 0)
     return x[start_idx:], y[start_idx:], yerr[start_idx:]
     
 def num_deriv(lgR, lgP):

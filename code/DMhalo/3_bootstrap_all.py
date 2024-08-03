@@ -9,7 +9,9 @@ print(f'size: {size}, rank: {rank}')
 
 # Define initial data (the data you want to split) on the root MPI process
 if rank == 0:
-    data = [33, 40, 50, 67, 78, 99]
+    data = [8, 13, 17, 21, 25, 
+            # 33, 40, 50, 67, 78, 99
+            ]
 else:
     data = None
 print(f'scatter data: {data}')
