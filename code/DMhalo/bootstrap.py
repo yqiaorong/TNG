@@ -33,10 +33,8 @@ if args.snapnum == 8:
     bin_start, bin_end = 1, 2
 elif args.snapnum == 13:
     bin_start, bin_end = 1, 2.5
-elif args.snapnum == 17 or 21:
+elif args.snapnum == 17 or 21 or 25:
     bin_start, bin_end  = 1, 3
-elif args.snapnum == 25:
-    bin_start, bin_end = 1, 3.5
 else:
     bin_start, bin_end = 1, 4
 
