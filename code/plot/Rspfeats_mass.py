@@ -25,8 +25,8 @@ basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/' + 'L%dn%dTNG/out
 
 
 # Save directory
-data_path = f'result/bootstrap'
-save_dir = f'{data_path}/sim_{boxsize}_{res}'
+data_path = f'result/bootstrap/'
+save_dir = f'{data_path}/sim_{boxsize}_{res}/plot'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -74,5 +74,5 @@ if args.feat_idx == 0:
     axs.set_yscale('log')
 axs.legend()
 # plt.tight_layout() # incompatible with pltstyle
-plt.savefig(os.path.join(save_dir, f'dm_{feats[feats_idx]}_vs_mass_TNG300'))
+plt.savefig(f'{save_dir}/dm_{feats[feats_idx]}_vs_mass_TNG300')
 plt.close()

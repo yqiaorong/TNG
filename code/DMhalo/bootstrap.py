@@ -67,7 +67,10 @@ halos_list = [f'halo_{idx}.npy' for idx in subset_idx]
 print(f'The total halo numbers: {len(halos_list)}')
 del Group_M_Mean200
 
-
+# Save the result
+save_dir = f'result/bootstrap/sim_{boxsize}_{res}'
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
 
 ### Bootstrap ###
 
@@ -114,7 +117,7 @@ while valid_boots < Nboots:
             plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
                         fitted_radius, fitted_rho, fitted_slope, 
                         [mass_bins[i], mass_bins[i+1]], num_halo, snap, 
-                        f'result/bootstrap/snap_{snap}', f'boots_{valid_boots}',
+                        f'{save_dir}/snap_{snap}', f'boots_{valid_boots}',
                         save_data=True)
             
             # Compute Rsp
@@ -143,8 +146,6 @@ while valid_boots < Nboots:
             results[i, :, valid_boots] = Rsp, depth, width
         del boots_halo_list
         
-        
-            
         # Updata counts
         valid_boots += 1
         print(f'Nboots: {valid_boots}')
@@ -167,14 +168,7 @@ for i, cut in enumerate(results):
     print(f'cut {mass_bins[i]}: median boots idx = {origin_idx}')
     origin_indices.append(origin_idx)
     
-    
-    
-# Save the result
-save_dir = f'result/bootstrap/'
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-    
 save_data = {'full_results': results, 
              'final_results': final_results, 
              'median_idx_in_boots': origin_indices}
-np.save(save_dir+f'snap_{snap}_Rsp_stats', save_data)
+np.save(save_dir+f'/snap_{snap}_Rsp_stats', save_data)
