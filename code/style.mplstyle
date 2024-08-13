@@ -40,4 +40,4 @@ ytick.minor.size : 2
 xtick.minor.visible : False
 ytick.minor.visible : False
 # Use a colourful default colour map
-image.cmap: plasma
+image.cmap: winter

@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt 
-plt.style.use('code/plot/style.mplstyle')
+plt.style.use('code/style.mplstyle')
 import numpy as np
 import os
 import h5py 
@@ -25,8 +25,8 @@ basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/' + 'L%dn%dTNG/out
 
 
 # Save directory
-data_path = f'result/bootstrap/'
-save_dir = f'{data_path}/sim_{boxsize}_{res}/plot'
+data_path = f'result/bootstrap/sim_{boxsize}_{res}'
+save_dir = f'{data_path}/plot'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -44,9 +44,11 @@ print(feats[feats_idx])
 fig, axs = plt.subplots(1, 1, 
                         # figsize=(10, 8), 
                         dpi=500)
+# Colour map
+cmap = plt.get_cmap('winter', len(snaps))
 
 z = []
-for i, snap in enumerate(snaps): # from high z to low z
+for isnap, snap in enumerate(snaps): # from high z to low z
     # Load redshifts
     with h5py.File(il.snapshot.snapPath(basePath, snap), 'r') as f:
         header = dict(f['Header'].attrs.items())
@@ -61,8 +63,10 @@ for i, snap in enumerate(snaps): # from high z to low z
     #              yerr = [np.abs(data[:, feats_idx, 1]-data[:, feats_idx, 0]), 
     #                      np.abs(data[:, feats_idx, 1]-data[:, feats_idx, 2])],
     #              label=f'z = {np.round(z[i], 3)}')
-    axs.plot(mass_cut[:num_cut], data[:, feats_idx, 1], label=f'z = {np.round(z[i], 3)}')
-    axs.fill_between(mass_cut[:num_cut], data[:, feats_idx, 0], data[:, feats_idx, 2], alpha=0.2)
+    axs.plot(mass_cut[:num_cut], data[:, feats_idx, 1], color=cmap(isnap / len(snaps)),
+             label=f'z = {np.round(z[isnap], 1)}')
+    axs.fill_between(mass_cut[:num_cut], data[:, feats_idx, 0], data[:, feats_idx, 2], 
+                     color=cmap(isnap / len(snaps)), alpha=0.2)
     
 axs.set_xlabel('Mass [$M_\\odot$/h]')
 if args.feat_idx == 0:

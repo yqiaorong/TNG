@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt 
-plt.style.use('code/plot/style.mplstyle')
+plt.style.use('code/style.mplstyle')
 import numpy as np
 import os
 import h5py 
@@ -28,8 +28,8 @@ basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 
 
 # Save directory
-data_path = f'result/bootstrap'
-save_dir = f'{data_path}/sim_{boxsize}_{res}/plot'
+data_path = f'result/bootstrap/sim_{boxsize}_{res}/'
+save_dir = f'{data_path}/plot'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -46,9 +46,11 @@ print(feats[feats_idx])
 
 # Plot 
 fig, axs = plt.subplots(1, 1, dpi=500)
+# Colour map
+cmap = plt.get_cmap('winter', len(mass_cut))
 
 z, all_data = [], []
-for i, snap in enumerate(snaps): # from high z to low z (present)
+for snap in snaps: # from high z to low z (present)
     # Load redshifts
     with h5py.File(il.snapshot.snapPath(basePath, snap), 'r') as f:
         header = dict(f['Header'].attrs.items())
@@ -78,9 +80,9 @@ for cut_idx in range(len(mass_cut)-1): # from low cut to high cut
     # axs.errorbar(plot_x, plot_y, 
     #              yerr = [np.abs(plot_y_min-plot_y), np.abs(plot_y_max-plot_y)],
     #              label=r'mass = $10^{%.1f}$'%mass_cut[cut_idx]+'~'+r'$10^{%.1f}$ '%mass_cut[cut_idx+1]+f'$M_\\odot$/h)
-    axs.plot(plot_x, plot_y, 
+    axs.plot(plot_x, plot_y, color=cmap(cut_idx / len(mass_cut)),
              label=r'mass = $10^{%.1f}$'%mass_cut[cut_idx]+'~'+r'$10^{%.1f}$ '%mass_cut[cut_idx+1]+f'$M_\\odot$/h')
-    axs.fill_between(plot_x, plot_y_min, plot_y_max, alpha=0.2)
+    axs.fill_between(plot_x, plot_y_min, plot_y_max, color=cmap(cut_idx / len(mass_cut)), alpha=0.2)
     
 axs.set_xlabel('z')
 if args.feat_idx == 0:
