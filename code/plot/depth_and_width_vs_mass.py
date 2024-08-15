@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-plt.style.use('code/plot/style.mplstyle') 
+plt.style.use('code/style.mplstyle') 
 import numpy as np
 import os
 import h5py 
@@ -13,8 +13,8 @@ basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 
 
 # Save directory
-data_path = f'result/bootstrap'
-save_dir = f'{data_path}/sim_{boxsize}_{res}/plot'
+data_path = f'result/bootstrap_stats/sim_{boxsize}_{res}'
+save_dir = f'result/bootstrap_plot/sim_{boxsize}_{res}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 

@@ -25,8 +25,8 @@ basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/' + 'L%dn%dTNG/out
 
 
 # Save directory
-data_path = f'result/bootstrap/sim_{boxsize}_{res}'
-save_dir = f'{data_path}/plot'
+data_path = f'result/bootstrap_stats/sim_{boxsize}_{res}'
+save_dir = f'result/bootstrap_plot/sim_{boxsize}_{res}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -71,11 +71,13 @@ for isnap, snap in enumerate(snaps): # from high z to low z
 axs.set_xlabel('Mass [$M_\\odot$/h]')
 if args.feat_idx == 0:
     axs.set_ylabel(r"$R_{sp}$ [kpc]")
+    axs.set_yscale('log')
+elif args.feat_idx == 2:
+    axs.set_ylabel(feats[feats_idx]+r" [kpc]")
+    axs.set_yscale('log')
 else:
     axs.set_ylabel(feats[feats_idx])
 axs.set_xscale('log')
-if args.feat_idx == 0:
-    axs.set_yscale('log')
 axs.legend()
 # plt.tight_layout() # incompatible with pltstyle
 plt.savefig(f'{save_dir}/dm_{feats[feats_idx]}_vs_mass_TNG300')

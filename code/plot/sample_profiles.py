@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt 
-plt.style.use('code/plot/style.mplstyle')
+plt.style.use('code/style.mplstyle')
 import h5py
 import illustris_python as il
 import numpy as np
@@ -25,7 +25,8 @@ axs = gs.subplots(sharex='col', sharey='row')
 
 
 data_path = f'result/bootstrap/sim_{boxsize}_{res}'
-save_dir = data_path
+stats_path = f'result/bootstrap_stats/sim_{boxsize}_{res}'
+save_dir = f'result/bootstrap_plot/sim_{boxsize}_{res}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
     
@@ -39,7 +40,7 @@ with h5py.File(il.snapshot.snapPath(basePath, snap), 'r') as f:
     h = header['HubbleParam']
         
 # Load data
-data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy', allow_pickle = True).item()
+data = np.load(stats_path+f'/snap_{snap}_Rsp_stats.npy', allow_pickle = True).item()
 median_idx = data['median_idx_in_boots']
     
 # select median data
@@ -85,7 +86,7 @@ right_idx = radius_min_idx + np.argmin(np.abs(right_grads - half_grad))
 ax0.set_yscale('log')
 ax0.set_ylabel(r"$\rho$/$\rho_c$")
 ax0.legend(loc='best')
-ax1.set_ylabel(r'd log $\rho$ / d \og r')
+ax1.set_ylabel(r'd log $\rho$ / d log r')
 ax1.set_ylim(-4,-0)
 ax1.legend(loc='best')
 
@@ -94,6 +95,6 @@ for ax in fig.get_axes():
     ax.set_xscale('log')
     ax.label_outer()
 
-plt.savefig(f'result/bootstrap/sim_{boxsize}_{res}/plot/'+
+plt.savefig(f'result/bootstrap_plot/sim_{boxsize}_{res}/'+
             f'sample_profile_snap{snap}_masscut{mass_cut[mass_cut_idx]}')
 plt.close

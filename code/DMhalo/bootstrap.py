@@ -9,6 +9,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--snapnum',default=99,     type=int)
 parser.add_argument('--Nsample',default=10000,  type=int)
+parser.add_argument('--bin_end',default=None,   type=float)
 args = parser.parse_args()
 
 print('')
@@ -29,16 +30,18 @@ basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 
 
 # Make mass cuts
-if args.snapnum == 8:
-    bin_start, bin_end = 1, 2
-elif args.snapnum == 13:
-    bin_start, bin_end = 1, 2.5
-elif args.snapnum == 17 or 21 or 25:
-    bin_start, bin_end  = 1, 3
-else:
-    bin_start, bin_end = 1, 4
 
-bin_width = 0.5
+# if args.snapnum == 8:
+#     bin_end = 2
+# elif args.snapnum == 13:
+#     bin_end = 2.5
+# elif args.snapnum == 17 or 21 or 25:
+#     bin_end  = 3
+# else:
+#     bin_end = 1, 4
+
+bin_start, bin_width = 1, 0.5
+bin_end = args.bin_end
 num_bins = int((bin_end-bin_start)/bin_width)
 mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun/h
 print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun/h')
@@ -68,9 +71,12 @@ print(f'The total halo numbers: {len(halos_list)}')
 del Group_M_Mean200
 
 # Save the result
-save_dir = f'result/bootstrap/sim_{boxsize}_{res}'
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
+save_data_dir = f'result/bootstrap/sim_{boxsize}_{res}'
+if not os.path.exists(save_data_dir):
+    os.makedirs(save_data_dir)
+save_stats_dir = f'result/bootstrap_stats/sim_{boxsize}_{res}'
+if not os.path.exists(save_stats_dir):
+    os.makedirs(save_stats_dir)
 
 ### Bootstrap ###
 
@@ -117,7 +123,7 @@ while valid_boots < Nboots:
             plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
                         fitted_radius, fitted_rho, fitted_slope, 
                         [mass_bins[i], mass_bins[i+1]], num_halo, snap, 
-                        f'{save_dir}/snap_{snap}', f'boots_{valid_boots}',
+                        f'{save_data_dir}/snap_{snap}', f'boots_{valid_boots}',
                         save_data=True)
             
             # Compute Rsp
@@ -140,7 +146,7 @@ while valid_boots < Nboots:
             left_idx = np.argmin(np.abs(left_data - half_grad))
             right_idx = min_grad_idx + np.argmin(np.abs(right_data - half_grad))
             
-            width = fitted_radius[right_idx] - fitted_radius[left_idx]
+            width = physical_fitted_radius[right_idx] - physical_fitted_radius[left_idx]
             
             # Append results
             results[i, :, valid_boots] = Rsp, depth, width
@@ -157,7 +163,7 @@ for i in range(num_bins):
     print(f'bin {i}: ')
     print(f'Rsp: {final_results[i, 0]}')
     print(f'depth: {final_results[i, 1]}')
-    print(f'depth: {final_results[i, 2]}')
+    print(f'width: {final_results[i, 2]}')
     print('')
     
 # Check the index of median value
@@ -168,7 +174,8 @@ for i, cut in enumerate(results):
     print(f'cut {mass_bins[i]}: median boots idx = {origin_idx}')
     origin_indices.append(origin_idx)
     
-save_data = {'full_results': results, 
+save_data = {'z': z, 'h': h, 'start_mass_cut': bin_start, 
+             'full_results': results, 
              'final_results': final_results, 
              'median_idx_in_boots': origin_indices}
-np.save(save_dir+f'/snap_{snap}_Rsp_stats', save_data)
+np.save(save_stats_dir+f'/snap_{snap}_Rsp_stats', save_data)

@@ -28,8 +28,8 @@ basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 
 
 # Save directory
-data_path = f'result/bootstrap/sim_{boxsize}_{res}/'
-save_dir = f'{data_path}/plot'
+data_path = f'result/bootstrap_stats/sim_{boxsize}_{res}'
+save_dir = f'result/bootstrap_plot/sim_{boxsize}_{res}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -87,6 +87,8 @@ for cut_idx in range(len(mass_cut)-1): # from low cut to high cut
 axs.set_xlabel('z')
 if args.feat_idx == 0:
     axs.set_ylabel(r"$R_{sp}$ [kpc]")
+elif args.feat_idx == 2:
+    axs.set_ylabel(feats[feats_idx]+r" [kpc]")
 else:
     axs.set_ylabel(feats[feats_idx])
 if args.feat_idx == 0:
