@@ -274,7 +274,7 @@ def plot_profile(R200_median, radius, rho, rho_err, slope, slope_err,
     
     import os
     from matplotlib import pyplot as plt  
-    plt.style.use('code/plot/style.mplstyle')
+    plt.style.use('code/style.mplstyle')
     
     fig, axs = plt.subplots(2, 1, figsize=(10, 15))
     axs[0].scatter(radius, rho, s=1, # color='b', 

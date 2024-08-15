@@ -10,7 +10,7 @@ print(f'size: {size}, rank: {rank}')
 # Define initial data (the data you want to split) on the root MPI process
 if rank == 0:
     snaps = [8, 13, 17, 21, 25, 33, 40, 50, 67, 78, 99]
-    bin_ends = [2, 2.5, 3, 3, 3, 4, 4, 4.5, 4.5, 5, 5]
+    bin_ends = [2, 2.5, 3, 3, 3, 4, 4, 4, 4, 4, 4]
 else:
     snaps = None
     bin_ends = None

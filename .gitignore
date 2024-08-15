@@ -1,5 +1,6 @@
 output/
 result/
+result/bootstrap_stats
 job/
 data/
 code/illustris_python
