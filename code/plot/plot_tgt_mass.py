@@ -142,6 +142,6 @@ else:
     param, pcov = curve_fit(model_func, x, saved_y, 
                             sigma=(saved_y_max-saved_y_min)/2, 
                             absolute_sigma=True)
-    print(f'func: SP (logM, z) = {param[0]:.3f} (log M)^2 + {param[1]:.3f} (log M) z '+
+    print(f'equ: SP (logM, z) = {param[0]:.3f} (log M)^2 + {param[1]:.3f} (log M) z '+
         f'+ {param[2]:.3f} z^2 + {param[3]:.3f} logM + {param[4]:.3f} z + {param[5]:.3f}')
 print(param)
