@@ -82,7 +82,7 @@ if not os.path.exists(save_stats_dir):
 
 # Bootstrap setup
 Nsample, Nboots = args.Nsample, 32
-results = np.empty((num_bins, 3, Nboots))
+results = np.empty((num_bins, 4, Nboots))
 
 valid_boots = 0
 while valid_boots < Nboots: 
@@ -146,10 +146,11 @@ while valid_boots < Nboots:
             left_idx = np.argmin(np.abs(left_data - half_grad))
             right_idx = min_grad_idx + np.argmin(np.abs(right_data - half_grad))
             
+            width_dimless = fitted_radius[right_idx] - fitted_radius[left_idx]
             width = physical_fitted_radius[right_idx] - physical_fitted_radius[left_idx]
             
             # Append results
-            results[i, :, valid_boots] = Rsp, depth, width
+            results[i, :, valid_boots] = Rsp, depth, width_dimless, width
         del boots_halo_list
         
         # Updata counts
@@ -163,7 +164,8 @@ for i in range(num_bins):
     print(f'bin {i}: ')
     print(f'Rsp: {final_results[i, 0]}')
     print(f'depth: {final_results[i, 1]}')
-    print(f'width: {final_results[i, 2]}')
+    print(f'width dimless: {final_results[i, 2]}')
+    print(f'width physical: {final_results[i, 3]}')
     print('')
     
 # Check the index of median value
