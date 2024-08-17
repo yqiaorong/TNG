@@ -124,24 +124,31 @@ saved_y  = np.array(np.concatenate(saved_y).tolist())
 saved_y_min = np.array(np.concatenate(saved_y_min).tolist())
 saved_y_max = np.array(np.concatenate(saved_y_max).tolist())
 
-# Curve fit
-from scipy.optimize import curve_fit
+# Save the data
+np.save(f'data/equ_data_{feats[feat_idx]}', {'mass_x1': saved_x1, 'z_x2': saved_x2,
+                                             'y': saved_y, 'y_min': saved_y_min, 'y_max': saved_y_max})
+print('data saved.')
+print('')
 
-def model_func(x, a, b, c, d, e, f):
-    logM, z = x
-    return a*logM**2 + b*logM*z + c*z**2 + d*logM + e*z + f
 
-x = np.vstack((np.log10(saved_x1), saved_x2))
-if feat_idx == 0 or 3:
-    param, pcov = curve_fit(model_func, x, np.log10(saved_y), 
-                            sigma=(np.log10(saved_y_max)-np.log10(saved_y_min))/2, 
-                            absolute_sigma=True)
-    print(f'func: log SP (logM, z) = {param[0]:.3f} (log M)^2 + {param[1]:.3f} (log M) z '+
-      f'+ {param[2]:.3f} z^2 + {param[3]:.3f} logM + {param[4]:.3f} z + {param[5]:.3f}')
-else:
-    param, pcov = curve_fit(model_func, x, saved_y, 
-                            sigma=(saved_y_max-saved_y_min)/2, 
-                            absolute_sigma=True)
-    print(f'equ: SP (logM, z) = {param[0]:.3f} (log M)^2 + {param[1]:.3f} (log M) z '+
-        f'+ {param[2]:.3f} z^2 + {param[3]:.3f} logM + {param[4]:.3f} z + {param[5]:.3f}')
-print(param)
+# # Curve fit
+# from scipy.optimize import curve_fit
+
+# def model_func(x, a, b, c, d, e, f):
+#     logM, z = x
+#     return a*logM**2 + b*logM*z + c*z**2 + d*logM + e*z + f
+
+# x = np.vstack((np.log10(saved_x1), saved_x2))
+# if feat_idx == 0 or 3:
+#     param, pcov = curve_fit(model_func, x, np.log10(saved_y), 
+#                             sigma=(np.log10(saved_y_max)-np.log10(saved_y_min))/2, 
+#                             absolute_sigma=True)
+#     print(f'func: log SP (logM, z) = {param[0]:.3f} (log M)^2 + {param[1]:.3f} (log M) z '+
+#       f'+ {param[2]:.3f} z^2 + {param[3]:.3f} logM + {param[4]:.3f} z + {param[5]:.3f}')
+# else:
+#     param, pcov = curve_fit(model_func, x, saved_y, 
+#                             sigma=(saved_y_max-saved_y_min)/2, 
+#                             absolute_sigma=True)
+#     print(f'equ: SP (logM, z) = {param[0]:.3f} (log M)^2 + {param[1]:.3f} (log M) z '+
+#         f'+ {param[2]:.3f} z^2 + {param[3]:.3f} logM + {param[4]:.3f} z + {param[5]:.3f}')
+# print(param)
