@@ -83,15 +83,13 @@ for isnap, snap in enumerate(MTNG_DM_snaps):
              color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
     axs.fill_between(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 0], data[:, feat_idx, 2], 
                      color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), alpha=0.2)
-    
+
     # Append to saved data
     saved_x1.append(MTNG_DM_mass_cuts[:num_cut])
     saved_x2.append([z]*len(MTNG_DM_mass_cuts[:num_cut]))
     saved_y.append(data[:, feat_idx, 1])
     saved_y_min.append(data[:, feat_idx, 0])
     saved_y_max.append(data[:, feat_idx, 2])
-
-
 
 # Final edit
 axs.set_xscale('log')
@@ -128,7 +126,7 @@ saved_y_max = np.array(np.concatenate(saved_y_max).tolist())
 np.save(f'data/equ_data_{feats[feat_idx]}', {'mass_x1': saved_x1, 'z_x2': saved_x2,
                                              'y': saved_y, 'y_min': saved_y_min, 'y_max': saved_y_max})
 print('data saved.')
-print('')
+
 
 
 # # Curve fit

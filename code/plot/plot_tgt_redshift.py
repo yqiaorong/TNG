@@ -35,7 +35,7 @@ TNG300_list = os.listdir(TNG300_dir)
 
 TNG300_cmap = plt.get_cmap('winter', len(TNG300_list))
 TNG300_snaps = [99, 78, 67, 50, 40, 33, 21, 17, 13, 8]
-TNG300_mass_cuts = [11, 11.5, 12, 12.5, 13, 13.5]
+TNG300_mass_cuts = [11, 11.5, 12, 12.5, 13, 13.5, 14]
 
 TNG300_z, TNG300_all_data = [], []
 for snap in TNG300_snaps: # from low z to high z (present)
@@ -61,7 +61,7 @@ for cut_idx in range(len(TNG300_mass_cuts)-1): # from low cut to high cut
             plot_x.append(TNG300_z[snap_idx])
         else:
             pass
-
+ 
     axs.plot(plot_x, plot_y, color=TNG300_cmap(cut_idx / len(TNG300_mass_cuts)),
              label=r'$10^{%.1f}$'%TNG300_mass_cuts[cut_idx]+'~'
              +r'$10^{%.1f}$ '%TNG300_mass_cuts[cut_idx+1]+'$M_\\odot$/h')
@@ -77,7 +77,7 @@ MTNG_DM_list = os.listdir(MTNG_DM_dir)
 
 MTNG_DM_cmap = plt.get_cmap('autumn', len(TNG300_list))
 MTNG_DM_snaps = [264, 237, 214, 179, 151, 129]
-MTNG_DM_mass_cuts = [13.5, 14, 14.5, 15, 15.5]
+MTNG_DM_mass_cuts = [13.5, 14, 14.5, 15]
 
 MTNG_DM_z, MTNG_DM_all_data = [], []
 for snap in MTNG_DM_snaps: # from high z to low z (present)
