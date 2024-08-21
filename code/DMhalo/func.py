@@ -119,7 +119,9 @@ def stacked_density_profile(root_dir, fnames, mass_criteria, use_bootstrap=True)
     
     import os
     import sys
+    from tqdm import tqdm
     import numpy as np
+    import matplotlib.pyplot as plt
     from unyt import G, second, megaparsec, km
     
     # Initialize the output
@@ -129,7 +131,7 @@ def stacked_density_profile(root_dir, fnames, mass_criteria, use_bootstrap=True)
     
     ### Load all density profile data ###
     # Iterate over halos
-    for fname in fnames:
+    for fname in tqdm(fnames):
         # Load data
         data = np.load(os.path.join(root_dir, fname), allow_pickle=True).item()
         h = data['h'] # unit [100 * km / megaparsec / second]
@@ -174,8 +176,12 @@ def stacked_density_profile(root_dir, fnames, mass_criteria, use_bootstrap=True)
     ### Find the median density profile ###
     if use_bootstrap == True:
         medians, errors = [], []
-        for rho_data_at_r in density_profiles:
+        for idx, rho_data_at_r in enumerate(density_profiles):
             resampled_median_rho_data_at_r = bootstrap(rho_data_at_r, np.median)
+            # plt.figure()
+            # plt.hist(resampled_median_rho_data_at_r)
+            # plt.savefig(f'result/hist/r_{idx}')
+            # plt.close()
             median_with_error = np.percentile(resampled_median_rho_data_at_r, [16, 50, 84])
             # Append new data to the lists
             medians.append(median_with_error[1])

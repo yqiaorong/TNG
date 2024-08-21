@@ -8,7 +8,8 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--feat_idx',default=0,type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
+parser.add_argument('--Nboots',  default=None,type=int)
+parser.add_argument('--feat_idx',default=0,   type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
 args = parser.parse_args()
 
 print('')
@@ -25,8 +26,8 @@ basePath = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/' + 'L%dn%dTNG/out
 
 
 # Save directory
-data_path = f'result/bootstrap_stats/sim_{boxsize}_{res}'
-save_dir = f'result/bootstrap_plot/sim_{boxsize}_{res}'
+data_path = f'result/bootstrap_stats/sim_{boxsize}_{res}/Nboots_{args.Nboots}/'
+save_dir = f'result/bootstrap_plot/sim_{boxsize}_{res}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -56,7 +57,7 @@ for isnap, snap in enumerate(snaps): # from high z to low z
         z.append(1 / scale_factor - 1)
         
     # Load data
-    data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy', allow_pickle = True).item()
+    data = np.load(data_path+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
     data = data['final_results']
     num_cut = data.shape[0]
     

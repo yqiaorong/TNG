@@ -6,6 +6,7 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
+parser.add_argument('--Nboots',  default=None,type=int)
 parser.add_argument('--feat_idx',default=0,type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
 args = parser.parse_args()
 
@@ -32,7 +33,7 @@ saved_x1, saved_x2, saved_y, saved_y_max, saved_y_min = [], [], [], [], []
 ### Plot TNG300 ### 
 ##############################################################################################
 
-TNG300_dir = f'{root_dir}/sim_205_1250/'
+TNG300_dir = f'{root_dir}/sim_205_1250/Nboots_{args.Nboots}/'
 TNG300_list = os.listdir(TNG300_dir)
 
 TNG300_cmap = plt.get_cmap('winter', len(TNG300_list))
@@ -62,7 +63,7 @@ for isnap, snap in enumerate(TNG300_snaps):
 ### Plot MTNG-DM ### 
 ##############################################################################################
 
-MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output'
+MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
 MTNG_DM_list = os.listdir(MTNG_DM_dir)
 
 MTNG_DM_cmap = plt.get_cmap('autumn', len(TNG300_list))
@@ -107,7 +108,7 @@ elif feat_idx == 3:
 axs.legend()
 
 # Save the plot
-save_dir = f'result/bootstrap_plot/full/'
+save_dir = f'result/bootstrap_plot/full/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 plt.savefig(f'{save_dir}/dm_{feats[feat_idx]}_vs_mass')

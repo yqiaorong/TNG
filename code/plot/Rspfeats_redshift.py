@@ -28,8 +28,8 @@ basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 
 
 # Save directory
-data_path = f'result/bootstrap_stats/sim_{boxsize}_{res}'
-save_dir = f'result/bootstrap_plot/sim_{boxsize}_{res}'
+data_path = f'result/bootstrap_stats/sim_{boxsize}_{res}/Nboots_{args.Nboots}/'
+save_dir = f'result/bootstrap_plot/sim_{boxsize}_{res}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 

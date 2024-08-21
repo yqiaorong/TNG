@@ -8,7 +8,8 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--feat_idx',default=0,type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
+parser.add_argument('--Nboots',  default=None,type=int)
+parser.add_argument('--feat_idx',default=0,   type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
 args = parser.parse_args()
 
 print('')
@@ -30,7 +31,7 @@ fig, axs = plt.subplots(1, 1, dpi=500)
 ### Plot TNG300 ### 
 ##############################################################################################
 
-TNG300_dir = f'{root_dir}/sim_205_1250/'
+TNG300_dir = f'{root_dir}/sim_205_1250/Nboots_{args.Nboots}/'
 TNG300_list = os.listdir(TNG300_dir)
 
 TNG300_cmap = plt.get_cmap('winter', len(TNG300_list))
@@ -72,7 +73,7 @@ for cut_idx in range(len(TNG300_mass_cuts)-1): # from low cut to high cut
 ### Plot MTNG-DM ### 
 ##############################################################################################
 
-MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output'
+MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
 MTNG_DM_list = os.listdir(MTNG_DM_dir)
 
 MTNG_DM_cmap = plt.get_cmap('autumn', len(TNG300_list))
@@ -128,7 +129,7 @@ elif feat_idx == 3:
 axs.legend()
 
 # Save the plot
-save_dir = f'result/bootstrap_plot/full/'
+save_dir = f'result/bootstrap_plot/full/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 plt.savefig(os.path.join(save_dir, f'dm_{feats[feat_idx]}_vs_redshift'))

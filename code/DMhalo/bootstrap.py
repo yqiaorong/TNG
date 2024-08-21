@@ -7,9 +7,10 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--snapnum',default=99,     type=int)
-parser.add_argument('--Nsample',default=10000,  type=int)
-parser.add_argument('--bin_end',default=None,   type=float)
+parser.add_argument('--Nsample',default=None,type=int)
+parser.add_argument('--Nboots', default=None,type=int)
+parser.add_argument('--snapnum',default=99,  type=int)
+parser.add_argument('--bin_end',default=None,type=float)
 args = parser.parse_args()
 
 print('')
@@ -71,17 +72,17 @@ print(f'The total halo numbers: {len(halos_list)}')
 del Group_M_Mean200
 
 # Save the result
-save_data_dir = f'result/bootstrap/sim_{boxsize}_{res}'
+save_data_dir = f'result/bootstrap/sim_{boxsize}_{res}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_data_dir):
     os.makedirs(save_data_dir)
-save_stats_dir = f'result/bootstrap_stats/sim_{boxsize}_{res}'
+save_stats_dir = f'result/bootstrap_stats/sim_{boxsize}_{res}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_stats_dir):
     os.makedirs(save_stats_dir)
 
 ### Bootstrap ###
 
 # Bootstrap setup
-Nsample, Nboots = args.Nsample, 32
+Nsample, Nboots = args.Nsample, args.Nboots
 results = np.empty((num_bins, 4, Nboots))
 
 valid_boots = 0
