@@ -119,7 +119,7 @@ print(f'p value: {p_val}')
 ########################################################################################
 
 cmap1 = plt.get_cmap('autumn', len(uniq_logM))
-cmap2 = plt.get_cmap('cool', len(uniq_z))
+cmap2 = plt.get_cmap('cool',   len(uniq_z))
 fig, axs = plt.subplots(1, 2, figsize=(9, 4), dpi=500)
 
 # As a func of mass
@@ -175,4 +175,3 @@ if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 plt.savefig(f'{save_dir}/fit_{feats[feat_idx]}_func{args.func_idx}')
 plt.close()
-

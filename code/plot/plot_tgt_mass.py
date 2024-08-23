@@ -7,11 +7,11 @@ import argparse
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--Nboots',  default=None,type=int)
-parser.add_argument('--feat_idx',default=0,type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
+parser.add_argument('--feat_idx',default=0,   type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
 args = parser.parse_args()
 
 print('')
-print(f'>>> Plot Rsp feats vs mass <<<')
+print('>>> Plot Rsp feats vs mass <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))

@@ -22,5 +22,5 @@ b = comm.scatter(bin_ends, root=0)
 
 # Apply the computation
 comm.Barrier()
-os.system(f'python3 code/DMhalo/bootstrap.py --Nsample 10000 --Nboots 128'+ 
+os.system(f'python3 code/DMhalo/bootstrap.py --Nsample 10000 --Nboots 128 '+ 
           f'--snapnum {s} --bin_end {b}')
