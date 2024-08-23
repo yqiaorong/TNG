@@ -10,6 +10,7 @@ from func import *
 parser = argparse.ArgumentParser()
 parser.add_argument('--feat_idx',default=0,   type=int) 
 # Feature index [Rsp = 0, depth = 1, width_dimless = 2, width_phys = 3]
+parser.add_argument('--Nboots',  default=None,type=int)
 parser.add_argument('--variable',default=None,type=str) # [mass / redshift]
 args = parser.parse_args()
 
@@ -26,7 +27,7 @@ for key, val in vars(args).items():
 print('')
 
 # Save dir
-save_dir = f'result/fitting_partial/'
+save_dir = f'result/fitting_partial/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
