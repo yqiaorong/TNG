@@ -1,6 +1,6 @@
 """This scripts plot the distribution of bootstrapped splashback features. 
 The target is to verify if they follow normal distribution. The plots are
-saved in ./result/hist/"""
+saved in ./result/hist/Nboots_{Nboots}/"""
 
 import os
 import numpy as np
@@ -12,7 +12,7 @@ mass_cut_idx = 0 # 10^11 Msun/h
 feat_idx = 2 # width dimensionless
 root_dir = 'result/bootstrap_stats/'
 
-save_dir = f'result/hist/'
+save_dir = f'result/hist/Nboots_{Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
     

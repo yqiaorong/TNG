@@ -44,6 +44,7 @@ TNG300_snaps = [99, 78, 67, 50, 40, 33, 21, 17, 13, 8]
 TNG300_mass_cuts = [10**11, 10**11.5, 10**12, 10**12.5, 10**13, 10**13.5]
 
 for isnap, snap in enumerate(TNG300_snaps):
+    
     # Load data
     data = np.load(TNG300_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
     z = data['z']
@@ -51,10 +52,10 @@ for isnap, snap in enumerate(TNG300_snaps):
     num_cut = data.shape[0]
     
     axs.plot(TNG300_mass_cuts[:num_cut], data[:, feat_idx, 1], 
-             color=TNG300_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
+            color=TNG300_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
     axs.fill_between(TNG300_mass_cuts[:num_cut], data[:, feat_idx, 0], data[:, feat_idx, 2], 
-                     color=TNG300_cmap(isnap / len(TNG300_snaps)), alpha=0.2)
-    
+                    color=TNG300_cmap(isnap / len(TNG300_snaps)), alpha=0.2)
+
     # Append to saved data
     saved_x1.append(TNG300_mass_cuts[:num_cut])
     saved_x2.append([z]*len(TNG300_mass_cuts[:num_cut]))
@@ -62,38 +63,39 @@ for isnap, snap in enumerate(TNG300_snaps):
     saved_y_min.append(data[:, feat_idx, 0])
     saved_y_max.append(data[:, feat_idx, 2])
 
-##############################################################################################
-### Plot MTNG-DM ### 
-##############################################################################################
+#############################################################################################
+# Plot MTNG-DM #
+#############################################################################################
 
-# MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
-# MTNG_DM_list = os.listdir(MTNG_DM_dir)
+MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
+MTNG_DM_list = os.listdir(MTNG_DM_dir)
 
-# MTNG_DM_cmap = plt.get_cmap('autumn', len(TNG300_list))
-# MTNG_DM_snaps = [264, 237, 214, 179, 151, 129]
-# MTNG_DM_mass_cuts = [10**13.5, 10**14, 10**14.5, 10**15, 10**15.5]
+MTNG_DM_cmap = plt.get_cmap('autumn', len(TNG300_list))
+MTNG_DM_snaps = [264, 237, 214, 179, 151, 129]
+MTNG_DM_mass_cuts = [10**13.5, 10**14, 10**14.5, 10**15, 10**15.5]
 
-# for isnap, snap in enumerate(MTNG_DM_snaps):
-#     # Load data
-#     data = np.load(MTNG_DM_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
-#     z = data['z']
-#     data = data['final_results']
-#     num_cut = data.shape[0]
+for isnap, snap in enumerate(MTNG_DM_snaps):
     
-#     factors = [1000, 1, 1, 1000]
-#     data[:, feat_idx, :] = data[:, feat_idx, :]*factors[feat_idx] # convert Rsp in [Mpc] to [kpc]
+    # Load data
+    data = np.load(MTNG_DM_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+    z = data['z']
+    data = data['final_results']
+    num_cut = data.shape[0]
     
-#     axs.plot(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 1], 
-#              color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
-#     axs.fill_between(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 0], data[:, feat_idx, 2], 
-#                      color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), alpha=0.2)
+    factors = [1000, 1, 1, 1000]
+    data[:, feat_idx, :] = data[:, feat_idx, :]*factors[feat_idx] # convert Rsp in [Mpc] to [kpc]
+    
+    axs.plot(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 1], 
+             color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
+    axs.fill_between(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 0], data[:, feat_idx, 2], 
+                     color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), alpha=0.2)
 
-#     # Append to saved data
-#     saved_x1.append(MTNG_DM_mass_cuts[:num_cut])
-#     saved_x2.append([z]*len(MTNG_DM_mass_cuts[:num_cut]))
-#     saved_y.append(data[:, feat_idx, 1])
-#     saved_y_min.append(data[:, feat_idx, 0])
-#     saved_y_max.append(data[:, feat_idx, 2])
+    # Append to saved data
+    saved_x1.append(MTNG_DM_mass_cuts[:num_cut])
+    saved_x2.append([z]*len(MTNG_DM_mass_cuts[:num_cut]))
+    saved_y.append(data[:, feat_idx, 1])
+    saved_y_min.append(data[:, feat_idx, 0])
+    saved_y_max.append(data[:, feat_idx, 2])
 
 # Final edit
 axs.set_xscale('log')

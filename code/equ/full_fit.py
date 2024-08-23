@@ -93,7 +93,7 @@ sel_func = func_list[args.func_idx]
 
 # Full fit
 variables = np.vstack((logM, z))
-sketchy_factor = 1.5
+sketchy_factor = 1
 mean_err = (ymax-ymin)*sketchy_factor/2
 popt, _ = curve_fit(sel_func, variables, y, sigma=mean_err, absolute_sigma=True)
 # print(f'func: log SP (logM, z) = {popt[0]:.3f} (log M)^2 + {popt[1]:.3f} (log M) z '+
