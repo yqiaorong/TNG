@@ -1,3 +1,6 @@
+"""The script uses data from both TNG300 and MTNG to plot how the splashback 
+features change with redshift. The results are saved in ./result/bootstrap_plot/full/"""
+
 import os
 import h5py
 import numpy as np

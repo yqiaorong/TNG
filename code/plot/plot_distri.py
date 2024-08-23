@@ -1,5 +1,6 @@
 """This scripts plot the distribution of bootstrapped splashback features. 
-The target is to verify if they follow normal distribution."""
+The target is to verify if they follow normal distribution. The plots are
+saved in ./result/hist/"""
 
 import os
 import numpy as np

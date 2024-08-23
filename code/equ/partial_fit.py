@@ -26,7 +26,7 @@ for key, val in vars(args).items():
 print('')
 
 # Save dir
-save_dir = f'result/fitting_plot/'
+save_dir = f'result/fitting_partial/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -97,7 +97,7 @@ for icons, cons in enumerate(uniq_constraints):
         x_theory = np.linspace(min(x[mask]), max(x[mask]), num=100, endpoint=True)
         y_theory = partial_func(x_theory, *params)
         
-        # plot
+        # plot every constraint one by one on one plot
         axs[icons].errorbar(x[mask], y[mask], yerr=[np.abs(ymin[mask]-y[mask]), 
                                                     np.abs(ymax[mask]-y[mask])],
                             fmt='.', c=cmap(icons/len(uniq_constraints)))
@@ -129,7 +129,7 @@ print('')
 x_theory = np.linspace(min(x), max(x), num=100, endpoint=True)
 y_theory = partial_func(x_theory, *params)
 
-# plot
+# plot every constraint together on one plot
 fig, ax = plt.subplots(1, 1, dpi=500)
 for icons, cons in enumerate(uniq_constraints):
     mask = (constraints == cons)

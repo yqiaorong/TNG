@@ -1,3 +1,5 @@
+"""The plots are saved in ./result/fitting_full/"""
+
 import os
 import numpy as np
 from scipy.optimize import curve_fit
@@ -26,7 +28,7 @@ feat_idx = args.feat_idx
 os.system(f'python3 code/plot/plot_tgt_mass.py --feat_idx {feat_idx} --Nboots {args.Nboots}')
 
 ### Load the compiled data ###
-data = np.load(f'data/equ_data_{feats[feat_idx]}.npy', allow_pickle=True).item()
+data = np.load(f'data/equ_data_{feats[feat_idx]}_Nboots{args.Nboots}.npy', allow_pickle=True).item()
 
 logM, z = np.log10(data['mass_x1']), data['z_x2']
 uniq_logM, uniq_z = np.unique(logM), np.unique(z)

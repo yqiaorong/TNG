@@ -1,3 +1,6 @@
+"""The script uses data from both TNG300 and MTNG to plot how the splashback 
+features change with mass. The results are saved in ./result/bootstrap_plot/full/"""
+
 import os
 import numpy as np
 from matplotlib import pyplot as plt 
@@ -63,34 +66,34 @@ for isnap, snap in enumerate(TNG300_snaps):
 ### Plot MTNG-DM ### 
 ##############################################################################################
 
-MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
-MTNG_DM_list = os.listdir(MTNG_DM_dir)
+# MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
+# MTNG_DM_list = os.listdir(MTNG_DM_dir)
 
-MTNG_DM_cmap = plt.get_cmap('autumn', len(TNG300_list))
-MTNG_DM_snaps = [264, 237, 214, 179, 151, 129]
-MTNG_DM_mass_cuts = [10**13.5, 10**14, 10**14.5, 10**15, 10**15.5]
+# MTNG_DM_cmap = plt.get_cmap('autumn', len(TNG300_list))
+# MTNG_DM_snaps = [264, 237, 214, 179, 151, 129]
+# MTNG_DM_mass_cuts = [10**13.5, 10**14, 10**14.5, 10**15, 10**15.5]
 
-for isnap, snap in enumerate(MTNG_DM_snaps):
-    # Load data
-    data = np.load(MTNG_DM_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
-    z = data['z']
-    data = data['final_results']
-    num_cut = data.shape[0]
+# for isnap, snap in enumerate(MTNG_DM_snaps):
+#     # Load data
+#     data = np.load(MTNG_DM_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+#     z = data['z']
+#     data = data['final_results']
+#     num_cut = data.shape[0]
     
-    factors = [1000, 1, 1, 1000]
-    data[:, feat_idx, :] = data[:, feat_idx, :]*factors[feat_idx] # convert Rsp in [Mpc] to [kpc]
+#     factors = [1000, 1, 1, 1000]
+#     data[:, feat_idx, :] = data[:, feat_idx, :]*factors[feat_idx] # convert Rsp in [Mpc] to [kpc]
     
-    axs.plot(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 1], 
-             color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
-    axs.fill_between(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 0], data[:, feat_idx, 2], 
-                     color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), alpha=0.2)
+#     axs.plot(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 1], 
+#              color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
+#     axs.fill_between(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 0], data[:, feat_idx, 2], 
+#                      color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), alpha=0.2)
 
-    # Append to saved data
-    saved_x1.append(MTNG_DM_mass_cuts[:num_cut])
-    saved_x2.append([z]*len(MTNG_DM_mass_cuts[:num_cut]))
-    saved_y.append(data[:, feat_idx, 1])
-    saved_y_min.append(data[:, feat_idx, 0])
-    saved_y_max.append(data[:, feat_idx, 2])
+#     # Append to saved data
+#     saved_x1.append(MTNG_DM_mass_cuts[:num_cut])
+#     saved_x2.append([z]*len(MTNG_DM_mass_cuts[:num_cut]))
+#     saved_y.append(data[:, feat_idx, 1])
+#     saved_y_min.append(data[:, feat_idx, 0])
+#     saved_y_max.append(data[:, feat_idx, 2])
 
 # Final edit
 axs.set_xscale('log')
@@ -124,8 +127,9 @@ saved_y_min = np.array(np.concatenate(saved_y_min).tolist())
 saved_y_max = np.array(np.concatenate(saved_y_max).tolist())
 
 # Save the data
-np.save(f'data/equ_data_{feats[feat_idx]}', {'mass_x1': saved_x1, 'z_x2': saved_x2,
-                                             'y': saved_y, 'y_min': saved_y_min, 'y_max': saved_y_max})
+np.save(f'data/equ_data_{feats[feat_idx]}_Nboots{args.Nboots}', 
+        {'mass_x1': saved_x1, 'z_x2': saved_x2,
+         'y': saved_y, 'y_min': saved_y_min, 'y_max': saved_y_max})
 print('data saved.')
 
 
