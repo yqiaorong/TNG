@@ -8,8 +8,8 @@ from mpi4py import MPI
 parser = argparse.ArgumentParser()
 parser.add_argument('--sim',          default=None,                     type=str)
 parser.add_argument('--snapnum',      default=264,                      type=int)
-parser.add_argument('--bin_start',    default=1,                        type=float) # [10^{10+x} Msun/h]
-parser.add_argument('--bin_end',      default=5.5,                      type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--bin_start',    default=None,                     type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--bin_end',      default=None,                     type=float) # [10^{10+x} Msun/h]
 parser.add_argument('--save_root_dir',default='DMhalo_density_profiles',type=str)
 args = parser.parse_args()
 

@@ -1,4 +1,7 @@
-result
+result/DMhalo_density_profiles/
+result/bootstrap/
+result/bootstrap_stats/
+Stacked_DMhalo_density_profiles/
 
 output_buffer/
 code/illustris_python
