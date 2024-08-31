@@ -87,7 +87,7 @@ else:
                 'radial_bins': total_r, # [ckpc/h]
                 'h': h, 'scale_factor': scale_factor, 'z': z}  
 
-    save_dir = f'result/DMhalo_density_profiles/TNG300/sim_{boxsize}_{res}/snap_{snap}/'
+    save_dir = f'result/DMhalo_density_profiles/TNG300/sim_{boxsize}_{res}/snap_{snap}/final_densities/'
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     np.save(f'{save_dir}/bin-{int(bin_start*10)}-{int(bin_end*10)}', save_dict) 
