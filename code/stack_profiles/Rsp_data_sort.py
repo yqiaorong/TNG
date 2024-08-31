@@ -1,3 +1,14 @@
+"""This script save the median fitted density profiles and gradient profiles 
+   (from result/Stacked_DMhalo_density_profiles_old/sim_205_1250) of DM halos
+   into one hdf5 file. The dataset hieracy:
+    --> snapX --> z
+              --> R00
+              --> radius_fit
+              --> densities_fit
+              --> slopes_fit
+    THis script is useless now!!!
+"""
+
 import argparse
 import numpy as np
 import os

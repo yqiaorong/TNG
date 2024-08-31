@@ -24,4 +24,4 @@ for i in range(len(bins)):
             f' --root_dir DMhalo_density_profiles_old')
    
 # Sort data
-os.system(f'python3 code/DMhalo/3_Rsp_data_sort.py --root_dir DMhalo_density_profiles_old')
+os.system(f'python3 code/DMhalo/Rsp_data_sort.py --root_dir DMhalo_density_profiles_old')
