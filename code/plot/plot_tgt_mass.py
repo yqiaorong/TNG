@@ -50,7 +50,7 @@ for isnap, snap in enumerate(TNG300_snaps):
     z = data['z']
     data = data['final_results']
     num_cut = data.shape[0]
-    
+
     axs.plot(TNG300_mass_cuts[:num_cut], data[:, feat_idx, 1], 
             color=TNG300_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
     axs.fill_between(TNG300_mass_cuts[:num_cut], data[:, feat_idx, 0], data[:, feat_idx, 2], 
