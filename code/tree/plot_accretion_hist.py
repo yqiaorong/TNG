@@ -29,17 +29,47 @@ for snap in snap_list:
         z = 1 / scale_factor - 1
         redshifts.append(z)
 
-for idx in range(len(snap_list)):
-    if idx != 0:
-        rate = accretion_df.iloc[idx, :]
+for isnap in range(len(snap_list)):
+    if isnap != 0:
+        rate = accretion_df.iloc[isnap, :]
         rate = rate.replace([np.inf, -np.inf], np.nan)
         rate = rate.dropna().to_numpy()
         median = np.median(rate)
 
         plt.figure()
-        hist = plt.hist(rate, label=f'z = {np.round(redshifts[idx], 2)}')[0]
+        hist = plt.hist(rate, label=f'z = {np.round(redshifts[isnap], 2)}')[0]
         plt.plot([median, median], [0, max(hist)], linestyle='dashed', color='red', 
                   label=f'median = {np.round(median, 3)}')
         plt.legend(loc='best')
-        plt.savefig(load_dir+f'snap_{snap_list[idx][5:]}')
+        plt.savefig(load_dir+f'snap_{snap_list[isnap][5:]}')
+
+# Plot per mass stacks
+mass_cuts = np.arange(1, 4.5, 0.5)
+num_cuts = int((4.5-1)/0.5)
+
+for isnap in range(len(snap_list)):
     
+    if isnap != 0:
+        fig, axes = plt.subplots(1, num_cuts, figsize=(15, 5))
+        
+        mass = mass_df.iloc[isnap, :]
+        rate = accretion_df.iloc[isnap, :]
+        
+        # Drop inf and nan
+        rate = rate.replace([np.inf, -np.inf], np.nan)
+        valid_mask = ~np.isnan(rate)
+        rate, mass = rate[valid_mask], mass[valid_mask]
+
+        for icut, cut in enumerate(mass_cuts[:-1]):
+            # Get the mass bin
+            mass_mask = (mass >= 10**mass_cuts[icut]) & (mass < 10**mass_cuts[icut+1])
+            rate_cut = rate[mass_mask]
+            median = np.median(rate_cut)
+            # Plot the histogram
+            hist = axes[icut].hist(rate_cut, label=f'mass cut {mass_cuts[icut]}')[0]
+            axes[icut].plot([median, median], [0, max(hist)], linestyle='dashed', color='red', 
+                            label=f'median = {np.round(median, 3)}')
+            axes[icut].legend(loc='best')
+            
+        plt.savefig(load_dir+f'snap_{snap_list[isnap][5:]}_cuts')
+        plt.close()
