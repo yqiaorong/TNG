@@ -51,4 +51,4 @@ for isnap in range(len(snap_list)-1):
 save_mass_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}{DM}'
 if not os.path.exists(save_mass_dir):
     os.makedirs(save_mass_dir)
-rate_df.to_csv(f'{save_mass_dir}/accretion_table.csv', index=True)
+rate_df.to_csv(f'{save_mass_dir}/accretion_table.csv', index=snap_list)

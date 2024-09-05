@@ -114,48 +114,52 @@ def lifeline(parent_dir, subhalo_global_idx, df, last_snap_idx=99):
         # print(f'Subhalo gobal index {subhalo_global_idx} is stored in tree chunk file index: {tree_chunk_idx}.')
         # print(f'In tree chunk file index {tree_chunk_idx}, the subhalo is stored in Tree{treeX}.')
         # print(f'In Tree{treeX}, the subhalo has index: {subhalo_intreeX_idx}.')
-    
-    # enter the global index of current subhalo into the dataframe
-    df.loc[f'snap_{last_snap_idx}', f'global_idx_{subhalo_global_idx}'] = subhalo_global_idx
-    
-    ### Finding the lifeline of global index ###
-    # Tree 
-    tree_path = os.path.join(parent_dir,f'postprocessing/trees/LHaloTree/trees_sf1_{last_snap_idx:03d}.{tree_chunk_idx}.hdf5')
-    with h5py.File(tree_path, 'r') as f:
-    
-        # In treeX
-        SubhaloNumber = f[f'Tree{treeX}/SubhaloNumber'] # This is the global index of the subhalo at corresponding snapshot
-        SnapNum = f[f'Tree{treeX}/SnapNum']
-        Descendant = f[f'Tree{treeX}/Descendant']
-        FirstProgenitor = f[f'Tree{treeX}/FirstProgenitor']
         
-        # Initials: these are the index of first progenitor and descendant within TreeX
-        FP_idx = FirstProgenitor[subhalo_intreeX_idx]
-        D_idx = Descendant[subhalo_intreeX_idx]
+    if tree_chunk_idx == -1:
+        pass
+    else: 
+        # enter the global index of current subhalo into the dataframe
+        df.loc[f'snap_{last_snap_idx}', f'global_idx_{subhalo_global_idx}'] = subhalo_global_idx
         
-        # Set up the iterator 
-        iterator = count(0, 1)
+        ### Finding the lifeline of global index ###
+        # Tree 
+        tree_path = os.path.join(parent_dir,f'postprocessing/trees/LHaloTree/trees_sf1_{last_snap_idx:03d}.{tree_chunk_idx}.hdf5')
+        with h5py.File(tree_path, 'r') as f:
         
-        # First progenitor
-        for item in iterator:
-            if FP_idx == -1:
-                break
-            df.loc[f'snap_{SnapNum[FP_idx]}', f'global_idx_{subhalo_global_idx}'] = SubhaloNumber[FP_idx]
-            # Update FP_idx
-            FP_idx = FirstProgenitor[FP_idx]
+            # In treeX
+            SubhaloNumber = f[f'Tree{treeX}/SubhaloNumber'] # This is the global index of the subhalo at corresponding snapshot
+            SnapNum = f[f'Tree{treeX}/SnapNum']
+            Descendant = f[f'Tree{treeX}/Descendant']
+            FirstProgenitor = f[f'Tree{treeX}/FirstProgenitor']
             
-        # Descendant
-        for item in iterator:
-            if D_idx == -1:
-                break
-            df.loc[f'snap_{SnapNum[D_idx]}', f'global_idx_{subhalo_global_idx}'] = SubhaloNumber[D_idx]
-            # Update D_idx
-            D_idx = Descendant[D_idx]
+            # Initials: these are the index of first progenitor and descendant within TreeX
+            FP_idx = FirstProgenitor[subhalo_intreeX_idx]
+            D_idx = Descendant[subhalo_intreeX_idx]
+            
+            # Set up the iterator 
+            iterator = count(0, 1)
+            
+            # First progenitor
+            for item in iterator:
+                if FP_idx == -1:
+                    break
+                df.loc[f'snap_{SnapNum[FP_idx]}', f'global_idx_{subhalo_global_idx}'] = SubhaloNumber[FP_idx]
+                # Update FP_idx
+                FP_idx = FirstProgenitor[FP_idx]
+                
+            # Descendant
+            for item in iterator:
+                if D_idx == -1:
+                    break
+                df.loc[f'snap_{SnapNum[D_idx]}', f'global_idx_{subhalo_global_idx}'] = SubhaloNumber[D_idx]
+                # Update D_idx
+                D_idx = Descendant[D_idx]
     pass
     # return df
 
 
-def get_field_values_of_lifeline(simpath, df):
+def get_field_values_of_lifeline(simpath, df, group_field=None, coords_idx=None):
+    """Only specify the coordinates idx of group_fields includes GroupPos"""
     from tqdm import tqdm
     import numpy as np
     import pandas as pd
@@ -165,16 +169,18 @@ def get_field_values_of_lifeline(simpath, df):
 
         snapnum = int(irow[5:])
         print(irow)
-        
-        # Load halo masses
-        group_fields = ['Group_M_Mean200', 'GroupFirstSub']
-        Halos = il.groupcat.loadHalos(simpath+'output', snapnum, fields=group_fields)
-        Group_M_Mean200 = Halos['Group_M_Mean200'] # [10^10 MSun/h]
+    
+        # Load halo field
+        Halos = il.groupcat.loadHalos(simpath+'output', snapnum, fields=group_field)
+        if group_field == 'GroupPos':
+            Halos = Halos[:, coords_idx]
+        else:
+            pass
         
         # Load subhalo global index 
         SubhaloGrNr = il.groupcat.loadSubhalos(simpath+'output', snapnum, fields='SubhaloGrNr')
         
         # Substitute the subhalo global index with the parent halo mass
-        df.loc[irow] = [Group_M_Mean200[SubhaloGrNr[int(idx)]] if pd.notna(idx) else np.nan for idx in row]
+        df.loc[irow] = [Halos[SubhaloGrNr[int(idx)]] if pd.notna(idx) else np.nan for idx in row]
     
     return df

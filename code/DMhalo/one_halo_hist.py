@@ -127,7 +127,6 @@ del densities_bins
 
 # Save directory
 save_dir = 'result/'+args.save_root_dir+f'/sim_{boxsize}_{res}{args.DM}/snap_{snapnum}'
-
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
     

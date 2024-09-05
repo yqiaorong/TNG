@@ -17,7 +17,7 @@ parser.add_argument('--bin_end',default=4.5,type=float) # [10^{10+x} Msun/h]
 args = parser.parse_args()
 
 print('')
-print(f'>>> Accretion rate <<<')
+print(f'>>> Mass table <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -84,7 +84,7 @@ for file in tqdm(df_list, desc='concatenate chunk df'):
 tot_df = pd.concat(tot_df_list, axis=1)
 
 # Now change the entries of these global index to their masses
-tot_df = get_field_values_of_lifeline(basePath, tot_df)
+tot_df = get_field_values_of_lifeline(basePath, tot_df, group_field='Group_M_Mean200')
 
 # Save the dataframe
 save_mass_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}{args.DM}'
