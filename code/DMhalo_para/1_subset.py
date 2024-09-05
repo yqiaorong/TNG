@@ -8,10 +8,13 @@ from mpi4py import MPI
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',  default=205,  type=int)
 parser.add_argument('--res',      default=1250, type=int)
+parser.add_argument('--DM',       default='',   type=str)
+
 parser.add_argument('--snapnum',  default=None, type=int)
-parser.add_argument('--bin_start',default=4,    type=float) # [10^{10+x} Msun/h]
-parser.add_argument('--bin_end',  default=4.5,  type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--bin_start',default=None, type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--bin_end',  default=None, type=float) # [10^{10+x} Msun/h]
 parser.add_argument('--method', default='old',  type=str)
+
 parser.add_argument('--save_root_dir',default='DMhalo_density_profiles',type=str)
 args = parser.parse_args()
 
@@ -26,7 +29,7 @@ print('')
 
 # Specify the snapshot
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG/output'%(args.boxsize,args.res)
+basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+f'{args.DM}/output'
 snapnum = args.snapnum
 boxsize = args.boxsize
 res     = args.res
@@ -79,13 +82,13 @@ comm.Barrier()
 
 # Iterate over DM halos
 for idx in subset_idx[start_idx_per_core:]:
-    if not os.path.exists(f'result/{save_root_dir}/sim_{boxsize}_{res}/snap_{snapnum}/densities/halo_{idx}.npy'):
+    if not os.path.exists(f'result/{save_root_dir}/sim_{boxsize}_{res}{args.DM}/snap_{snapnum}/densities/halo_{idx}.npy'):
         # Round values 
         x, y, z = np.round(GroupPos[idx, 0].item(), 0), np.round(GroupPos[idx, 1].item(), 0), np.round(GroupPos[idx, 2].item(), 0)
         R = np.round(Group_R_Mean200[idx].item(), 0)
         # Run the script
         os.system(f'python3 code/DMhalo/one_halo_hist.py'+
-            f' --boxsize {boxsize} --res {res} --snapnum {snapnum} --groupnum {idx}'+
+            f' --boxsize {boxsize} --res {res} --snapnum {snapnum} --groupnum {idx} --DM {args.DM}'+
             f' --x {x} --y {y} --z {z}'+
             f' --M {Group_M_Mean200[idx]} --R {R}'+
             f' --save_root_dir {save_root_dir} --method {args.method}')
