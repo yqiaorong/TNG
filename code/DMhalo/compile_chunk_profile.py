@@ -15,7 +15,7 @@ parser.add_argument('--bin_end',default=None,type=float)
 args = parser.parse_args()
 
 print('')
-print(f'>>> Bootstrap Rsp <<<')
+print(f'>>> BCompile chunk files of DM density profiles <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -27,7 +27,7 @@ root_dir = 'DMhalo_density_profiles_old'
 boxsize = 205
 res = 1250
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+f'{args.DM}/output'
+basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+f'{args.DM}/output'
 
 
 

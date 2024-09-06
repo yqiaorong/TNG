@@ -3,9 +3,15 @@ import h5py
 import pandas as pd
 import numpy as np
 import os
+import argparse
+
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--DM', default='', type=str)
+args = parser.parse_args()
 
 # input
-DM = ''
+DM = args.DM
 boxsize = 205
 res = 1250
 
@@ -47,8 +53,10 @@ for isnap in range(len(snap_list)-1):
     
     rate_df.loc[snap_list[isnap+1], mask.index[mask]] = rate
 
+rate_df.index = snap_list
+
 # Save the accretion rate df
 save_mass_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}{DM}'
 if not os.path.exists(save_mass_dir):
     os.makedirs(save_mass_dir)
-rate_df.to_csv(f'{save_mass_dir}/accretion_table.csv', index=snap_list)
+rate_df.to_csv(f'{save_mass_dir}/accretion_table.csv', index=True)

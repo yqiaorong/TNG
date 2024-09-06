@@ -4,10 +4,16 @@ plt.style.use('code/style.mplstyle')
 import h5py
 import illustris_python as il
 import numpy as np
+import argparse
+
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--DM', default='', type=str)
+args = parser.parse_args()
 
 
 
-DM = ''
+DM = args.DM
 boxsize, res = 205, 1250
 
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
