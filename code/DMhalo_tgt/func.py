@@ -572,8 +572,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                     print('Successfully found optimal params! ')
                     return (
                         evaluate_profile_at,
-                        10 ** wrapped_profile(evaluate_profile_at * R_200_mean, *popt)
-                        * R_200_mean ** 3,
+                        10 ** wrapped_profile(evaluate_profile_at * R_200_mean, *popt) * R_200_mean ** 3,
                     )
                 
                 # Entire curve fit error
@@ -581,8 +580,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                     print(f"Warning: Optimal parameters not found for entire profile. Error: {e}")
                     return (
                         evaluate_profile_at,
-                        np.array([0]), 
-                        * R_200_mean ** 3,
+                        np.array([0]),
                     )   
             
             # Ftrans curve fit error
@@ -590,8 +588,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                 print(f"Warning: Optimal parameters not found for ftrans profile. Error: {e}")
                 return (
                     evaluate_profile_at,
-                    np.array([0]), 
-                    * R_200_mean ** 3,
+                    np.array([0]),
                 )           
             
         # Outer curve fit error
@@ -599,8 +596,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
             print(f"Warning: Optimal parameters not found for outer profile. Error: {e}")
             return (
                 evaluate_profile_at,
-                np.array([0]), 
-                * R_200_mean ** 3,
+                np.array([0]),
             )
         
     # Inner curve fit error
@@ -608,6 +604,5 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
         print(f"Warning: Optimal parameters not found for inner profile. Error: {e}")
         return (
             evaluate_profile_at,
-            np.array([0]), 
-            * R_200_mean ** 3,
+            np.array([0]),
         )

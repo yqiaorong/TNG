@@ -118,6 +118,7 @@ while valid_boots < Nboots:
             
             ### If the optimal params are not found! ###
             if np.all(fitted_rho) == 0:
+                print('This bootstrap is abandoned! ')
                 break
             else:
                 # Fit the slope
