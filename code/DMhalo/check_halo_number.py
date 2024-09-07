@@ -26,8 +26,8 @@ data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
 basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+f'{args.DM}/output/'
 
 # Select a subset of DM halos
-snaps = [# 8, 13, 17, 
-         21, 25, 33, 40, 50, 67, 78, 99]
+snaps = [# 8, 13, 17, 21, 
+         25, 33, 40, 50, 67, 78, 99]
 for s in snaps:
     Halos = il.groupcat.loadHalos(basePath, s, fields='Group_M_Mean200')
     subset_idx = np.where((Halos >= 10**args.bin_start) & 

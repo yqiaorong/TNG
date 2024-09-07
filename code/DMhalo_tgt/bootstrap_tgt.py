@@ -116,46 +116,52 @@ while valid_boots < Nboots:
             fitted_radius, fitted_rho = fit_profiles[0], fit_profiles[1]
             del fit_profiles
             
-            # Fit the slope
-            fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho))      # [dimensionless]
+            ### If the optimal params are not found! ###
+            if np.all(fitted_rho) == 0:
+                break
+            else:
+                # Fit the slope
+                fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho))      # [dimensionless]
 
-            # Plot the profile
-            plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
-                        fitted_radius, fitted_rho, fitted_slope, 
-                        [mass_bins[i], mass_bins[i+1]], num_halo, args.snapnum, 
-                        save_data_dir, f'boots_{valid_boots}',
-                        save_data=True)
-            
-            # Compute Rsp
-            physical_fitted_radius = fitted_radius * R200_median * scale_factor / h
-            Rsp = physical_fitted_radius[np.argmin(fitted_slope)] # [kpc]
-            
-            # Rsp depth
-            min_grad = np.min(fitted_slope)
-            min_grad_idx = np.argmin(fitted_slope)
-            print(f'min grad index: {min_grad_idx}')
-            left_data = fitted_slope[:min_grad_idx]
-            right_data = fitted_slope[min_grad_idx:]
-            
-            max_grad = np.max(right_data)
-            depth = max_grad - min_grad
-            
-            # Width
-            half_grad = min_grad + depth/2
-            
-            left_idx = np.argmin(np.abs(left_data - half_grad))
-            right_idx = min_grad_idx + np.argmin(np.abs(right_data - half_grad))
-            
-            width = physical_fitted_radius[right_idx] - physical_fitted_radius[left_idx]
-            width_dimless = fitted_radius[right_idx] - fitted_radius[left_idx]
-            
-            # Append results
-            results[i, :, valid_boots] = Rsp, depth, width_dimless, width
-         
-        # Updata counts
-        valid_boots += 1
-        print(f'Nboots: {valid_boots}')
-        print('')
+                # Plot the profile
+                plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
+                            fitted_radius, fitted_rho, fitted_slope, 
+                            [mass_bins[i], mass_bins[i+1]], num_halo, args.snapnum, 
+                            save_data_dir, f'boots_{valid_boots}',
+                            save_data=True)
+                
+                # Compute Rsp
+                physical_fitted_radius = fitted_radius * R200_median * scale_factor / h
+                Rsp = physical_fitted_radius[np.argmin(fitted_slope)] # [kpc]
+                
+                # Rsp depth
+                min_grad = np.min(fitted_slope)
+                min_grad_idx = np.argmin(fitted_slope)
+                print(f'min grad index: {min_grad_idx}')
+                left_data = fitted_slope[:min_grad_idx]
+                right_data = fitted_slope[min_grad_idx:]
+                
+                max_grad = np.max(right_data)
+                depth = max_grad - min_grad
+                
+                # Width
+                half_grad = min_grad + depth/2
+                
+                left_idx = np.argmin(np.abs(left_data - half_grad))
+                right_idx = min_grad_idx + np.argmin(np.abs(right_data - half_grad))
+                
+                width = physical_fitted_radius[right_idx] - physical_fitted_radius[left_idx]
+                width_dimless = fitted_radius[right_idx] - fitted_radius[left_idx]
+                
+                # Append results
+                results[i, :, valid_boots] = Rsp, depth, width_dimless, width
+       
+        ### Only the for loop is complete, update valid_boots
+        else:
+            # Updata counts
+            valid_boots += 1
+            print(f'Nboots: {valid_boots}')
+            print('')
             
 final_results = np.percentile(results, [16, 50, 84], axis=2).transpose(1,2,0)
 print(f'final_results shape (bin, type, percentile): {final_results.shape}')
