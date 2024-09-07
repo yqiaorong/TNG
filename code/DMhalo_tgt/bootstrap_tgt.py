@@ -11,7 +11,7 @@ parser.add_argument('--sim',      default=None,type=str)
 parser.add_argument('--snapnum',  default=None,type=int)
 parser.add_argument('--Nsample',  default=None,type=int)
 parser.add_argument('--Nboots',   default=None,type=int)
-parser.add_argument('--bin_start',default=None,type=float)
+parser.add_argument('--bin_start',default=1,type=float)
 parser.add_argument('--bin_end',  default=None,type=float)
 args = parser.parse_args()
 
