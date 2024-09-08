@@ -66,12 +66,12 @@ with h5py.File(il.snapshot.snapPath(basePath, snapnum), 'r') as f:
 
 
 # Load coordinates ONLY AT ONCE
-load_dir = f'{basePath}/snapdir_{snapnum:03d}'
-load_list = os.listdir(load_dir)
-load_list = [fname for fname in load_list if fname.startswith(f'snapshot_{snapnum:03d}') and fname.endswith('hdf5')]
+load_dir = f'{basePath}/snapdir_{snapnum:03d}/'
+# load_list = os.listdir(load_dir)
+# load_list = [fname for fname in load_list if fname.startswith(f'snapshot_{snapnum:03d}') and fname.endswith('hdf5')]
 
-# Load coordinates
-snap_path = os.path.join(load_dir, load_list[args.chunk_idx])
+# snap_path = os.path.join(load_dir, load_list[args.chunk_idx])
+snap_path = os.path.join(load_dir, f'snapshot_{snapnum:03d}.{args.chunk_idx}.hdf5')
 with h5py.File(snap_path, 'r') as f:
     Coordinates = np.array(f['PartType1/Coordinates'], dtype='float32') # [ckpc/h]
     print(Coordinates.shape)
@@ -158,12 +158,9 @@ save_dict = {'halo_R_Mean200': halo_R_Mean200, # [ckpc / h]
 
 
 
-# Save directory
-save_dir = 'result/'+args.save_root_dir+f'/{args.sim}/snap_{snapnum}'
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-    
-save_data_dir = f'{save_dir}/intermediate_densities/bin-{int(args.bin_start*10)}-{int(args.bin_end*10)}'
+# Save directory    
+save_dir = f'/nfs/mvogelsblab001/Users/s_qyu/{args.save_root_dir}/{args.sim}/'
+save_data_dir = f'{save_dir}/snap_{snapnum}/intermediate_densities/bin-{int(args.bin_start*10)}-{int(args.bin_end*10)}'
 if not os.path.exists(save_data_dir):
     os.makedirs(save_data_dir)
     

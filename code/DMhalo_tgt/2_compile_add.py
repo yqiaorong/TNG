@@ -24,7 +24,7 @@ print('')
 
 
 ### Load h, scale_factor and z ###
-load_dir = f'result/{args.save_root_dir}/{args.sim}/snap_{args.snapnum}/final_densities/'
+load_dir = f'/nfs/mvogelsblab001/Users/s_qyu/{args.save_root_dir}/{args.sim}/snap_{args.snapnum}/final_densities/'
 data = np.load(f'{load_dir}/bin-30-35.npy', allow_pickle=True).item()
 
 

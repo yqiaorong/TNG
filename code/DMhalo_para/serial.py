@@ -10,9 +10,9 @@ args = parser.parse_args()
 
 chunk_size = 4
 start = args.start_chunk_idx
+parent_dir = f'/nfs/mvogelsblab001/Users/s_qyu/DMhalo_density_profiles/{args.sim}/snap_{args.snapnum}/'
 
 for i in range(start, int(start+chunk_size)):
-    if not os.path.exists(f'result/DMhalo_density_profiles/{args.sim}/snap_{args.snapnum}/intermediate_densities/'+
-                          f'bin-{int(args.bin_start*10)}-{int(args.bin_start*10+5)}/chunk-{i}.npy'):
+    if not os.path.exists(f'{parent_dir}/intermediate_densities/bin-{int(args.bin_start*10)}-{int(args.bin_start*10+5)}/chunk-{i}.npy'):
         os.system(f'python3.11 code/DMhalo_tgt/subset_tgt_chunk-gpu.py --sim {args.sim} --snapnum {args.snapnum} '+
                   f'--bin_start {args.bin_start} --bin_end 3.5 --chunk_idx {i}')
