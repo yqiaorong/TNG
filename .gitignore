@@ -14,6 +14,7 @@ result/hist
 result/DMhalo_idx_table
 result/DMhalo_mass_table
 result/DMhalo_coords_table
+result/accretion_rate_plot
 
 job/
 data/
