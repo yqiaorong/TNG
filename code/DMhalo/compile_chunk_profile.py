@@ -8,10 +8,10 @@ import h5py
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM',default='',  type=str)
-parser.add_argument('--snapnum',default=None,  type=int)
-parser.add_argument('--bin_start',default=None,type=float)
-parser.add_argument('--bin_end',default=None,type=float)
+parser.add_argument('--DM',       default='_DM',type=str)
+parser.add_argument('--snapnum',  default=None, type=int)
+parser.add_argument('--bin_start',default=1,    type=float)
+parser.add_argument('--bin_end',  default=None, type=float)
 args = parser.parse_args()
 
 print('')
@@ -36,7 +36,7 @@ bin_start = args.bin_start
 bin_end = args.bin_end
 print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun/h')
 
-    
+
     
 snap = args.snapnum
 # Load redshift values

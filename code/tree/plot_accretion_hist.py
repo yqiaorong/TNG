@@ -93,12 +93,12 @@ plt.close()
 
 # Plot accretion rate per mass cut per snapshots
 mass_cuts = np.arange(1, 4.5, 0.5)
-num_cuts = int((4.5-1)/0.5)
+num_cuts  = int((4.5-1)/0.5)
 
 median_array = np.empty((len(snap_list), len(mass_cuts)-1))
-std_array = np.empty((len(snap_list), len(mass_cuts)-1))
-lowp_array = np.empty((len(snap_list), len(mass_cuts)-1))
-highp_array = np.empty((len(snap_list), len(mass_cuts)-1))
+std_array    = np.empty((len(snap_list), len(mass_cuts)-1))
+lowp_array   = np.empty((len(snap_list), len(mass_cuts)-1))
+highp_array  = np.empty((len(snap_list), len(mass_cuts)-1))
 
 for isnap in range(len(snap_list)):
     
@@ -170,8 +170,9 @@ plt.close()
 
 # Save accret per mass cut per snap
 save_dict = {'redshifts': redshifts,
-            'mass_cuts': mass_cuts, 
-            'accret_med': median_array,
-            'accret_low': lowp_array, 
-            'accret_high': highp_array}
+             'mass_cuts': mass_cuts,
+             'accret_std': std_array,  
+             'accret_med': median_array,
+             'accret_low': lowp_array, 
+             'accret_high': highp_array}
 np.save(f'{save_dir}/TNG300{DM}_accret_stats', save_dict)
