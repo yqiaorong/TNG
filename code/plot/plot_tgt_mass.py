@@ -9,6 +9,7 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
+parser.add_argument('--DM',default='',   type=str)
 parser.add_argument('--Nboots',  default=None,type=int)
 parser.add_argument('--feat_idx',default=0,   type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
 args = parser.parse_args()
@@ -36,17 +37,18 @@ saved_x1, saved_x2, saved_y, saved_y_max, saved_y_min = [], [], [], [], []
 ### Plot TNG300 ### 
 ##############################################################################################
 
-TNG300_dir = f'{root_dir}/sim_205_1250/Nboots_{args.Nboots}/'
+TNG300_dir = f'{root_dir}/sim_205_1250{args.DM}/Nboots_{args.Nboots}/'
 TNG300_list = os.listdir(TNG300_dir)
 
 TNG300_cmap = plt.get_cmap('winter', len(TNG300_list))
 TNG300_snaps = [99, 78, 67, 50, 40, 33, 21, 17, 13, 8]
-TNG300_mass_cuts = [10**11, 10**11.5, 10**12, 10**12.5, 10**13, 10**13.5]
+TNG300_mass_cuts = [10**11, 10**11.5, 10**12, 10**12.5, 10**13, 10**13.5, 10**14, 10**14.5]
 
 for isnap, snap in enumerate(TNG300_snaps):
     
     # Load data
     data = np.load(TNG300_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+    print(data.keys())
     z = data['z']
     data = data['final_results']
     num_cut = data.shape[0]
@@ -64,20 +66,24 @@ for isnap, snap in enumerate(TNG300_snaps):
     saved_y_max.append(data[:, feat_idx, 2])
 
 #############################################################################################
-# Plot MTNG-DM #
+# Plot MTNG #
 #############################################################################################
 
-MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
+if args.DM == '':
+    MTNG_DM_dir = f'{root_dir}/Hydro-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
+elif args.DM == '_DM':
+    MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
 MTNG_DM_list = os.listdir(MTNG_DM_dir)
 
 MTNG_DM_cmap = plt.get_cmap('autumn', len(TNG300_list))
 MTNG_DM_snaps = [264, 237, 214, 179, 151, 129]
-MTNG_DM_mass_cuts = [10**13.5, 10**14, 10**14.5, 10**15, 10**15.5]
+MTNG_DM_mass_cuts = [10**13, 10**13.5, 10**14, 10**14.5, 10**15, 10**15.5]
 
 for isnap, snap in enumerate(MTNG_DM_snaps):
     
     # Load data
     data = np.load(MTNG_DM_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+    print(data.keys())
     z = data['z']
     data = data['final_results']
     num_cut = data.shape[0]
@@ -113,7 +119,7 @@ elif feat_idx == 3:
 axs.legend()
 
 # Save the plot
-save_dir = f'result/bootstrap_plot/full/Nboots_{args.Nboots}/'
+save_dir = f'result/bootstrap_plot/full{args.DM}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 plt.savefig(f'{save_dir}/dm_{feats[feat_idx]}_vs_mass')
@@ -129,7 +135,7 @@ saved_y_min = np.array(np.concatenate(saved_y_min).tolist())
 saved_y_max = np.array(np.concatenate(saved_y_max).tolist())
 
 # Save the data
-np.save(f'data/equ_data_{feats[feat_idx]}_Nboots{args.Nboots}', 
+np.save(f'data/equ_data_{feats[feat_idx]}_Nboots{args.Nboots}{args.DM}', 
         {'mass_x1': saved_x1, 'z_x2': saved_x2,
          'y': saved_y, 'y_min': saved_y_min, 'y_max': saved_y_max})
 print('data saved.')
