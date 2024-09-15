@@ -1,186 +1,185 @@
-# This function is quoted from Thesan offsets documentation so never change any of it.
-
-def get_global_index(simpath, snap, offset_type, local_index, chunk):
-
-    """
-    Returns the global index (i.e. across all chunks, considered sequentially) of a particle/group/subgroup.
-
-    Parameters
-    ----------
-    simpath      : string
-                   path to the base simulation directory
-    snap         : int
-                   number of the snapshot to consider
-    offset_type  : string
-                   string identifying the type of object considered. Accepted values: 'particle', 'group', 'subhalo'
-    local_index  : int
-                   index of the object in the chunk file
-    chunk        : int
-                   number of the chunk file the object resides in
-
-    Returns
-    -------
-    global_index  : int
-                    index of the object across all chunk files
-    """
-    
+def Lifeline(treedir, chunk_idx):
     import h5py
-
-    assert(offset_type in ['particle', 'group', 'subhalo'])
-    if offset_type == 'particle':
-        offset_file_key = 'FileOffsets/SnapByType'
-    elif offset_type == 'group':
-        offset_file_key = 'FileOffsets/Group'
-    elif offset_type == 'subhalo':
-        offset_file_key = 'FileOffsets/Subhalo'
-
-    with h5py.File(f'{simpath}/postprocessing/offsets/offsets_{snap:03d}.hdf5', 'r') as offset_file:
-        global_index = offset_file[offset_file_key][chunk] + local_index
-
-    return global_index
-
-
-def get_chunk_and_local_index(simpath, snap, offset_type, global_index, ptype=-1):
-
-    """
-    Returns the chunk file number and local index (i.e. within the chunk file) of a particle/group/subgroup.
-
-    Parameters
-    ----------
-    simpath       : string
-                    path to the base simulation directory
-    snap          : int
-                    number of the snapshot to consider
-    offset_type   : string
-                    string identifying the type of object considered. Accepted values: 'particle', 'group', 'subhalo'
-    global_index  : int
-                    index of the object across all chunk files
-    ptype         : int, required for offset_type == 'particle', ignored otherwise
-                  : particle type
-
-    Returns
-    -------
-    chunk        : int
-                   number of the first chunk file the object resides in
-    local_index  : int
-                   index of the object in the chunk file
-    """
-    
-    import h5py
-    import numpy as np
-    
-    assert(offset_type in ['particle', 'group', 'subhalo'])
-    if offset_type == 'particle':
-        assert(ptype>=0 and ptype<6)
-    
-    
-    if offset_type == 'particle':
-        offset_file_key = 'FileOffsets/SnapByType'
-    elif offset_type == 'group':
-        offset_file_key = 'FileOffsets/Group'
-    elif offset_type == 'subhalo':
-        offset_file_key = 'FileOffsets/Subhalo'
-
-    with h5py.File(f'{simpath}/postprocessing/offsets/offsets_{snap:03d}.hdf5', 'r') as offset_file:
-        if offset_type == 'particle':
-            chunk = np.where(offset_file[offset_file_key][:, ptype] <= global_index)[0][-1]
-            local_index = global_index - offset_file[offset_file_key][chunk, ptype]
-        else:
-            chunk = np.where(offset_file[offset_file_key][()]       <= global_index)[0][-1]
-            local_index = global_index - offset_file[offset_file_key][chunk]
-        print(offset_file[offset_file_key])
-    return chunk, local_index
-
-
-def lifeline(parent_dir, subhalo_global_idx, df, last_snap_idx=99):
-    import os
-    import h5py
-    import pandas as pd
-    from itertools import count
-    
-    ### Find subhalo with global index's position in MergerTree ###
-    # Offsets
-    offset_path = os.path.join(parent_dir, f'postprocessing/offsets/offsets_{last_snap_idx:03d}.hdf5')
-    with h5py.File(offset_path, 'r') as f:
-        
-        File = f['Subhalo/LHaloTree/File']
-        Num = f['Subhalo/LHaloTree/Num']
-        Index = f['Subhalo/LHaloTree/Index']
-        
-        tree_chunk_idx = File[subhalo_global_idx]
-        treeX = Num[subhalo_global_idx]
-        subhalo_intreeX_idx = Index[subhalo_global_idx]
-        
-        # print(f'Subhalo gobal index {subhalo_global_idx} is stored in tree chunk file index: {tree_chunk_idx}.')
-        # print(f'In tree chunk file index {tree_chunk_idx}, the subhalo is stored in Tree{treeX}.')
-        # print(f'In Tree{treeX}, the subhalo has index: {subhalo_intreeX_idx}.')
-        
-    if tree_chunk_idx == -1:
-        pass
-    else: 
-        # enter the global index of current subhalo into the dataframe
-        df.loc[f'snap_{last_snap_idx}', f'global_idx_{subhalo_global_idx}'] = subhalo_global_idx
-        
-        ### Finding the lifeline of global index ###
-        # Tree 
-        tree_path = os.path.join(parent_dir,f'postprocessing/trees/LHaloTree/trees_sf1_{last_snap_idx:03d}.{tree_chunk_idx}.hdf5')
-        with h5py.File(tree_path, 'r') as f:
-        
-            # In treeX
-            SubhaloNumber = f[f'Tree{treeX}/SubhaloNumber'] # This is the global index of the subhalo at corresponding snapshot
-            SnapNum = f[f'Tree{treeX}/SnapNum']
-            Descendant = f[f'Tree{treeX}/Descendant']
-            FirstProgenitor = f[f'Tree{treeX}/FirstProgenitor']
-            
-            # Initials: these are the index of first progenitor and descendant within TreeX
-            FP_idx = FirstProgenitor[subhalo_intreeX_idx]
-            D_idx = Descendant[subhalo_intreeX_idx]
-            
-            # Set up the iterator 
-            iterator = count(0, 1)
-            
-            # First progenitor
-            for item in iterator:
-                if FP_idx == -1:
-                    break
-                df.loc[f'snap_{SnapNum[FP_idx]}', f'global_idx_{subhalo_global_idx}'] = SubhaloNumber[FP_idx]
-                # Update FP_idx
-                FP_idx = FirstProgenitor[FP_idx]
-                
-            # Descendant
-            for item in iterator:
-                if D_idx == -1:
-                    break
-                df.loc[f'snap_{SnapNum[D_idx]}', f'global_idx_{subhalo_global_idx}'] = SubhaloNumber[D_idx]
-                # Update D_idx
-                D_idx = Descendant[D_idx]
-    pass
-    # return df
-
-
-def get_field_values_of_lifeline(simpath, df, group_field=None, coords_idx=None):
-    """Only specify the coordinates idx of group_fields includes GroupPos"""
     from tqdm import tqdm
     import numpy as np
     import pandas as pd
-    import illustris_python as il
+    pd.set_option('future.no_silent_downcasting', True)
+    # from itertools import count
+    # iterator = count(0, 1) 
+    from tqdm import tqdm
     
-    for irow, row in tqdm(df.iterrows(), desc='snaps'):
+    with h5py.File(f'{treedir}/trees.{chunk_idx}.hdf5', 'r') as f:
+        # print(f['TreeHalos'].keys())
+        
+        # tot_TreeID = np.unique(f['TreeTable/TreeID'][:])      # (Number of trees in this chunk file,)
+        # print(f'The number of Trees in this chunk file {len(tot_TreeID)}')
+        # print('')
+        # GroupNr         = f['TreeHalos/GroupNr']
+        Group_M_Crit200 = f['TreeHalos/Group_M_Crit200'][:]
+        SnapNum         = f['TreeHalos/SnapNum'][:]           # Convert from Dataset to array    
+        # Descendant      = f['TreeHalos/TreeDescendant']       # It gives the index in this chunk file
+        FirstProgenitor = f[f'TreeHalos/TreeFirstProgenitor'][:] # It gives the index in this chunk file
+        # TreeID          = f[f'TreeHalos/TreeID']              # The unique ID of tree
+        SubhaloID       = f[f'TreeHalos/TreeIndex'][:]           # The "unique" ID of subhalo throughout
+        subhalo_dict = {id: idx for idx, id in enumerate(SubhaloID)}
+        subhalo_dict[-1] = -1
+        
+        # Select subhalos from the last snap
+        last_snap = 264
+        
+        indices_in_file = np.where(SnapNum == last_snap)[0]  # Unique
 
-        snapnum = int(irow[5:])
-        print(irow)
-    
-        # Load halo field
-        Halos = il.groupcat.loadHalos(simpath+'output', snapnum, fields=group_field)
-        if group_field == 'GroupPos':
-            Halos = Halos[:, coords_idx]
-        else:
+        if indices_in_file.shape[0] == 0:
+            df = pd.DataFrame(index = [f'snap_{x}' for x in range(264, 15, -1)])
             pass
-        
-        # Load subhalo global index 
-        SubhaloGrNr = il.groupcat.loadSubhalos(simpath+'output', snapnum, fields='SubhaloGrNr')
-        
-        # Substitute the subhalo global index with the parent halo mass
-        df.loc[irow] = [Halos[SubhaloGrNr[int(idx)]] if pd.notna(idx) else np.nan for idx in row]
-    
+        else:
+            # Create the dataframe
+            last_snap_IDs = SubhaloID[indices_in_file]      # The unique subhalo IDs
+            last_snap_IDs = np.unique(last_snap_IDs)
+
+            df = pd.DataFrame(index = [f'snap_{x}' for x in range(264, 15, -1)],
+                              columns = last_snap_IDs)
+            
+            # Update the last snap
+            snap = last_snap
+            df.loc[f'snap_{snap}', last_snap_IDs] = last_snap_IDs # unique so far
+
+            # Update variables, moving to one prev snap
+            FP_indices = np.array([subhalo_dict[id] for id in last_snap_IDs]) # The shape matches now
+
+            for snap in tqdm(range(263, 15, -1)):
+                
+                FP_IDs = FirstProgenitor[FP_indices]
+                # print(FP_IDs.shape, FP_indices.shape)
+                
+                # print(df.loc[f'snap_{snap}'].shape, FP_IDs.shape)
+                df.loc[f'snap_{snap}'] = FP_IDs
+
+                FP_indices = np.array([subhalo_dict.get(id, -1) for id in FP_IDs])
+
+            # Modify incorrect FP ids
+            df = df.apply(lambda col: np.where(col.cummin() == -1, -1, col))
+            
+            # Assign mass to IDs
+            subid_to_mass = dict(zip(SubhaloID, Group_M_Crit200))
+            subid_to_mass[-1] = np.nan
+            df = df.map(lambda x: subid_to_mass.get(x, x))
+
     return df
+
+# def lifeline2(treedir, chunk_idx):
+#     import h5py
+#     from tqdm import tqdm
+#     import numpy as np
+#     import pandas as pd
+#     pd.set_option('future.no_silent_downcasting', True)
+#     # from itertools import count
+#     # iterator = count(0, 1) 
+#     from tqdm import tqdm
+    
+#     with h5py.File(f'{treedir}/trees.{chunk_idx}.hdf5', 'r') as f:
+#         # print(f['TreeHalos'].keys())
+        
+#         tot_TreeID = np.unique(f['TreeTable/TreeID'][:])      # (Number of trees in this chunk file,)
+#         print(f'The number of Trees in this chunk file {len(tot_TreeID)}')
+#         print('')
+#         # GroupNr         = f['TreeHalos/GroupNr']
+#         Group_M_Crit200 = f['TreeHalos/Group_M_Crit200'][:]
+#         SnapNum         = f['TreeHalos/SnapNum'][:]           # Convert from Dataset to array    
+#         # Descendant      = f['TreeHalos/TreeDescendant']       # It gives the index in this chunk file
+#         FirstProgenitor = f[f'TreeHalos/TreeFirstProgenitor'][:] # It gives the index in this chunk file
+#         TreeID          = f[f'TreeHalos/TreeID']              # The unique ID of tree
+#         SubhaloID       = f[f'TreeHalos/TreeIndex'][:]          # The unique ID of subhalo throughout
+        
+#         # Select subhalos from the last snap
+#         last_snap = 264
+        
+
+#         indices_in_tree = np.where(SnapNum == last_snap)[0]  
+#         print(indices_in_tree.shape)
+#         # Sanitiy check of treeID
+#         # print(f'Sanity check: selected {indices_in_tree.shape} subhalos belong to tree {np.unique(TrID[indices_in_tree])}')
+
+#         if indices_in_tree.shape[0] == 0:
+#             pass
+#         else:
+#             # Create the dataframe
+#             start_IDs = SubhaloID[indices_in_tree]      # The unique subhalo IDs
+#             FP_IDs = start_IDs
+#             df = np.empty((len(range(16, 265)), start_IDs.shape[0]))
+#             # df = pd.DataFrame(index = [f'snap_{x}' for x in range(16, 265)], columns = column_names)
+#             print(df.shape)
+#             # Update the last snap
+#             snap = last_snap
+#             isnap = 0
+#             # print(np.all(df.columns == column_names))
+#             # print(FP_IDs.shape)
+#             # print(df.loc[f'snap_264', df.columns].shape)
+#             # df.loc[f'snap_264', column_names] = FP_IDs
+            
+            
+            
+#             # Update variables, moving to one prev snap
+#             FP_indices = indices_in_tree
+#             df[isnap] = FP_IDs
+#             print('FP indices', FP_indices.shape)
+            
+#             assign_col_idx = np.where(FP_IDs = start_IDs)
+            
+#             for snap in tqdm(range(263, 15, -1)):
+                
+#                 FP_IDs = FirstProgenitor[FP_indices]
+#                 # print('FP IDs', FP_IDs.shape, np.unique(FP_IDs).shape, min(FP_IDs))
+#                 # print(assign_column_names.shape, FP_IDs.shape)
+#                 if assign_column_names.shape == FP_IDs.shape:
+#                     print('true')
+#                     print(df.loc[f'snap_{snap}', assign_column_names].shape)
+#                     df.loc[f'snap_{snap}', assign_column_names] = np.array(FP_IDs)
+#                 else:
+#                     print('pass')
+
+#                 print('column names', column_names.shape, 'FP IDs', FP_IDs.shape)
+        
+#                 end_columns = df.columns[df.loc[f'snap_{snap}'] == -1]
+#                 print(np.unique(column_names.shape), np.unique(end_columns.shape))
+#                 df.loc[:, end_columns] = df.loc[:, end_columns].fillna(-1)# .infer_objects(copy=False)
+#                 print('end columns', end_columns.shape)
+                
+#                 # print(np.all(np.isin(column_names, end_columns)))
+#                 # column_names = np.array([col for col in column_names if col not in end_columns])
+#                 assign_column_names = np.setdiff1d(column_names, end_columns)
+#                 print('assign column names', assign_column_names.shape)
+#                 FP_indices = np.where(np.isin(SubhaloID, FP_IDs))[0]
+#                 print('FP indices', FP_indices.shape)
+#                 print('')
+                
+#             # Assign mass to IDs
+#             subid_to_mass = dict(zip(SubhaloID, Group_M_Crit200))
+#             df = df.map(lambda x: subid_to_mass.get(x, x))
+#     return df
+
+# def get_field_values_of_lifeline(basePath, df, group_field=None, coords_idx=None):
+#     """Only specify the coordinates idx of group_fields includes GroupPos"""
+#     from tqdm import tqdm
+#     import numpy as np
+#     import pandas as pd
+#     import illustris_python as il
+    
+#     for irow, row in tqdm(df.iterrows(), desc='snaps'):
+
+#         snapnum = int(irow[5:])
+#         print(irow)
+#         # Load halo field
+#         Halos = il.groupcat.loadHalos(basePath, snapnum, fields=group_field)
+#         if group_field == 'GroupPos':
+#             Halos = Halos[:, coords_idx]
+#         else:
+#             pass
+        
+#         # Load subhalo global index 
+#         # SubhaloGrNr = il.groupcat.loadSubhalos(basePath, snapnum, fields='SubhaloGroupNr') # It gives the "index" into the groups catalogue
+        
+#         # Substitute the subhalo global index with the parent group_field
+#         df.loc[irow] = [Halos[int(idx)] if pd.notna(idx) else np.nan for idx in row]
+    
+#     return df  

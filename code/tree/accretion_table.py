@@ -3,31 +3,36 @@ import h5py
 import pandas as pd
 import numpy as np
 import os
+import argparse
+from tqdm import tqdm
 
-# input
-DM = ''
-boxsize = 205
-res = 1250
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--sim',    default='DM-Arepo/MTNG-L500-4320-A/',  type=str)
+args = parser.parse_args()
+
+
 
 # BasePath
-data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+f'{DM}/output/'
+basePath = f'/virgotng/mpa/MTNG/{args.sim}/'
 
 
 
 # Load mass csv
-df = pd.read_csv(f'result/DMhalo_mass_table/sim_{boxsize}_{res}{DM}/mass_table.csv', index_col=0)
+df = pd.read_csv(f'result/DMhalo_mass_table/{args.sim}/mass_table.csv', index_col=0)
 
 # Load scale factors
 snap_list = df.index
 print(snap_list)
 a = []
-for snap in snap_list:
+for snap in tqdm(snap_list):
     # Load scale factors
-    with h5py.File(il.snapshot.snapPath(basePath, int(snap[5:])), 'r') as f:
+    with h5py.File(il.snapshot.snapPath(basePath+'output', int(snap[5:])), 'r') as f:
         header = dict(f['Header'].attrs.items())
         scale_factor = header['Time']
     a.append(scale_factor)
+
+
 
 # Create accretion rate df
 rate_df = pd.DataFrame(index=df.index, columns=df.columns)
@@ -44,11 +49,12 @@ for isnap in range(len(snap_list)-1):
     rate = np.log10(mass_f[mask]/mass_i[mask]) / np.log10(a_f/a_i)
     
     # Assign the calculated rate back to the new DataFrame
-    
     rate_df.loc[snap_list[isnap+1], mask.index[mask]] = rate
 
+rate_df.index = snap_list
+
 # Save the accretion rate df
-save_mass_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}{DM}'
+save_mass_dir = f'result/DMhalo_mass_table/{args.sim}/'
 if not os.path.exists(save_mass_dir):
     os.makedirs(save_mass_dir)
-rate_df.to_csv(f'{save_mass_dir}/accretion_table.csv', index=snap_list)
+rate_df.to_csv(f'{save_mass_dir}/accretion_table.csv', index=True)
