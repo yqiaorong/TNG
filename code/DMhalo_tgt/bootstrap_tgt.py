@@ -7,9 +7,9 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',      default=None,type=str)
+parser.add_argument('--sim',      default='TNG300/sim_205_1250_DM',type=str)
 parser.add_argument('--snapnum',  default=None,type=int)
-parser.add_argument('--Nsample',  default=None,type=int)
+parser.add_argument('--Nsample',  default=10000,type=int)
 parser.add_argument('--Nboots',   default=None,type=int)
 parser.add_argument('--bin_start',default=1,type=float)
 parser.add_argument('--bin_end',  default=None,type=float)
