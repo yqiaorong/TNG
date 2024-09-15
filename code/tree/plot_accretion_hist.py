@@ -6,13 +6,21 @@ import illustris_python as il
 import numpy as np
 import argparse
 import os
+from tqdm import tqdm
 
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--sim', default='DM', type=str)
 args = parser.parse_args()
 
-simpath = {args.sim}+'-Arepo/MTNG-L500-4320-A/'
+print('')
+print(f'>>> Accretion rate histograms <<<')
+print('\nInput arguments:')
+for key, val in vars(args).items():
+	print('{:16} {}'.format(key, val))
+print('')
+
+simpath = f'{args.sim}-Arepo/MTNG-L500-4320-A/'
 basePath = f'/virgotng/mpa/MTNG/{simpath}/'
 
 load_dir = f'result/DMhalo_mass_table/{simpath}/'
@@ -23,15 +31,23 @@ if not os.path.exists(save_dir):
     
     
 # Load df
-mass_df = pd.read_csv(load_dir+'mass_table.csv', index_col=0)
+mass_df      = pd.read_csv(load_dir+'mass_table.csv', index_col=0)
+print('mass df succesfully loaded')
 accretion_df = pd.read_csv(load_dir+'accretion_table.csv', index_col=0)
+print('accretion rate df succesfully loaded')
+
+# Select only accross cosmological time
+mass_df      = mass_df.loc['snap_51', 'snap_69', 'snap_94', 'snap_151', 'snap_214', 'snap_264']
+accretion_df = accretion_df.loc['snap_51', 'snap_69', 'snap_94', 'snap_151', 'snap_214', 'snap_264']
 
 snap_list = mass_df.index
 
+
+
 # Load redshift
 redshifts = []
-for snap in snap_list:
-    with h5py.File(il.snapshot.snapPath(basePath, int(snap[5:])), 'r') as f:
+for snap in tqdm(snap_list, desc='load z'):
+    with h5py.File(il.snapshot.snapPath(basePath+'output', int(snap[5:])), 'r') as f:
         header = dict(f['Header'].attrs.items())
         scale_factor = header['Time']
         z = 1 / scale_factor - 1
@@ -42,7 +58,7 @@ redshifts = np.array(redshifts)
 
 # plot the total accretion rate per snapshots
 tot_median, tot_std, tot_low_bound, tot_high_bound = [], [], [], []
-for isnap in range(len(snap_list)):
+for isnap in tqdm(range(len(snap_list)), desc='calc distri over snaps'):
     if isnap != 0:
         rate = accretion_df.iloc[isnap, :]
         rate = rate.replace([np.inf, -np.inf], np.nan)

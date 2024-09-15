@@ -34,7 +34,7 @@ for icut in range(len(mass_cuts)-1):
             label='std '+r'$10^{%.1f}$'%mass_cuts[icut]+'~'
                  +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h')
     ax[0].plot(redshifts[mask], highp_array[mask, icut]-lowp_array[mask, icut], color=cmap(icut/len(mass_cuts)), 
-            label='width '+r'$width 10^{%.1f}$'%mass_cuts[icut]+'~'
+            label='width '+r'$10^{%.1f}$'%mass_cuts[icut]+'~'
                  +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h', linestyle='--')  
 
 # MTNG-DM
@@ -57,10 +57,10 @@ for icut in range(len(mass_cuts)-1):
     # plt.fill_between(redshifts[mask], lowp_array[mask, icut], highp_array[mask, icut], 
     #                  alpha=0.1, color=cmap(icut/len(mass_cuts)))
     ax[1].plot(redshifts[mask], std_array[mask, icut], color=cmap(icut/len(mass_cuts)), 
-             label='std '+r'$std 10^{%.1f}$'%mass_cuts[icut]+'~'
+             label='std '+r'$10^{%.1f}$'%mass_cuts[icut]+'~'
                   +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h')
     ax[1].plot(redshifts[mask], highp_array[mask, icut]-lowp_array[mask, icut], color=cmap(icut/len(mass_cuts)), 
-             label='width '+r'$width 10^{%.1f}$'%mass_cuts[icut]+'~'
+             label='width '+r'$10^{%.1f}$'%mass_cuts[icut]+'~'
                   +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h', linestyle='--')
     
 # General settings and save fig

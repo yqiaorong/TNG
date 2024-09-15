@@ -11,6 +11,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--sim',    default='DM-Arepo/MTNG-L500-4320-A/',  type=str)
 args = parser.parse_args()
 
+print('')
+print(f'>>> Accretion rate table <<<')
+print('\nInput arguments:')
+for key, val in vars(args).items():
+	print('{:16} {}'.format(key, val))
+print('')
 
 
 # BasePath
