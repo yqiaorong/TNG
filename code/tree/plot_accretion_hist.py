@@ -28,20 +28,26 @@ save_dir = f'result/accretion_rate_plot/{simpath}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
     
-    
+snap_list = ['snap_51', 'snap_69', 'snap_94', 'snap_151', 'snap_214', 'snap_264']
     
 # Load df
-mass_df      = pd.read_csv(load_dir+'mass_table.csv', index_col=0)
+if os.path.exists(f'{load_dir}/redu_mass_table.csv'):
+    mass_df = pd.read_csv(load_dir+'redu_mass_table.csv', index_col=0)
+else:
+    mass_df = pd.read_csv(load_dir+'mass_table.csv', index_col=0)
+    # Select only accross cosmological time
+    mass_df = mass_df.loc[snap_list]
+    mass_df.to_csv(load_dir+'redu_mass_table.csv', index=True)
 print('mass df succesfully loaded')
-accretion_df = pd.read_csv(load_dir+'accretion_table.csv', index_col=0)
+
+if os.path.exists(f'{load_dir}/redu_accretion_table.csv'):
+    accretion_df = pd.read_csv(load_dir+'redu_accretion_table.csv', index_col=0)
+else:
+    accretion_df = pd.read_csv(load_dir+'accretion_table.csv', index_col=0)
+    # Select only accross cosmological time
+    accretion_df = accretion_df.loc[snap_list]
+    accretion_df.to_csv(load_dir+'redu_accretion_table.csv', index=True)
 print('accretion rate df succesfully loaded')
-
-# Select only accross cosmological time
-mass_df      = mass_df.loc[['snap_51', 'snap_69', 'snap_94', 'snap_151', 'snap_214', 'snap_264']]
-accretion_df = accretion_df.loc[['snap_51', 'snap_69', 'snap_94', 'snap_151', 'snap_214', 'snap_264']]
-
-snap_list = mass_df.index
-print(snap_list)
 
 
 
@@ -140,21 +146,24 @@ for isnap in range(len(snap_list)):
                 rate_mask = (rate_cut <= 15)
                 rate_cut  = rate_cut[rate_mask]
                 
-                median     = np.median(rate_cut)
-                std        = np.std(rate_cut)
-                low_bound  = np.percentile(rate_cut, 16)
-                high_bound = np.percentile(rate_cut, 84)
-                
-                # Plot the histogram
-                hist = axes[icut].hist(rate_cut, label=f'mass cut {mass_cuts[icut]}')[0]
-                axes[icut].plot([median, median], [0, max(hist)], linestyle='dashed', color='red', 
-                                label=f'median = {np.round(median, 3)}')
-                axes[icut].legend(loc='best')
-                
-                median_array[isnap, icut] = median
-                std_array[isnap, icut]    = std
-                lowp_array[isnap, icut]   = low_bound
-                highp_array[isnap, icut]  = high_bound
+                if len(rate_cut) < 5:
+                    pass
+                else:
+                    median     = np.median(rate_cut)
+                    std        = np.std(rate_cut)
+                    low_bound  = np.percentile(rate_cut, 16)
+                    high_bound = np.percentile(rate_cut, 84)
+                    
+                    # Plot the histogram
+                    hist = axes[icut].hist(rate_cut, label=f'mass cut {mass_cuts[icut]}')[0]
+                    axes[icut].plot([median, median], [0, max(hist)], linestyle='dashed', color='red', 
+                                    label=f'median = {np.round(median, 3)}')
+                    axes[icut].legend(loc='best')
+                    
+                    median_array[isnap, icut] = median
+                    std_array[isnap, icut]    = std
+                    lowp_array[isnap, icut]   = low_bound
+                    highp_array[isnap, icut]  = high_bound
             
         plt.savefig(save_dir+f'snap_{snap_list[isnap][5:]}_cuts')
         plt.close()
