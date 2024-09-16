@@ -37,10 +37,11 @@ accretion_df = pd.read_csv(load_dir+'accretion_table.csv', index_col=0)
 print('accretion rate df succesfully loaded')
 
 # Select only accross cosmological time
-mass_df      = mass_df.loc['snap_51', 'snap_69', 'snap_94', 'snap_151', 'snap_214', 'snap_264']
-accretion_df = accretion_df.loc['snap_51', 'snap_69', 'snap_94', 'snap_151', 'snap_214', 'snap_264']
+mass_df      = mass_df.loc[['snap_51', 'snap_69', 'snap_94', 'snap_151', 'snap_214', 'snap_264']]
+accretion_df = accretion_df.loc[['snap_51', 'snap_69', 'snap_94', 'snap_151', 'snap_214', 'snap_264']]
 
 snap_list = mass_df.index
+print(snap_list)
 
 
 
@@ -106,10 +107,10 @@ plt.close()
 mass_cuts = np.arange(1, 4.5, 0.5)
 num_cuts  = int((4.5-1)/0.5)
 
-median_array = np.empty((len(snap_list), len(mass_cuts)-1))
-std_array    = np.empty((len(snap_list), len(mass_cuts)-1))
-lowp_array   = np.empty((len(snap_list), len(mass_cuts)-1))
-highp_array  = np.empty((len(snap_list), len(mass_cuts)-1))
+median_array = np.zeros((len(snap_list), len(mass_cuts)-1))
+std_array    = np.zeros((len(snap_list), len(mass_cuts)-1))
+lowp_array   = np.zeros((len(snap_list), len(mass_cuts)-1))
+highp_array  = np.zeros((len(snap_list), len(mass_cuts)-1))
 
 for isnap in range(len(snap_list)):
     
@@ -164,7 +165,7 @@ for isnap in range(len(snap_list)):
 fig, ax = plt.subplots(1, 1,)
 cmap = plt.get_cmap('autumn', len(mass_cuts))
 for icut in range(len(mass_cuts)-1):
-    mask = median_array[:, icut] > 1e-20 # Remove zero terms
+    mask = median_array[:, icut] != 0 # Remove zero terms
     ax.plot(redshifts[mask], median_array[mask, icut], color=cmap(icut/len(mass_cuts)), 
              label=r'$10^{%.1f}$'%mass_cuts[icut]+'~'
                   +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h')

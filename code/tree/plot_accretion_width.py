@@ -24,12 +24,8 @@ highp_array  = data['accret_high']
 
 cmap = plt.get_cmap('autumn', len(mass_cuts))
 for icut in range(len(mass_cuts)-1):
-    mask = median_array[:, icut] > 1e-20 # Remove zero terms
-    # ax.plot(redshifts[mask], median_array[mask, icut], color=cmap(icut/len(mass_cuts)), 
-    #         label=r'$10^{%.1f}$'%mass_cuts[icut]+'~'
-    #              +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h')
-    # plt.fill_between(redshifts[mask], lowp_array[mask, icut], highp_array[mask, icut], 
-    #                  alpha=0.1, color=cmap(icut/len(mass_cuts)))
+    mask = median_array[:, icut] != 0 # Remove zero terms
+
     ax[0].plot(redshifts[mask], std_array[mask, icut], color=cmap(icut/len(mass_cuts)), 
             label='std '+r'$10^{%.1f}$'%mass_cuts[icut]+'~'
                  +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h')
@@ -50,12 +46,8 @@ highp_array  = data['accret_high']
 
 cmap = plt.get_cmap('winter', len(mass_cuts))
 for icut in range(len(mass_cuts)-1):
-    mask = median_array[:, icut] > 1e-20 # Remove zero terms
-    # ax.plot(redshifts[mask], median_array[mask, icut], color=cmap(icut/len(mass_cuts)), 
-    #          label=r'$10^{%.1f}$'%mass_cuts[icut]+'~'
-    #               +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h')
-    # plt.fill_between(redshifts[mask], lowp_array[mask, icut], highp_array[mask, icut], 
-    #                  alpha=0.1, color=cmap(icut/len(mass_cuts)))
+    mask = median_array[:, icut] != 0 # Remove zero terms
+
     ax[1].plot(redshifts[mask], std_array[mask, icut], color=cmap(icut/len(mass_cuts)), 
              label='std '+r'$10^{%.1f}$'%mass_cuts[icut]+'~'
                   +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h')

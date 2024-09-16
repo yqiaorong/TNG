@@ -1,11 +1,9 @@
-import pandas as pd
-from matplotlib import pyplot as plt 
-plt.style.use('code/style.mplstyle')
+"""The answers are ~51, ~64, 94, 151, 214, 264"""
+
 import h5py
 import illustris_python as il
 import numpy as np
 import argparse
-import os
 from tqdm import tqdm
 from func import *
 
@@ -15,7 +13,7 @@ parser.add_argument('--sim', default='DM', type=str)
 args = parser.parse_args()
 
 print('')
-print(f'>>> Accretion rate histograms <<<')
+print(f'>>> Calculate cosmological time <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -38,5 +36,3 @@ redshifts = np.array(redshifts)
 # Calculate t_dyn
 prev_snap_idx, prev_z = calc_tdyn(redshifts, basePath, 69)
 print(snap_list[prev_snap_idx], redshifts[prev_snap_idx], prev_z)
-
-# The answers are ~51, ~64, 94, 151, 214, 164
