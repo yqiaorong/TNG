@@ -12,7 +12,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--DM', default='', type=str)
 args = parser.parse_args()
 
-
+print('')
+print(f'>>> Plot accretion rate histogram <<<')
+print('\nInput arguments:')
+for key, val in vars(args).items():
+	print('{:16} {}'.format(key, val))
+print('')
 
 DM = args.DM
 boxsize, res = 205, 1250
@@ -28,10 +33,16 @@ if not os.path.exists(save_dir):
     
     
 # Load df
-mass_df = pd.read_csv(load_dir+'mass_table.csv', index_col=0)
+mass_df      = pd.read_csv(load_dir+'mass_table.csv', index_col=0)
 accretion_df = pd.read_csv(load_dir+'accretion_table.csv', index_col=0)
 
+# Select only accross cosmological time
+mass_df      = mass_df.loc[['snap_8', 'snap_13', 'snap_25', 'snap_40', 'snap_67', 'snap_99']]
+accretion_df = accretion_df.loc[['snap_8', 'snap_13', 'snap_25', 'snap_40', 'snap_67', 'snap_99']]
+
 snap_list = mass_df.index
+print(snap_list)
+
 
 # Load redshift
 redshifts = []
@@ -95,10 +106,10 @@ plt.close()
 mass_cuts = np.arange(1, 4.5, 0.5)
 num_cuts  = int((4.5-1)/0.5)
 
-median_array = np.empty((len(snap_list), len(mass_cuts)-1))
-std_array    = np.empty((len(snap_list), len(mass_cuts)-1))
-lowp_array   = np.empty((len(snap_list), len(mass_cuts)-1))
-highp_array  = np.empty((len(snap_list), len(mass_cuts)-1))
+median_array = np.zeros((len(snap_list), len(mass_cuts)-1))
+std_array    = np.zeros((len(snap_list), len(mass_cuts)-1))
+lowp_array   = np.zeros((len(snap_list), len(mass_cuts)-1))
+highp_array  = np.zeros((len(snap_list), len(mass_cuts)-1))
 
 for isnap in range(len(snap_list)):
     
@@ -147,18 +158,17 @@ for isnap in range(len(snap_list)):
         plt.savefig(save_dir+f'snap_{snap_list[isnap][5:]}_cuts')
         plt.close()
         
-# print(highp_array)
+
 
 # Plot accretion rate per mass cut across snapshots
 fig, ax = plt.subplots(1, 1,)
 cmap = plt.get_cmap('autumn', len(mass_cuts))
 for icut in range(len(mass_cuts)-1):
-    mask = median_array[:, icut] > 1e-20 # Remove zero terms
+    
+    mask = median_array[:, icut] != 0 # Remove zero terms
     ax.plot(redshifts[mask], median_array[mask, icut], color=cmap(icut/len(mass_cuts)), 
              label=r'$10^{%.1f}$'%mass_cuts[icut]+'~'
                   +r'$10^{%.1f}$ '%mass_cuts[icut+1]+'$M_\\odot$/h')
-    # plt.fill_between(redshifts[mask], median_array[mask, icut]+std_array[mask, icut],
-    #                             median_array[mask, icut]-std_array[mask, icut], alpha=0.2)
     plt.fill_between(redshifts[mask], lowp_array[mask, icut], highp_array[mask, icut], 
                      alpha=0.1, color=cmap(icut/len(mass_cuts)))
 ax.set_xlabel('z')
@@ -167,6 +177,8 @@ ax.legend(loc='best')
 ax.set_title(f'TNG300{DM}')
 plt.savefig(save_dir+f'accretion_rate_vs_z_TNG300{DM}')
 plt.close()
+
+
 
 # Save accret per mass cut per snap
 save_dict = {'redshifts': redshifts,
