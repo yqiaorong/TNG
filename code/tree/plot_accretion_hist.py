@@ -130,7 +130,7 @@ for isnap in range(len(snap_list)):
             mass_mask = (mass >= 10**mass_cuts[icut]) & (mass < 10**mass_cuts[icut+1])
             rate_cut = rate[mass_mask]
             
-            if rate_cut.empty:
+            if rate_cut.empty or len(rate_cut) == 1:
                 pass
             else:
                 # At later snaps, two normal distri of accret rates appear per mass cut per snap,
