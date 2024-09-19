@@ -76,38 +76,39 @@ for isnap, snap in enumerate(TNG300_snaps):
 # Plot MTNG #
 #############################################################################################
 
-# if args.DM == '':
-#     MTNG_DM_dir = f'{root_dir}/Hydro-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
-# elif args.DM == '_DM':
-#     MTNG_DM_dir = f'{root_dir}/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
-# MTNG_DM_list = os.listdir(MTNG_DM_dir)
+if args.DM == '':
+    MTNG_type = 'Hydro'
+elif args.DM == '_DM':
+    MTNG_type = 'DM'
+MTNG_DM_dir = f'{root_dir}/MTNG/{MTNG_type}-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
+MTNG_DM_list = os.listdir(MTNG_DM_dir)
 
-# MTNG_DM_cmap = plt.get_cmap(cmap_name, len(TNG300_list))
-# MTNG_DM_snaps = [264, 237, 214, 179, 151, 129]
-# MTNG_DM_mass_cuts = [10**13, 10**13.5, 10**14, 10**14.5, 10**15, 10**15.5]
+MTNG_DM_cmap = plt.get_cmap(cmap_name, len(TNG300_list))
+MTNG_DM_snaps = [264, 237, 214, 179, 151, 129]
+MTNG_DM_mass_cuts = [10**13, 10**13.5, 10**14, 10**14.5, 10**15, 10**15.5]
 
-# for isnap, snap in enumerate(MTNG_DM_snaps):
+for isnap, snap in enumerate(MTNG_DM_snaps):
     
-#     # Load data
-#     data = np.load(MTNG_DM_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
-#     z = data['z']
-#     data = data['final_results']
-#     num_cut = data.shape[0]
+    # Load data
+    data = np.load(MTNG_DM_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+    z = data['z']
+    data = data['final_results']
+    num_cut = data.shape[0]
     
-#     factors = [1000, 1, 1, 1000]
-#     data[:, feat_idx, :] = data[:, feat_idx, :]*factors[feat_idx] # convert Rsp in [Mpc] to [kpc]
+    factors = [1000, 1, 1, 1000]
+    data[:, feat_idx, :] = data[:, feat_idx, :]*factors[feat_idx] # convert Rsp in [Mpc] to [kpc]
     
-#     axs.plot(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 1], 
-#              color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
-#     axs.fill_between(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 0], data[:, feat_idx, 2], 
-#                      color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), alpha=0.2)
+    axs.plot(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 1], 
+             color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), label=f'z = {np.round(z, 1)}')
+    axs.fill_between(MTNG_DM_mass_cuts[:num_cut], data[:, feat_idx, 0], data[:, feat_idx, 2], 
+                     color=MTNG_DM_cmap(isnap / len(TNG300_snaps)), alpha=0.2)
 
-#     # Append to saved data
-#     saved_x1.append(MTNG_DM_mass_cuts[:num_cut])
-#     saved_x2.append([z]*len(MTNG_DM_mass_cuts[:num_cut]))
-#     saved_y.append(data[:, feat_idx, 1])
-#     saved_y_min.append(data[:, feat_idx, 0])
-#     saved_y_max.append(data[:, feat_idx, 2])
+    # Append to saved data
+    saved_x1.append(MTNG_DM_mass_cuts[:num_cut])
+    saved_x2.append([z]*len(MTNG_DM_mass_cuts[:num_cut]))
+    saved_y.append(data[:, feat_idx, 1])
+    saved_y_min.append(data[:, feat_idx, 0])
+    saved_y_max.append(data[:, feat_idx, 2])
 
 # Final edit
 axs.set_xscale('log')
@@ -124,11 +125,17 @@ elif feat_idx == 3:
     axs.set_yscale('log')
 axs.legend()
 
+
+
 # Save the plot
 save_dir = f'result/bootstrap_plot/full{args.DM}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
-plt.savefig(f'{save_dir}/dm_{feats[feat_idx]}_vs_mass')
+if args.DM == '':
+    save_type = 'Hydro'
+elif args.DM == '_DM':
+    save_type = 'DM'
+plt.savefig(f'{save_dir}/{save_type}_{feats[feat_idx]}_vs_mass')
 plt.close()
 
 
