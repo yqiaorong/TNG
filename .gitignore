@@ -2,6 +2,8 @@ result/DMhalo_density_profiles/
 result/bootstrap/
 result/bootstrap_stats/
 result/DMhalo_mass_table/
+result/DMhalo_mass_table_old/
+result/DMhalo_mass_table_new/
 result/Stacked_DMhalo_density_profiles/
 
 output_buffer/

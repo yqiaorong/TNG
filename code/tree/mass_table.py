@@ -28,12 +28,12 @@ if not os.path.exists(save_dir):
 
 
 # Iterate over chunk files
-for chunk_idx in range(args.chunk_start_idx, 640):
+for chunk_idx in range(args.chunk_start_idx, 1):
     print('chunk idx: ', chunk_idx)
     if not os.path.exists(f'{save_dir}/chunk_{chunk_idx}.csv'):
 
         # Get the dataframe of Group Mass
-        df = Lifeline(basePath+'treedata/', chunk_idx)
+        df = Lifeline2(basePath+'treedata/', chunk_idx)
         if df.columns.shape[0] == 0:
             pass
         else:

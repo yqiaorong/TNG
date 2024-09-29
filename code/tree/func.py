@@ -1,3 +1,62 @@
+def Lifeline2(treedir, chunk_idx):
+    import h5py
+    from tqdm import tqdm
+    import numpy as np
+    import pandas as pd
+    pd.set_option('future.no_silent_downcasting', True)
+    # from itertools import count
+    # iterator = count(0, 1) 
+    from tqdm import tqdm
+    
+    with h5py.File(f'{treedir}/trees.{chunk_idx}.hdf5', 'r') as f:
+        # print(f['TreeHalos'].keys())
+        
+        # tot_TreeID = np.unique(f['TreeTable/TreeID'][:])      # (Number of trees in this chunk file,)
+        # print(f'The number of Trees in this chunk file {len(tot_TreeID)}')
+        # print('')
+        # GroupNr         = f['TreeHalos/GroupNr']
+        Group_M_Crit200 = f['TreeHalos/Group_M_Crit200'][:]
+        SnapNum         = f['TreeHalos/SnapNum'][:]           # Convert from Dataset to array    
+        # Descendant      = f['TreeHalos/TreeDescendant']       # It gives the index in this chunk file
+        FirstProgenitor = f[f'TreeHalos/TreeFirstProgenitor'][:] # It gives the index in this chunk file
+        # TreeID          = f[f'TreeHalos/TreeID']              # The unique ID of tree
+        SubhaloID       = f[f'TreeHalos/TreeIndex'][:]           # The "unique" ID of subhalo throughout
+        
+        subhalo_dict = {f'{snap}_{id}': idx_in_file 
+                        for snap, (idx_in_file, id) in zip(SnapNum, enumerate(SubhaloID))}
+        
+        # Select subhalos from the last snap
+        indices_in_file = np.where(SnapNum == 264)[0]  # Unique
+
+        if indices_in_file.shape[0] == 0:
+            df = pd.DataFrame(index = [f'snap_{x}' for x in range(264, 15, -1)])
+            pass
+        else:
+            # Create the dataframe
+            last_snap_IDs = SubhaloID[indices_in_file]      # The unique subhalo IDs (each corresponds to different snapshots)
+            last_snap_IDs = np.unique(last_snap_IDs)        # The unique subhalo IDs
+            
+            df = pd.DataFrame(index = [f'snap_{x}' for x in range(264, 15, -1)],
+                              columns = last_snap_IDs)
+            
+            # Update the last snap
+            FP_IDs = last_snap_IDs
+            del last_snap_IDs
+            for snap in tqdm(range(264, 15, -1)):
+
+                FP_indices = np.array([subhalo_dict.get(f'{snap}_{id}', -1) for id in FP_IDs])
+                df.loc[f'snap_{snap}'] = FP_indices
+                # Update variables, moving to one prev snap
+                FP_IDs = FirstProgenitor[FP_indices]
+
+            # Modify incorrect FP ids
+            df = df.apply(lambda col: np.where(col.cummin() == -1, -1, col))
+            
+            # Assign mass to FP_indices
+            df = df.map(lambda x: Group_M_Crit200[x] if x != -1 else np.nan) 
+
+    return df
+
 def Lifeline(treedir, chunk_idx):
     import h5py
     from tqdm import tqdm
