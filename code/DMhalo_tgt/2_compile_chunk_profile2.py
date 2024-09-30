@@ -6,9 +6,9 @@ from tqdm import tqdm
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--sim',          default='Hydro-Arepo/MTNG-L500-4320-A',type=str)
-parser.add_argument('--snapnum',      default=237,                           type=int)
+parser.add_argument('--snapnum',      default=129,                           type=int)
 parser.add_argument('--bin_start',    default=3,                             type=float) # [10^{10+x} Msun/h]
-parser.add_argument('--bin_end',      default=4,                             type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--bin_end',      default=3.5,                             type=float) # [10^{10+x} Msun/h]
 parser.add_argument('--save_root_dir',default='DMhalo_density_profiles',     type=str)
 args = parser.parse_args()
 
@@ -35,7 +35,7 @@ else:
     num_halos = data['halo_R_Mean200'].shape[0]
 
     # Load data
-    densities = np.empty((len(load_list), num_halos, 85))
+    densities = np.zeros((num_halos, 85))
     for ifname, fname in enumerate(tqdm(load_list, desc='chunk files')):
         data = np.load(f'{load_dir}/{fname}', allow_pickle=True).item()
         if ifname == 0: 
@@ -45,10 +45,8 @@ else:
             h = data['h']
             scale_factor = data['scale_factor']
             z = 1 / scale_factor - 1
-        
-        densities[ifname] = data['densities']
+        densities += data['densities']
         del data
-    densities = np.sum(densities, axis=0)
     print(densities.shape, radii.shape, halo_R_Mean200.shape, halo_M_Mean200.shape)
 
 

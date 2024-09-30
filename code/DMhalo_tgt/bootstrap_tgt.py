@@ -25,7 +25,7 @@ print('')
 
 
 # Load redshift values (Alternative!!!)
-halos_dir = f'result/DMhalo_density_profiles/{args.sim}/snap_{args.snapnum}/final_densities/'
+halos_dir = f'/nfs/mvogelsblab001/Users/s_qyu/DMhalo_density_profiles/{args.sim}/snap_{args.snapnum}/final_densities/'
 halos_list = os.listdir(halos_dir)
 sample_file = halos_list[0]
 sample_data = np.load(os.path.join(halos_dir, sample_file), allow_pickle=True).item()

@@ -7,10 +7,10 @@ from tqdm import tqdm
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',          default='DM-Arepo/MTNG-L500-4320-A',type=str)
-parser.add_argument('--snapnum',      default=None,                      type=int)
-parser.add_argument('--bin_start',    default=None,                     type=float) # [10^{10+x} Msun/h]
-parser.add_argument('--bin_end',      default=None,                     type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--sim',          default='Hydro-Arepo/MTNG-L500-4320-A',type=str)
+parser.add_argument('--snapnum',      default=129,                      type=int)
+parser.add_argument('--bin_start',    default=3.5,                     type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--bin_end',      default=4,                     type=float) # [10^{10+x} Msun/h]
 parser.add_argument('--save_root_dir',default='DMhalo_density_profiles',type=str)
 args = parser.parse_args()
 
