@@ -26,8 +26,8 @@ ax[0][1].set_title(f'MTNG-DM')
 
 
 # Run the scripts
-os.system('python3 code/tree/plot_accretion_hist2.py --sim DM')
-os.system('python3 code/tree/plot_accretion_hist2.py --sim Hydro')
+# os.system('python3 code/tree/plot_accretion_hist2.py --sim DM')
+# os.system('python3 code/tree/plot_accretion_hist2.py --sim Hydro')
 
 
 

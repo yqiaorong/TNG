@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim', default='DM-Arepo/MTNG-L500-4320-A/', type=str)
+parser.add_argument('--sim', default='Hydro-Arepo/MTNG-L500-4320-A/', type=str)
 args = parser.parse_args()
 
 print('')

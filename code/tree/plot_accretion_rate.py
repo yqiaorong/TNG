@@ -8,8 +8,8 @@ fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 root_dir = f'result/accretion_rate_plot_new/'
 
 # Run the scripts
-os.system('python3 code/tree/plot_accretion_hist2.py --sim DM')
-os.system('python3 code/tree/plot_accretion_hist2.py --sim Hydro')
+# os.system('python3 code/tree/plot_accretion_hist2.py --sim DM')
+# os.system('python3 code/tree/plot_accretion_hist2.py --sim Hydro')
 
 # MTNG-Hydro
 data = np.load(f'{root_dir}/Hydro-Arepo/MTNG-L500-4320-A/MTNG_Hydro_accret_stats.npy', 
