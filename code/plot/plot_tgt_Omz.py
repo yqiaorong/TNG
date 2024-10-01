@@ -28,12 +28,28 @@ feats = ['Rsp', 'depth', 'width_dimless', 'width_phys']
 feat_idx = args.feat_idx
 print(feats[feat_idx])
 
+
+
+boxsize, res = 205, 1250
+data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
+
 if args.DM == 'Hydro':
     cmap_name = 'autumn'
+    basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'_DM/output/'
 elif args.DM == 'DM':
     cmap_name = 'winter'
+    basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'/output/'
     
+def Om_z(z, Omega0, OmegaLambda):
+    return Omega0*(1+z)**3/(Omega0*(1+z)**3 + OmegaLambda)
     
+with h5py.File(il.snapshot.snapPath(basePath, 99), 'r') as f:
+    header = dict(f['Header'].attrs.items())
+    
+    Omega0 = header['Omega0']
+    OmegaLambda = header['OmegaLambda']
+
+
 
 root_dir = 'result/bootstrap_stats/'
 
@@ -53,13 +69,15 @@ TNG300_mass_cuts = [11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5]
 
 TNG300_z, TNG300_all_data = [], []
 for snap in TNG300_snaps: # from low z to high z (present)
-        
     # Load data
     data = np.load(TNG300_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
-    z = data['z']
+    z    = data['z']
     TNG300_z.append(z)
     data = data['final_results']
     TNG300_all_data.append(data)
+TNG300_z = np.array(TNG300_z)
+TNG300_omz = Om_z(TNG300_z, Omega0, OmegaLambda)
+del TNG300_z
 
 for cut_idx in range(len(TNG300_mass_cuts)-1): # from low cut to high cut
                      
@@ -72,7 +90,7 @@ for cut_idx in range(len(TNG300_mass_cuts)-1): # from low cut to high cut
             plot_y_min.append(TNG300_all_data[snap_idx][cut_idx, feat_idx, 0])
             plot_y_max.append(TNG300_all_data[snap_idx][cut_idx, feat_idx, 2])
             
-            plot_x.append(TNG300_z[snap_idx])
+            plot_x.append(TNG300_omz[snap_idx])
         else:
             pass
  
@@ -83,7 +101,7 @@ for cut_idx in range(len(TNG300_mass_cuts)-1): # from low cut to high cut
                      color=TNG300_cmap(cut_idx / len(TNG300_mass_cuts)), alpha=0.2)
     
 ##############################################################################################
-### Plot MTNG ### 
+### Plot MTNG-DM ### 
 ##############################################################################################
 
 MTNG_dir = f'{root_dir}/MTNG/{args.DM}-Arepo/MTNG-L500-4320-A/output/Nboots_{args.Nboots}/'
@@ -95,13 +113,15 @@ MTNG_mass_cuts = [13, 13.5, 14, 14.5, 15]
 
 MTNG_z, MTNG_all_data = [], []
 for snap in MTNG_snaps: # from high z to low z (present)
-        
     # Load data
     data = np.load(MTNG_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
-    z = data['z']
+    z    = data['z']
     MTNG_z.append(z)
     data = data['final_results']
     MTNG_all_data.append(data)
+MTNG_z = np.array(MTNG_z)
+MTNG_omz = Om_z(MTNG_z, Omega0, OmegaLambda)
+del MTNG_z
 
 factors = [1000, 1, 1, 1000]
 for cut_idx in range(len(MTNG_mass_cuts)-1): # from low cut to high cut
@@ -118,7 +138,7 @@ for cut_idx in range(len(MTNG_mass_cuts)-1): # from low cut to high cut
             plot_y_min.append(factor*MTNG_all_data[snap_idx][cut_idx, feat_idx, 0])
             plot_y_max.append(factor*MTNG_all_data[snap_idx][cut_idx, feat_idx, 2])
             
-            plot_x.append(MTNG_z[snap_idx])
+            plot_x.append(MTNG_omz[snap_idx])
         else:
             pass
 
@@ -146,5 +166,5 @@ axs.legend()
 save_dir = f'result/bootstrap_plot/full_{args.DM}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
-plt.savefig(os.path.join(save_dir, f'{args.DM}_{feats[feat_idx]}_vs_redshift'))
+plt.savefig(os.path.join(save_dir, f'{args.DM}_{feats[feat_idx]}_vs_Omz'))
 plt.close()
