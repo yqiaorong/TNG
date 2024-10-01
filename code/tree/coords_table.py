@@ -11,7 +11,7 @@ import illustris_python as il
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',default=205,   type=int)
 parser.add_argument('--res',    default=1250,  type=int)
-parser.add_argument('--DM',     default='',    type=str)
+parser.add_argument('--DM',     default=None,    type=str)
 parser.add_argument('--bin_start',default=1,type=float) # [10^{10+x} Msun/h]
 parser.add_argument('--bin_end',default=4.5,type=float) # [10^{10+x} Msun/h]
 args = parser.parse_args()
@@ -27,7 +27,10 @@ print('')
 
 # Specify the snapshot
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+f'{args.DM}/'
+if args.DM == 'DM':
+    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'_DM/'
+elif args.DM == 'Hydro':
+    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)
 snapnum = 99 # The last snapshot, should not change
 boxsize = args.boxsize
 res     = args.res
@@ -38,7 +41,7 @@ index_values = ['snap_' + str(i) for i in range(2, 99)]
 final_index_values = ['snap_' + str(i) for i in [8, 13, 17, 21, 25, 33, 40, 50, 67, 78, 99]]  
 
 # Save directory
-save_dir = f'result/DMhalo_idx_table/sim_{boxsize}_{res}{args.DM}/'
+save_dir = f'result/DMhalo_idx_table/sim_{boxsize}_{res}_{args.DM}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -54,7 +57,7 @@ df_y = tot_df.copy()
 df_z = tot_df.copy()
 
 # Save the dataframe
-save_mass_dir = f'result/DMhalo_coords_table/sim_{boxsize}_{res}{args.DM}'
+save_mass_dir = f'result/DMhalo_coords_table/sim_{boxsize}_{res}_{args.DM}/'
 if not os.path.exists(save_mass_dir):
     os.makedirs(save_mass_dir)
 

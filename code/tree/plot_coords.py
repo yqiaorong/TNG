@@ -14,8 +14,8 @@ print('\nInput arguments:')
 # ============================================================================================
 
 # Inpput
-DM = ''
-load_dir = f'result/DMhalo_coords_table/sim_205_1250{DM}/'
+DM = 'DM'
+load_dir = f'result/DMhalo_coords_table/sim_205_1250_{DM}/'
 save_dir = f'{load_dir}/Plots/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)

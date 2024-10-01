@@ -7,7 +7,7 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM', default='', type=str)
+parser.add_argument('--DM', default=None, type=str)
 args = parser.parse_args()
 
 # input
@@ -17,12 +17,15 @@ res = 1250
 
 # BasePath
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+f'{DM}/output/'
+if args.DM == 'DM':
+    basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'_DM/output/'
+elif args.DM == 'Hydro':
+    basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'/output/'
 
 
 
 # Load mass csv
-df = pd.read_csv(f'result/DMhalo_mass_table/sim_{boxsize}_{res}{DM}/mass_table.csv', index_col=0)
+df = pd.read_csv(f'result/DMhalo_mass_table/sim_{boxsize}_{res}_{DM}/mass_table.csv', index_col=0)
 
 # Load scale factors
 snap_list = df.index
@@ -56,7 +59,7 @@ for isnap in range(len(snap_list)-1):
 rate_df.index = snap_list
 
 # Save the accretion rate df
-save_mass_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}{DM}'
+save_mass_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}_{DM}'
 if not os.path.exists(save_mass_dir):
     os.makedirs(save_mass_dir)
 rate_df.to_csv(f'{save_mass_dir}/accretion_table.csv', index=True)

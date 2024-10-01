@@ -9,7 +9,7 @@ from func import *
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM', default='', type=str)
+parser.add_argument('--DM', default=None, type=str)
 args = parser.parse_args()
 
 print('')
@@ -23,8 +23,10 @@ print('')
 
 boxsize, res = 205, 1250
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+f'{args.DM}/'
-
+if args.DM == 'DM':
+    basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'_DM/output/'
+elif args.DM == 'Hydro':
+    basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'/output/'
 
 
 # Load redshift
