@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim', default='Hydro-Arepo/MTNG-L500-4320-A/', type=str)
+parser.add_argument('--sim', default='DM-Arepo/MTNG-L500-4320-A/', type=str)
 args = parser.parse_args()
 
 print('')
@@ -46,6 +46,6 @@ for i in tqdm(range(len(snaps)-1), desc='calculating accretion rates'):
     prev_snap = np.load(load_dir+fname.format(snaps[i+1]))
     
     mask = (current_snap != -1) & (prev_snap != -1) & (current_snap != 0) & (prev_snap != 0)
-    accretions[:,i] = np.log10(current_snap[mask]/prev_snap[mask]) / np.log10(a[i]/a[i+1])
+    accretions[mask, i] = np.log10(current_snap[mask]/prev_snap[mask]) / np.log10(a[i]/a[i+1])
 
 np.save(f'{load_dir}/accretion_rates.npy', accretions)
