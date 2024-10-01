@@ -9,7 +9,7 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM',default='',   type=str)
+parser.add_argument('--DM',      default='',  type=str) # [ /_DM ]
 parser.add_argument('--Nboots',  default=None,type=int)
 parser.add_argument('--feat_idx',default=0,   type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
 args = parser.parse_args()
@@ -128,13 +128,14 @@ axs.legend()
 
 
 # Save the plot
-save_dir = f'result/bootstrap_plot/full{args.DM}/Nboots_{args.Nboots}/'
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
 if args.DM == '':
     save_type = 'Hydro'
 elif args.DM == '_DM':
     save_type = 'DM'
+    
+save_dir = f'result/bootstrap_plot/full_{save_type}/Nboots_{args.Nboots}/'
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
 plt.savefig(f'{save_dir}/{save_type}_{feats[feat_idx]}_vs_mass')
 plt.close()
 

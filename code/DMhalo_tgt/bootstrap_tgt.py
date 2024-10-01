@@ -7,12 +7,12 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',      default='TNG300/sim_205_1250_DM',type=str)
-parser.add_argument('--snapnum',  default=None,type=int)
+parser.add_argument('--sim',      default='MTNG/Hydro-Arepo/MTNG-L500-4320-A/output/',type=str)
+parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--Nsample',  default=10000,type=int)
-parser.add_argument('--Nboots',   default=None,type=int)
-parser.add_argument('--bin_start',default=1,type=float)
-parser.add_argument('--bin_end',  default=None,type=float)
+parser.add_argument('--Nboots',   default=1024, type=int)
+parser.add_argument('--bin_start',default=3,    type=float)
+parser.add_argument('--bin_end',  default=None, type=float)
 args = parser.parse_args()
 
 print('')

@@ -10,8 +10,8 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM',default='',   type=str)
-parser.add_argument('--Nboots',  default=None,type=int)
+parser.add_argument('--DM',      default='',  type=str)
+parser.add_argument('--Nboots',  default=1024,type=int)
 parser.add_argument('--feat_idx',default=0,   type=int) 
 parser.add_argument('--func_idx',default=0,   type=int) 
 # Feature index [Rsp = 0, depth = 1, width_dimless = 2, width_phys = 3]
@@ -26,7 +26,10 @@ for key, val in vars(args).items():
 # Run the previous script to get the compiled data
 feats = ['Rsp', 'depth', 'width_dimless', 'width_phys']
 feat_idx = args.feat_idx
-os.system(f'python3 code/plot/plot_tgt_mass.py --DM {args.DM} --feat_idx {feat_idx} --Nboots {args.Nboots}')
+if args.DM == '':
+    os.system(f'python3 code/plot/plot_tgt_mass.py --feat_idx {feat_idx} --Nboots {args.Nboots}')
+elif args.DM == '_DM':
+    os.system(f'python3 code/plot/plot_tgt_mass.py --DM {args.DM} --feat_idx {feat_idx} --Nboots {args.Nboots}')
 
 ### Load the compiled data ###
 data = np.load(f'data/equ_data_{feats[feat_idx]}_Nboots{args.Nboots}{args.DM}.npy', allow_pickle=True).item()
@@ -49,9 +52,9 @@ def func0(x,
     part3 = r*logM*z + s
     return part1 + part2 + part3
 
-def func1(x, a, b, c, d, e, f):
-    logM, z = x
-    return a*logM**2 + b*logM + c + d*z**2 + e*z + f
+# def func1(x, a, b, c, d, e, f):
+#     logM, z = x
+#     return a*logM**2 + b*logM + c + d*z**2 + e*z + f
 
 def func2(x, 
           a, b, c,
@@ -105,7 +108,8 @@ def func5(x,
     part6 = c5*logM**5*z + c6*logM**4*z**2 + c7*logM**3*z**3 + c8*logM**2*z**4 + c9*logM*z**5 
     return  part1 + part2 + part3 + part4 + part5 + part6
 
-func_list = [func0, func1, func2, func3, func4, func5]
+func_list = [func0, # func1, 
+             func2, func3, func4, func5]
 sel_func = func_list[args.func_idx]
 
 # Full fit
@@ -139,7 +143,7 @@ print(f'p value: {p_val}')
 
 if args.DM == '_DM':
     cmap_name = 'winter'
-elif args.DM == 'Hydro':
+elif args.DM == '':
     cmap_name = 'autumn'
 cmap1 = plt.get_cmap(cmap_name, len(uniq_logM))
 cmap2 = plt.get_cmap(cmap_name, len(uniq_z))

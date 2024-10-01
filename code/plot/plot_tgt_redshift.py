@@ -11,7 +11,7 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM',  default='',type=str)
+parser.add_argument('--DM',      default='',  type=str)
 parser.add_argument('--Nboots',  default=None,type=int)
 parser.add_argument('--feat_idx',default=0,   type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
 args = parser.parse_args()
@@ -147,8 +147,13 @@ elif feat_idx == 3:
 axs.legend()
 
 # Save the plot
-save_dir = f'result/bootstrap_plot/full{args.DM}/Nboots_{args.Nboots}/'
+if args.DM == '':
+    save_type = 'Hydro'
+elif args.DM == '_DM':
+    save_type = 'DM'
+    
+save_dir = f'result/bootstrap_plot/full_{save_type}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
-plt.savefig(os.path.join(save_dir, f'dm_{feats[feat_idx]}_vs_redshift'))
+plt.savefig(os.path.join(save_dir, f'{save_type}_{feats[feat_idx]}_vs_redshift'))
 plt.close()
