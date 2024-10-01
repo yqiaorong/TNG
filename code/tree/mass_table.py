@@ -39,6 +39,7 @@ Halos = il.groupcat.loadHalos(basePath+'output', snapnum, fields=group_fields)
 
 Group_M_Mean200 = Halos['Group_M_Mean200'] # [10^10 MSun/h]
 GroupFirstSub = Halos['GroupFirstSub']
+del Halos
 
 # Using physical mass to select subset
 halo_global_idx = np.where((Group_M_Mean200 >= 10**args.bin_start) & 
@@ -50,7 +51,7 @@ index_values = ['snap_' + str(i) for i in range(2, 99)]
 final_index_values = ['snap_' + str(i) for i in [8, 13, 17, 21, 25, 33, 40, 50, 67, 78, 99]]  
 
 # Save directory
-save_dir = f'result/DMhalo_idx_table/sim_{boxsize}_{res}{args.DM}'
+save_dir = f'result/DMhalo_idx_table/sim_{boxsize}_{res}_{args.DM}'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -73,7 +74,7 @@ for chunk_idx in chunk_indices:
         df = df.loc[final_index_values]
 
         # Save the dataframe
-        df.to_csv(f'result/DMhalo_idx_table/sim_{boxsize}_{res}{args.DM}/chunk_{chunk_idx}.csv', index=True)
+        df.to_csv(f'result/DMhalo_idx_table/sim_{boxsize}_{res}_{args.DM}/chunk_{chunk_idx}.csv', index=True)
 
 # Concatenate all dataframes
 df_list = os.listdir(save_dir)
@@ -87,7 +88,7 @@ tot_df = pd.concat(tot_df_list, axis=1)
 tot_df = get_field_values_of_lifeline(basePath, tot_df, group_field='Group_M_Mean200')
 
 # Save the dataframe
-save_mass_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}{args.DM}'
+save_mass_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}_{args.DM}'
 if not os.path.exists(save_mass_dir):
     os.makedirs(save_mass_dir)
 tot_df.to_csv(f'{save_mass_dir}/mass_table.csv', index=final_index_values)

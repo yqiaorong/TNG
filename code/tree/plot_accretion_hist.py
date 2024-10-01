@@ -25,8 +25,8 @@ boxsize, res = 205, 1250
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
 basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
 
-load_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}{DM}/'
-save_dir = f'result/accretion_rate_plot/sim_{boxsize}_{res}{DM}/'
+load_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}_{DM}/'
+save_dir = f'result/accretion_rate_plot/TNG300/sim_{boxsize}_{res}_{DM}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
     
@@ -45,14 +45,21 @@ print(snap_list)
 
 
 # Load redshift
-redshifts = []
+redshifts, scale_factors = [], []
 for snap in snap_list:
     with h5py.File(il.snapshot.snapPath(basePath, int(snap[5:])), 'r') as f:
         header = dict(f['Header'].attrs.items())
-        scale_factor = header['Time']
-        z = 1 / scale_factor - 1
+        
+        Omega0 = header['Omega0']
+        OmegaLambda = header['OmegaLambda']
+        
+        z = header['Redshift']
+        a = header['Time']
+        
         redshifts.append(z)
-redshifts = np.array(redshifts)
+        scale_factors.append(a)
+redshifts     = np.array(redshifts)
+scale_factors = np.array(scale_factors)
 
 
 
@@ -97,7 +104,7 @@ plt.xlabel('z')
 plt.ylabel('accretion rate')
 plt.legend(loc='best')
 plt.title(f'TNG300{DM}')
-plt.savefig(save_dir+f'tot_accretion_rate_vs_z_TNG300{DM}')
+plt.savefig(save_dir+f'tot_accretion_rate_vs_z_TNG300_{DM}')
 plt.close()
 
 
@@ -161,7 +168,7 @@ for isnap in range(len(snap_list)):
 
 
 # Plot accretion rate per mass cut across snapshots
-fig, ax = plt.subplots(1, 1,)
+fig, ax = plt.subplots(1, 1)
 cmap = plt.get_cmap('autumn', len(mass_cuts))
 for icut in range(len(mass_cuts)-1):
     
@@ -175,13 +182,13 @@ ax.set_xlabel('z')
 ax.set_ylabel('accretion rate')
 ax.legend(loc='best')
 ax.set_title(f'TNG300{DM}')
-plt.savefig(save_dir+f'accretion_rate_vs_z_TNG300{DM}')
+plt.savefig(save_dir+f'accretion_rate_vs_z_TNG300_{DM}')
 plt.close()
 
 
 
 # Save accret per mass cut per snap
-save_dict = {'redshifts': redshifts,
+save_dict = {'scale_factors':scale_factors, 'redshifts': redshifts, 'Omega0': Omega0, 'OmegaLambda': OmegaLambda,
              'mass_cuts': mass_cuts,
              'accret_std': std_array,  
              'accret_med': median_array,

@@ -5,14 +5,14 @@ plt.style.use('code/style.mplstyle')
 
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 
-root_dir = 'result/accretion_rate_plot/'
+root_dir = 'result/accretion_rate_plot/TNG300/'
 
 # Run the scripts
-os.system('python3 code/tree/plot_accretion_hist.py')
-os.system('python3 code/tree/plot_accretion_hist.py --DM _DM')
+os.system('python3 code/tree/plot_accretion_hist.py --DM Hydro')
+os.system('python3 code/tree/plot_accretion_hist.py --DM DM')
 
-#TNG300
-data = np.load(f'{root_dir}/sim_205_1250/TNG300_accret_stats.npy', allow_pickle=True).item()
+#TNG300_Hydro
+data = np.load(f'{root_dir}/sim_205_1250_Hydro/TNG300_Hydro_accret_stats.npy', allow_pickle=True).item()
 
 redshifts = data['redshifts']
 mass_cuts = data['mass_cuts']
@@ -63,5 +63,5 @@ ax[0].legend(loc='best')
 ax[1].legend(loc='best')
 ax[0].set_title(f'TNG300')
 ax[1].set_title(f'TNG300_DM')
-plt.savefig(f'{root_dir}/accretion_rate_vs_z')
+plt.savefig(f'{root_dir}/TNG300_accretion_rate_vs_z')
 plt.close()

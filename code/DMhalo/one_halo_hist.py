@@ -14,7 +14,7 @@ parser.add_argument('--boxsize', default=205, type=int)
 parser.add_argument('--res',     default=1250,type=int)
 parser.add_argument('--snapnum', default=99,  type=int)
 parser.add_argument('--groupnum', default=0,  type=int)
-parser.add_argument('--DM', default='',  type=str)
+parser.add_argument('--DM', default=None,  type=str)
 # HaloPos
 parser.add_argument('--x', default=0,  type=float) # [ckpc/h]
 parser.add_argument('--y', default=0,  type=float) # [ckpc/h]
@@ -45,8 +45,10 @@ boxsize = args.boxsize
 #                                    625, 1250, or 2500 for the 205 cMpc/h box
 res = args.res
 # Path to the output files for the relevant box size and resolution:
-basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+f'{args.DM}/output'
-
+if args.DM == 'DM':
+    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'_DM/output/'
+elif args.DM == 'Hydro':
+    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'/output/'
 # Specify the snapshot
 snapnum = args.snapnum
 
@@ -126,7 +128,7 @@ del densities_bins
 
 
 # Save directory
-save_dir = 'result/'+args.save_root_dir+f'/sim_{boxsize}_{res}{args.DM}/snap_{snapnum}'
+save_dir = 'result/'+args.save_root_dir+f'/sim_{boxsize}_{res}_{args.DM}/snap_{snapnum}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
     

@@ -5,16 +5,16 @@ from scipy.stats import pearsonr
 from matplotlib import pyplot as plt 
 plt.style.use('code/style.mplstyle')
 
-DM = '' # [_DM / ]
-sim = 'TNG300' # [ TNG300 / MTNG]
+type = 'Hydro' # [DM / Hydro]
+sim = 'TNG300' # [TNG300 / MTNG]
 snap_list = [8, 13, 25, 40, 67, 99]
-acc_width_type = 'percentile' # [std / percentile]
+acc_width_type = 'std' # [std / percentile]
 
 
 # Load accretion rate width
-root_dir = 'result/accretion_rate_plot/'
+root_dir = f'result/accretion_rate_plot/{sim}/'
 if sim == 'TNG300': 
-    acc_data = np.load(f'{root_dir}/sim_205_1250{DM}/TNG300{DM}_accret_stats.npy', allow_pickle=True).item()
+    acc_data = np.load(f'{root_dir}/sim_205_1250_{type}/TNG300_{type}_accret_stats.npy', allow_pickle=True).item()
 elif sim == 'MTNG':
     acc_data = np.load(root_dir, allow_pickle=True).item()
     
@@ -35,13 +35,11 @@ elif acc_width_type == 'percentile':
 # Load splashback features width
 Nboots = 1024
 feat_idx = 2 # width
-root_dir = 'result/bootstrap_stats/'
+boots_dir = f'result/bootstrap_stats/{sim}/'
 if sim == 'TNG300': 
-    sp_dir = f'{root_dir}/TNG300/sim_205_1250{DM}/Nboots_{Nboots}/'
-elif sim == 'MTNG' and DM == '_DM':
-    sp_dir = f'{root_dir}/MTNG/DM-Arepo/MTNG-L500-4320-A/output/Nboots_{Nboots}/'
-elif sim == 'MTNG' and DM == '':
-    sp_dir = f'{root_dir}/MTNG/Hydro-Arepo/MTNG-L500-4320-A/output/Nboots_{Nboots}/'
+    sp_dir = f'{boots_dir}/sim_205_1250_{type}/Nboots_{Nboots}/'
+elif sim == 'MTNG':
+    sp_dir = f'{boots_dir}/{type}-Arepo/MTNG-L500-4320-A/output/Nboots_{Nboots}/'
 TNG_list = os.listdir(sp_dir)
 
 TNG_all_data = []
@@ -57,10 +55,10 @@ for snap in snap_list: # from low z to high z (present)
 
 # Set up the plot
 sns.set(style="whitegrid")
-fig, axs = plt.subplots(1, 1, dpi=500, figsize=(5, 4))
-if DM == '':
+fig, axs = plt.subplots(1, 1, dpi=500, figsize=(5, 4), sharey=True)
+if type == 'Hydro':
     cmap_name = 'autumn'
-elif DM == '_DM':
+elif type == 'DM':
     cmap_name = 'winter'
 cmap = plt.get_cmap(cmap_name, len(TNG_list))
 
@@ -102,9 +100,9 @@ tot_plot_y = [item for sublist in tot_plot_y for item in sublist]
 
 
 r_value, p_value = pearsonr(tot_plot_x, tot_plot_y)
-if DM == '_DM':
+if type == 'DM':
     reg_color = "blue"
-elif DM == '':
+elif type == 'Hydro':
     reg_color = "red"
 axs = sns.regplot(x=tot_plot_x, y=tot_plot_y, ci=95, 
                   scatter=False, line_kws={"color": reg_color})
@@ -116,8 +114,5 @@ axs.set_ylabel(f"Splashback feature (width)")
 axs.legend()
 
 # Save the plot
-save_dir = f'result/width/TNG300{DM}/'
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-plt.savefig(os.path.join(save_dir, f'{sim}{DM}_sp_width_accret_width_{acc_width_type}'))
+plt.savefig(os.path.join(root_dir, f'{sim}_{type}_sp_width_accret_width_{acc_width_type}'))
 plt.close()

@@ -8,14 +8,14 @@ import h5py
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM',       default='_DM',type=str)
+parser.add_argument('--DM',       default=None,type=str)
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--bin_start',default=1,    type=float)
 parser.add_argument('--bin_end',  default=None, type=float)
 args = parser.parse_args()
 
 print('')
-print(f'>>> BCompile chunk files of DM density profiles <<<')
+print('>>> Compile chunk files of DM density profiles <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -27,7 +27,10 @@ root_dir = 'DMhalo_density_profiles_old'
 boxsize = 205
 res = 1250
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+f'{args.DM}/output'
+if args.DM == 'DM':
+    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'_DM/output/'
+elif args.DM == 'Hydro':
+    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'/output/'
 
 
 
@@ -50,7 +53,7 @@ with h5py.File(il.snapshot.snapPath(basePath, snap), 'r') as f:
 ### Load halos ###
 
 # Halos data root dir
-halos_dir = f'result/{root_dir}/sim_{boxsize}_{res}{args.DM}/snap_{snap}/densities'
+halos_dir = f'result/{root_dir}/sim_{boxsize}_{res}_{args.DM}/snap_{snap}/densities'
 
 # First round of rough selection of halos based on M200
 Group_M_Mean200 = il.groupcat.loadHalos(basePath, snap, fields='Group_M_Mean200')
@@ -88,7 +91,7 @@ else:
                 'radial_bins': total_r, # [ckpc/h]
                 'h': h, 'scale_factor': scale_factor, 'z': z}  
 
-    save_dir = f'result/DMhalo_density_profiles/TNG300/sim_{boxsize}_{res}{args.DM}/snap_{snap}/final_densities/'
+    save_dir = f'result/DMhalo_density_profiles/TNG300/sim_{boxsize}_{res}_{args.DM}/snap_{snap}/final_densities/'
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     np.save(f'{save_dir}/bin-{int(bin_start*10)}-{int(bin_end*10)}', save_dict) 

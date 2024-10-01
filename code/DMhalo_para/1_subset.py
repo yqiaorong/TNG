@@ -8,7 +8,7 @@ from mpi4py import MPI
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',  default=205,  type=int)
 parser.add_argument('--res',      default=1250, type=int)
-parser.add_argument('--DM',       default='',   type=str)
+parser.add_argument('--DM',       default=None,   type=str)
 
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--bin_start',default=None, type=float) # [10^{10+x} Msun/h]
@@ -29,7 +29,10 @@ print('')
 
 # Specify the snapshot
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+f'{args.DM}/output'
+if args.DM == 'DM':
+    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'_DM/output/'
+elif args.DM == 'Hydro':
+    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'/output/'
 snapnum = args.snapnum
 boxsize = args.boxsize
 res     = args.res
@@ -82,7 +85,7 @@ comm.Barrier()
 
 # Iterate over DM halos
 for idx in subset_idx[start_idx_per_core:]:
-    if not os.path.exists(f'result/{save_root_dir}/sim_{boxsize}_{res}{args.DM}/snap_{snapnum}/densities/halo_{idx}.npy'):
+    if not os.path.exists(f'result/{save_root_dir}/sim_{boxsize}_{res}_{args.DM}/snap_{snapnum}/densities/halo_{idx}.npy'):
         # Round values 
         x, y, z = np.round(GroupPos[idx, 0].item(), 0), np.round(GroupPos[idx, 1].item(), 0), np.round(GroupPos[idx, 2].item(), 0)
         R = np.round(Group_R_Mean200[idx].item(), 0)
