@@ -4,13 +4,7 @@ result/bootstrap
 result/bootstrap_stats
 result/bootstrap_plot
 result/DMhalo_density_profiles
-result/DMhalo_density_profiles_old
-result/Stacked_DMhalo_density_profiles_old
-result/Evolution_DMhalo_density_profiles_old
-result/Rsp_DMhalo_density_profiles_old
 result/fitting_full
-result/fitting_partial
-result/hist
 result/DMhalo_idx_table
 result/DMhalo_mass_table
 result/DMhalo_coords_table
