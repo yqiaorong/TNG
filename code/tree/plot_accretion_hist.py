@@ -23,7 +23,10 @@ DM = args.DM
 boxsize, res = 205, 1250
 
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-basePath = data_path + 'L%dn%dTNG/output'%(boxsize,res)
+if args.DM == 'DM':
+    basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'_DM/output/'
+elif args.DM == 'Hydro':
+    basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'/output/'
 
 load_dir = f'result/DMhalo_mass_table/sim_{boxsize}_{res}_{DM}/'
 save_dir = f'result/accretion_rate_plot/TNG300/sim_{boxsize}_{res}_{DM}/'
