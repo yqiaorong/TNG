@@ -21,8 +21,6 @@ median_array = data['accret_med']
 lowp_array   = data['accret_low']
 highp_array  = data['accret_high']
 
-
-
 cmap = plt.get_cmap('autumn', len(mass_cuts))
 for icut in range(len(mass_cuts)-1):
     
@@ -43,8 +41,6 @@ median_array = data['accret_med']
 lowp_array   = data['accret_low']
 highp_array  = data['accret_high']
 
-
-
 cmap = plt.get_cmap('winter', len(mass_cuts))
 for icut in range(len(mass_cuts)-1):
     
@@ -61,7 +57,7 @@ ax[0].set_xlabel('z')
 ax[1].set_xlabel('z')
 ax[0].legend(loc='best')
 ax[1].legend(loc='best')
-ax[0].set_title(f'TNG300')
-ax[1].set_title(f'TNG300_DM')
+ax[0].set_title(f'TNG300-Hydro')
+ax[1].set_title(f'TNG300-DM')
 plt.savefig(f'{root_dir}/TNG300_accretion_rate_vs_z')
 plt.close()

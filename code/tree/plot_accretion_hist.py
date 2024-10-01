@@ -106,7 +106,7 @@ plt.fill_between(redshifts[1:], tot_low_bound, tot_high_bound, color='b', alpha=
 plt.xlabel('z')
 plt.ylabel('accretion rate')
 plt.legend(loc='best')
-plt.title(f'TNG300{DM}')
+plt.title(f'TNG300-{DM}')
 plt.savefig(save_dir+f'tot_accretion_rate_vs_z_TNG300_{DM}')
 plt.close()
 
@@ -184,7 +184,7 @@ for icut in range(len(mass_cuts)-1):
 ax.set_xlabel('z')
 ax.set_ylabel('accretion rate')
 ax.legend(loc='best')
-ax.set_title(f'TNG300{DM}')
+ax.set_title(f'TNG300-{DM}')
 plt.savefig(save_dir+f'accretion_rate_vs_z_TNG300_{DM}')
 plt.close()
 
@@ -197,4 +197,4 @@ save_dict = {'scale_factors':scale_factors, 'redshifts': redshifts, 'Omega0': Om
              'accret_med': median_array,
              'accret_low': lowp_array, 
              'accret_high': highp_array}
-np.save(f'{save_dir}/TNG300{DM}_accret_stats', save_dict)
+np.save(f'{save_dir}/TNG300_{DM}_accret_stats', save_dict)

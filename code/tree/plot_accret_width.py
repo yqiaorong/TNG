@@ -19,8 +19,8 @@ ax[0][0].set_ylabel('accretion rate width')
 ax[1][0].set_ylabel('accretion rate width')
 ax[1][1].set_xlabel(args.z_or_Omz)
 ax[1][0].set_xlabel(args.z_or_Omz)        
-ax[0][0].set_title(f'TNG300_Hydro')
-ax[0][1].set_title(f'TNG300_DM')
+ax[0][0].set_title(f'TNG300-Hydro')
+ax[0][1].set_title(f'TNG300-DM')
 
 
 

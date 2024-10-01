@@ -5,7 +5,7 @@ from scipy.stats import pearsonr
 from matplotlib import pyplot as plt 
 plt.style.use('code/style.mplstyle')
 
-type = 'Hydro' # [DM / Hydro]
+type = 'DM' # [DM / Hydro]
 sim = 'TNG300' # [TNG300 / MTNG]
 snap_list = [8, 13, 25, 40, 67, 99]
 acc_width_type = 'std' # [std / percentile]
