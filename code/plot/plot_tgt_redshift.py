@@ -11,13 +11,14 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
+parser.add_argument('--z_or_a',  default='z', type=str)
 parser.add_argument('--DM',      default=None,type=str)
 parser.add_argument('--Nboots',  default=None,type=int)
 parser.add_argument('--feat_idx',default=0,   type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
 args = parser.parse_args()
 
 print('')
-print(f'>>> Plot Rsp feats vs redshift <<<')
+print(f'>>> Plot Rsp feats vs {args.z_or_a} <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -57,6 +58,8 @@ for snap in TNG300_snaps: # from low z to high z (present)
     # Load data
     data = np.load(TNG300_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
     z = data['z']
+    if args.z_or_a == 'a':
+        z = 1/ (z+1) # Here z actually means a
     TNG300_z.append(z)
     data = data['final_results']
     TNG300_all_data.append(data)
@@ -99,6 +102,8 @@ for snap in MTNG_snaps: # from high z to low z (present)
     # Load data
     data = np.load(MTNG_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
     z = data['z']
+    if args.z_or_a == 'a':
+        z = 1/ (z+1) # Here z actually means a
     MTNG_z.append(z)
     data = data['final_results']
     MTNG_all_data.append(data)
@@ -129,7 +134,7 @@ for cut_idx in range(len(MTNG_mass_cuts)-1): # from low cut to high cut
                      color=MTNG_cmap(cut_idx / len(MTNG_mass_cuts)), alpha=0.2)
 
 # Final edit
-axs.set_xlabel('z')
+axs.set_xlabel(args.z_or_a)
 if feat_idx == 0:
     axs.set_ylabel(r"$R_{sp}$ [kpc]")
     axs.set_yscale('log')
@@ -146,5 +151,5 @@ axs.legend()
 save_dir = f'result/bootstrap_plot/full_{args.DM}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
-plt.savefig(os.path.join(save_dir, f'{args.DM}_{feats[feat_idx]}_vs_redshift'))
+plt.savefig(os.path.join(save_dir, f'{args.DM}_{feats[feat_idx]}_vs_{args.z_or_a}'))
 plt.close()

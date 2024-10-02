@@ -5,14 +5,17 @@ plt.style.use('code/style.mplstyle')
 
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 
-root_dir = 'result/accretion_rate_plot/TNG300/'
+
+sim = 'MTNG'         # input 
+simpath = '{}-Arepo' # input 
+root_dir = f'result/accretion_rate_plot/{sim}/'
 
 # Run the scripts
-os.system('python3 code/tree/plot_accretion_hist.py --DM Hydro')
-os.system('python3 code/tree/plot_accretion_hist.py --DM DM')
+# os.system('python3 code/tree/plot_accretion_hist.py --DM Hydro')
+# os.system('python3 code/tree/plot_accretion_hist.py --DM DM')
 
 #TNG300_Hydro
-data = np.load(f'{root_dir}/sim_205_1250_Hydro/TNG300_Hydro_accret_stats.npy', allow_pickle=True).item()
+data = np.load(root_dir+simpath.format('Hydro')+f'/{sim}_Hydro_accret_stats.npy', allow_pickle=True).item()
 
 redshifts = data['redshifts']
 mass_cuts = data['mass_cuts']
@@ -32,7 +35,7 @@ for icut in range(len(mass_cuts)-1):
                        alpha=0.1, color=cmap(icut/len(mass_cuts)))
 
 #TNG300_DM
-data = np.load(f'{root_dir}/sim_205_1250_DM/TNG300_DM_accret_stats.npy', allow_pickle=True).item()
+data = np.load(root_dir+simpath.format('DM')+f'/{sim}_DM_accret_stats.npy', allow_pickle=True).item()
 
 redshifts = data['redshifts']
 mass_cuts = data['mass_cuts']
@@ -52,12 +55,12 @@ for icut in range(len(mass_cuts)-1):
                      alpha=0.1, color=cmap(icut/len(mass_cuts)))
     
 # General settings and save fig
-ax[0].set_ylabel('accretion rate width')
+ax[0].set_ylabel(r'${\Gamma}$')
 ax[0].set_xlabel('z')
 ax[1].set_xlabel('z')
 ax[0].legend(loc='best')
 ax[1].legend(loc='best')
-ax[0].set_title(f'TNG300-Hydro')
-ax[1].set_title(f'TNG300-DM')
-plt.savefig(f'{root_dir}/TNG300_accretion_rate_vs_z')
+ax[0].set_title(f'{sim}-Hydro')
+ax[1].set_title(f'{sim}-DM')
+plt.savefig(f'{root_dir}/{sim}_accretion_rate_vs_z')
 plt.close()
