@@ -6,13 +6,17 @@ plt.style.use('code/style.mplstyle')
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 
 
-sim = 'MTNG'         # input 
-simpath = '{}-Arepo' # input 
-root_dir = f'result/accretion_rate_plot/{sim}/'
-
-# Run the scripts
+sim = 'TNG300'              # input 
+simpath = 'sim_205_1250_{}' # input 
+# # Run the scripts
 # os.system('python3 code/tree/plot_accretion_hist.py --DM Hydro')
 # os.system('python3 code/tree/plot_accretion_hist.py --DM DM')
+
+# sim = 'MTNG'         # input 
+# simpath = '{}-Arepo' # input 
+
+root_dir = f'result/accretion_rate_plot/{sim}/'
+
 
 #TNG300_Hydro
 data = np.load(root_dir+simpath.format('Hydro')+f'/{sim}_Hydro_accret_stats.npy', allow_pickle=True).item()

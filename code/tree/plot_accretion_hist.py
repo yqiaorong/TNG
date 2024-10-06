@@ -47,9 +47,13 @@ snap_list = mass_df.index
 print(snap_list)
 
 
-# Load redshift
+
+# plot the total accretion rate per snapshots
 redshifts, scale_factors = [], []
-for snap in snap_list:
+tot_median, tot_std, tot_low_bound, tot_high_bound = [], [], [], []
+for isnap, snap in enumerate(snap_list):
+    
+    # Load redshift
     with h5py.File(il.snapshot.snapPath(basePath, int(snap[5:])), 'r') as f:
         header = dict(f['Header'].attrs.items())
         
@@ -61,16 +65,10 @@ for snap in snap_list:
         
         redshifts.append(z)
         scale_factors.append(a)
-redshifts     = np.array(redshifts)
-scale_factors = np.array(scale_factors)
-
-
-
-# plot the total accretion rate per snapshots
-tot_median, tot_std, tot_low_bound, tot_high_bound = [], [], [], []
-for isnap in range(len(snap_list)):
+    
+    # Load accretion rate
     if isnap != 0:
-        rate = accretion_df.iloc[isnap, :]
+        rate = accretion_df.loc[snap]
         rate = rate.replace([np.inf, -np.inf], np.nan)
         rate = rate.dropna().to_numpy()
         
@@ -83,14 +81,18 @@ for isnap in range(len(snap_list)):
         tot_std.append(std)
         tot_low_bound.append(low_bound)
         tot_high_bound.append(high_bound)
- 
+        
+        # Plot
         plt.figure()
-        hist = plt.hist(rate, label=f'z = {np.round(redshifts[isnap], 2)}')[0]
+        hist = plt.hist(rate, label=f'z = {np.round(z, 2)}')[0]
         plt.plot([median, median], [0, max(hist)], linestyle='dashed', color='red', 
                   label=f'median = {np.round(median, 3)}')
         plt.legend(loc='best')
         plt.savefig(save_dir+f'snap_{snap_list[isnap][5:]}')
-        
+
+redshifts     = np.array(redshifts)
+scale_factors = np.array(scale_factors)
+
 tot_median     = np.array(tot_median)
 tot_tsd        = np.array(tot_std)
 tot_low_bound  = np.array(tot_low_bound)
@@ -121,13 +123,13 @@ std_array    = np.zeros((len(snap_list), len(mass_cuts)-1))
 lowp_array   = np.zeros((len(snap_list), len(mass_cuts)-1))
 highp_array  = np.zeros((len(snap_list), len(mass_cuts)-1))
 
-for isnap in range(len(snap_list)):
+for isnap, snap in enumerate(snap_list):
     
     if isnap != 0: # Assign the accretion rate between snapshots s1 and s2 to the later s2
         fig, axes = plt.subplots(1, num_cuts, figsize=(15, 5))
         
-        mass = mass_df.iloc[isnap, :]
-        rate = accretion_df.iloc[isnap, :]
+        mass = mass_df.loc[snap]
+        rate = accretion_df.loc[snap]
         
         # Drop inf and nan
         rate = rate.replace([np.inf, -np.inf], np.nan)
@@ -165,7 +167,7 @@ for isnap in range(len(snap_list)):
                 lowp_array[isnap, icut]   = low_bound
                 highp_array[isnap, icut]  = high_bound
             
-        plt.savefig(save_dir+f'snap_{snap_list[isnap][5:]}_cuts')
+        plt.savefig(save_dir+f'snap_{snap[5:]}_cuts')
         plt.close()
         
 

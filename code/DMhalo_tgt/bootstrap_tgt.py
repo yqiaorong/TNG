@@ -7,11 +7,11 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',      default='MTNG/Hydro-Arepo/MTNG-L500-4320-A/output/',type=str)
+parser.add_argument('--sim',      default=None, type=str)
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--Nsample',  default=10000,type=int)
 parser.add_argument('--Nboots',   default=1024, type=int)
-parser.add_argument('--bin_start',default=3,    type=float)
+parser.add_argument('--bin_start',default=None, type=float)
 parser.add_argument('--bin_end',  default=None, type=float)
 args = parser.parse_args()
 
@@ -43,7 +43,7 @@ num_bins = int((bin_end-bin_start)/bin_width)
 print(f'The number of mass bins: {num_bins}')
 mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun/h
 print(mass_bins[:-1])
-print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun/h')
+print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun')
 
 # Halos data root dir
 
@@ -56,10 +56,10 @@ for ifname, fname in enumerate(halos_list):
     data = np.load(f'{halos_dir}/{fname}', allow_pickle=True).item()
 
     if ifname == 0:
-        halo_R_Mean200 = data['halo_R_Mean200'] 
-        halo_M_Mean200 = data['halo_M_Mean200']
-        densities = data['densities']
-        radial_bins = data['radial_bins']
+        halo_R_Mean200 = data['halo_R_Mean200'] # [ckpc / h]
+        halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 Msun / h]
+        densities = data['densities']           # [(Msun/h) / (ckpc/h)^3]
+        radial_bins = data['radial_bins']       # [ckpc / h]
     else:
         halo_R_Mean200 = np.concatenate((halo_R_Mean200, data['halo_R_Mean200']), axis=0)
         halo_M_Mean200 = np.concatenate((halo_M_Mean200, data['halo_M_Mean200']), axis=0)
@@ -67,6 +67,8 @@ for ifname, fname in enumerate(halos_list):
         radial_bins = np.concatenate((radial_bins, data['radial_bins']), axis=0)
     
     total_num_halos = total_num_halos + data['halo_R_Mean200'].shape[0]
+    # Convert masses to physical masses DIVIDE!!!
+    halo_M_Mean200 = halo_M_Mean200 / h # [10^10 Msun]
     
 print(halo_R_Mean200.shape, halo_M_Mean200.shape, densities.shape, radial_bins.shape)
 print(f'total number of halos: {total_num_halos}')
@@ -86,10 +88,10 @@ while valid_boots < Nboots:
     # Random selection of halos
     indices = np.random.randint(0, total_num_halos, Nsample)
     # Select densities and masses
-    select_radii = radial_bins[indices]
-    select_densities = densities[indices]
-    select_masses = halo_M_Mean200[indices]
-    select_r200 = halo_R_Mean200[indices]
+    select_radii = radial_bins[indices]     # [ckpc / h]
+    select_densities = densities[indices]   # [(Msun/h) / (ckpc/h)^3]
+    select_masses = halo_M_Mean200[indices] # [10^10 Msun / h]
+    select_r200 = halo_R_Mean200[indices]   # [ckpc / h]
 
     del indices
     
@@ -122,7 +124,7 @@ while valid_boots < Nboots:
                 break
             else:
                 # Fit the slope
-                fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho))      # [dimensionless]
+                fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho)) # [dimensionless]
 
                 # Plot the profile
                 plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
