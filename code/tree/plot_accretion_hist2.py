@@ -31,6 +31,7 @@ if not os.path.exists(save_dir):
 snaps = [264, 214, 151, 94, 69, 51]
 
 # Load df
+h = 0.6774
 mass_fname = "snap_{}_FPGrMass.npy"
 
 accretion_df = np.load(load_dir+'accretion_rates.npy')
@@ -119,6 +120,8 @@ for isnap in range(len(snaps)-1):
     fig, axes = plt.subplots(1, num_cuts, figsize=(15, 5))
     # Load mass
     mass = np.load(load_dir+mass_fname.format(snaps[isnap]))
+    mass = mass / h
+    
     # Exclude mass with no accretion rate
     rate = accretion_df[:, isnap]
     mask = rate != 0
@@ -140,7 +143,7 @@ for isnap in range(len(snaps)-1):
             # rate_mask = (rate_cut <= 15)
             # rate_cut  = rate_cut[rate_mask]
             
-            if len(rate_cut) < 5:
+            if len(rate_cut) < 30:
                 pass
             else:
                 median     = np.median(rate_cut)
