@@ -8,9 +8,9 @@ fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 
 sim = 'TNG300'              # input 
 simpath = 'sim_205_1250_{}' # input 
-# # Run the scripts
-# os.system('python3 code/tree/plot_accretion_hist.py --DM Hydro')
-# os.system('python3 code/tree/plot_accretion_hist.py --DM DM')
+# Run the scripts
+os.system('python3 code/tree/plot_accretion_hist.py --DM Hydro')
+os.system('python3 code/tree/plot_accretion_hist.py --DM DM')
 
 # sim = 'MTNG'         # input 
 # simpath = '{}-Arepo' # input 

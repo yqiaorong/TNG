@@ -56,3 +56,62 @@ def load_z(dir, snaps):
     data = np.load(dir+f'/snap_{max(snaps)}_Rsp_stats.npy', allow_pickle=True).item()
     z_f = np.round(data['z'], 3)
     return z_i, z_f
+
+### Used in plot depth vs accretion rate
+
+def load_accret(dir):
+    import numpy as np
+    
+    acc = np.load(dir, allow_pickle=True).item()
+    mass_cuts = acc['mass_cuts'][:-1]
+    accret_med = acc['accret_med'] 
+    z = np.round(acc['redshifts'], 3)
+
+    print(mass_cuts, z)
+    return mass_cuts, z, accret_med
+
+def plot_data(dir, snaps, acc, axs, cmap, norm):
+    import numpy as np
+    
+    tot_x, tot_y = [], []
+    
+    acc_z, acc_mass_cuts, acc_med = acc[0], acc[1], acc[2]
+    for snap in snaps:
+
+        # Load data
+        data = np.load(dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+        z = np.round(data['z'], 3)
+        print(f'snap {snap}: z = ', z)
+        mass_cuts = data['mass_bins']
+        print(mass_cuts)
+        data = data['final_results']
+        
+        # In accretion rate, find the index corresponding to the current snap
+        acc_snap_idx = np.where(acc_z == z)[0][0]
+        print('acc z =', acc_z[acc_snap_idx], 'at idx', acc_snap_idx, acc_med.shape)
+        
+        # In accretion rate, find the index corresponding to the current mass cut
+        comm_mass_cuts = np.intersect1d(acc_mass_cuts, mass_cuts)
+        print(comm_mass_cuts)
+        x_mass_idx = [np.where(acc_mass_cuts == m)[0][0] for m in comm_mass_cuts]
+        print(x_mass_idx, acc_mass_cuts[x_mass_idx])
+        y_mass_idx = [np.where(mass_cuts == m)[0][0] for m in comm_mass_cuts]
+        print(y_mass_idx, mass_cuts[y_mass_idx])
+        
+        x = acc_med[acc_snap_idx, x_mass_idx]
+        y = data[y_mass_idx, 1, 1]
+        y_min, y_max = data[y_mass_idx, 1, 0], data[y_mass_idx, 1, 2]
+
+        mask = x!=0
+        x, y, y_min, y_max = x[mask], y[mask], y_min[mask], y_max[mask]
+        print(x)
+        print(y)
+        print('')
+        
+        axs.plot(x, y, color=cmap(norm(np.round(z, 3))), label=f'z = {z}')
+        axs.errorbar(x, y, yerr=[y-y_min, y_max-y], color=cmap(norm(np.round(z, 3))), fmt='.')
+        
+        tot_x = np.concatenate((tot_x, x))
+        tot_y = np.concatenate((tot_y, y))
+    
+    return tot_x, tot_y

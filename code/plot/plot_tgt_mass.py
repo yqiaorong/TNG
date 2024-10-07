@@ -82,8 +82,6 @@ cb.set_label('z')
 ### Plot TNG300 ### 
 ##############################################################################################
 
-
-TNG300_list = os.listdir(TNG300_dir)
 for isnap, snap in enumerate(TNG300_snaps):
     
     # Load data
@@ -119,10 +117,8 @@ for isnap, snap in enumerate(TNG300_snaps):
 # Plot MTNG #
 #############################################################################################
 
-
-MTNG_DM_list = os.listdir(MTNG_dir)
 for isnap, snap in enumerate(MTNG_snaps):
-    
+
     # Load data
     data = np.load(MTNG_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
     z = data['z']
@@ -142,10 +138,10 @@ for isnap, snap in enumerate(MTNG_snaps):
     #                  color=cmap(norm(np.round(z, 3))),
     #                  alpha=0.1)
     axs.errorbar(mass_cuts, data[:, feat_idx, 1],
-                 yerr=[data[:, feat_idx, 1]-data[:, feat_idx, 0], 
-                       data[:, feat_idx, 2]-data[:, feat_idx, 1]],
-                 color=cmap(norm(np.round(z, 3))),
-                 fmt='.')
+                yerr=[data[:, feat_idx, 1]-data[:, feat_idx, 0], 
+                    data[:, feat_idx, 2]-data[:, feat_idx, 1]],
+                color=cmap(norm(np.round(z, 3))),
+                fmt='.')
     
     # # Append to saved data
     # saved_x1.append(MTNG_DM_mass_cuts[:num_cut])

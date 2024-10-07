@@ -37,6 +37,8 @@ if not os.path.exists(save_dir):
     
 # Load df
 mass_df      = pd.read_csv(load_dir+'mass_table.csv', index_col=0)
+h = 0.6774
+mass_df = mass_df / h
 accretion_df = pd.read_csv(load_dir+'accretion_table.csv', index_col=0)
 
 # Select only accross cosmological time
@@ -98,8 +100,6 @@ tot_tsd        = np.array(tot_std)
 tot_low_bound  = np.array(tot_low_bound)
 tot_high_bound = np.array(tot_high_bound)
 
-
-
 # Plot the total accretion rate accross snapshots
 plt.figure()
 plt.plot(redshifts[1:], tot_median, color='b', label='median')
@@ -142,7 +142,7 @@ for isnap, snap in enumerate(snap_list):
             mass_mask = (mass >= 10**mass_cuts[icut]) & (mass < 10**mass_cuts[icut+1])
             rate_cut = rate[mass_mask]
             
-            if rate_cut.empty or len(rate_cut) == 1:
+            if rate_cut.empty or len(rate_cut) < 30:
                 pass
             else:
                 # At later snaps, two normal distri of accret rates appear per mass cut per snap,
@@ -159,7 +159,7 @@ for isnap, snap in enumerate(snap_list):
                 # Plot the histogram
                 hist = axes[icut].hist(rate_cut, label=f'mass cut {mass_cuts[icut]}')[0]
                 axes[icut].plot([median, median], [0, max(hist)], linestyle='dashed', color='red', 
-                                label=f'median = {np.round(median, 3)}')
+                                label=f'median = {np.round(median, 3)}'+r'$\pm$'+f'{np.round(high_bound-low_bound, 3)}')
                 axes[icut].legend(loc='best')
                 
                 median_array[isnap, icut] = median
@@ -193,9 +193,9 @@ plt.close()
 
 
 # Save accret per mass cut per snap
-save_dict = {'scale_factors':scale_factors, 'redshifts': redshifts, 'Omega0': Omega0, 'OmegaLambda': OmegaLambda,
+save_dict = {'scale_factors': scale_factors, 'redshifts': redshifts, 'Omega0': Omega0, 'OmegaLambda': OmegaLambda,
              'mass_cuts': mass_cuts,
-             'accret_std': std_array,  
+             'accret_std': std_array,  # (snaps, mass_cuts,)
              'accret_med': median_array,
              'accret_low': lowp_array, 
              'accret_high': highp_array}
