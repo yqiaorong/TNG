@@ -59,7 +59,7 @@ def load_z(dir, snaps):
 
 ### Used in plot depth vs accretion rate
 
-def load_accret(dir):
+def load_accret(dir, width=None):
     import numpy as np
     
     acc = np.load(dir, allow_pickle=True).item()
@@ -67,15 +67,24 @@ def load_accret(dir):
     accret_med = acc['accret_med'] 
     z = np.round(acc['redshifts'], 3)
 
-    print(mass_cuts, z)
-    return mass_cuts, z, accret_med
+    if width is not None:
+        if width =='std':
+            acc_width = acc['accret_std']
+        elif width == 'percentile':
+            lowp_array  = acc['accret_low']
+            highp_array = acc['accret_high']
+            acc_width = highp_array - lowp_array
+        return mass_cuts, z, accret_med, acc_width
+    else:
+        return mass_cuts, z, accret_med 
 
-def plot_data(dir, snaps, acc, axs, cmap, norm):
+def plot_data(dir, snaps, acc, axs, cmap, norm, feat='depth'):
     import numpy as np
     
     tot_x, tot_y = [], []
     
-    acc_z, acc_mass_cuts, acc_med = acc[0], acc[1], acc[2]
+    acc_z, acc_mass_cuts, acc_data = acc[0], acc[1], acc[2]
+
     for snap in snaps:
 
         # Load data
@@ -88,7 +97,7 @@ def plot_data(dir, snaps, acc, axs, cmap, norm):
         
         # In accretion rate, find the index corresponding to the current snap
         acc_snap_idx = np.where(acc_z == z)[0][0]
-        print('acc z =', acc_z[acc_snap_idx], 'at idx', acc_snap_idx, acc_med.shape)
+        print('acc z =', acc_z[acc_snap_idx], 'at idx', acc_snap_idx, acc_data.shape)
         
         # In accretion rate, find the index corresponding to the current mass cut
         comm_mass_cuts = np.intersect1d(acc_mass_cuts, mass_cuts)
@@ -98,14 +107,18 @@ def plot_data(dir, snaps, acc, axs, cmap, norm):
         y_mass_idx = [np.where(mass_cuts == m)[0][0] for m in comm_mass_cuts]
         print(y_mass_idx, mass_cuts[y_mass_idx])
         
-        x = acc_med[acc_snap_idx, x_mass_idx]
-        y = data[y_mass_idx, 1, 1]
-        y_min, y_max = data[y_mass_idx, 1, 0], data[y_mass_idx, 1, 2]
+        x = acc_data[acc_snap_idx, x_mass_idx]
+        if feat == 'depth':
+            y = data[y_mass_idx, 1, 1]
+            y_min, y_max = data[y_mass_idx, 1, 0], data[y_mass_idx, 1, 2]
+        elif feat == 'width':
+            y = data[y_mass_idx, 2, 1]
+            y_min, y_max = data[y_mass_idx, 2, 0], data[y_mass_idx, 2, 2]
 
         mask = x!=0
         x, y, y_min, y_max = x[mask], y[mask], y_min[mask], y_max[mask]
-        print(x)
-        print(y)
+        print('x:', x)
+        print('y:', y)
         print('')
         
         axs.plot(x, y, color=cmap(norm(np.round(z, 3))), label=f'z = {z}')
