@@ -1,56 +1,3 @@
-# def compt_density_profile(coordinates, haloCM, halo_R_Mean200, dimension,
-#                           radius_range=[0.01, 5], number_of_bins=85):
-#     """This function computes the density profile of halos.
-    
-#     INPUT:
-#     coordinates:    2D array with shape (N, 3)              [free unit]
-#     haloCM:         1D array with shape (3,)                [free unit]
-#     halo_R_Mean200: float                                   [free unit]
-#     dimension:      float                                   [ckpc^3/h]
-#     radius_range:   list with two fractional radius         [dimensionless]
-#     number_of_bins: float                       
-    
-#     RETURN:
-#     density_bins:   1D array with shape (number of bins,)   [input unit^(-3)]
-#     radius_bins:    1D array with shape (number of bins,)   [input unit]
-#     """
-    
-#     import numpy as np 
-#     radial_coordinates = distance(haloCM, coordinates, dimension)
-    
-#     # Create bins
-#     radius_bins = np.logspace(np.log10(radius_range[0]*halo_R_Mean200), 
-#                                  np.log10(radius_range[1]*halo_R_Mean200), number_of_bins)
-#     density_bins = np.empty((number_of_bins))
-    
-#     # Compute the density profile 
-#     for i, r in enumerate(radius_bins):
-#         # mass enclosed in bins
-#         if i == 0:
-#             mass_bin = len(radial_coordinates[(radial_coordinates <= r)]) 
-#             volume_bin =  4/3 * np.pi * r**3 
-#         else:
-#             mass_bin = len(radial_coordinates[(radius_bins[i-1] < radial_coordinates) & 
-#                                                     (radial_coordinates <= r)]) 
-#             volume_bin =  4/3 * np.pi * (r**3 - radius_bins[i-1]**3) 
-#         # Compute density
-#         density_bins[i] = mass_bin / volume_bin
-    
-#     return density_bins, radius_bins
-
-# def distance(x0, x1, dimensions):
-#     '''
-#     find distance between points in a periodic box
-#     x0,x1=coordinates or set of coordinates
-#     delta = distance between two points assuming no periodicity
-#     dimensions = box size *7500 ckpc/h*
-#     returns delta if delta<box size, else returns 1-delta as the distance between points
-#     '''
-#     import numpy as np
-#     delta = np.abs(x0 - x1)
-#     delta = np.where(delta > 0.5 * dimensions, dimensions - delta, delta)
-#     return np.sqrt((delta ** 2).sum(axis=-1))
-
 def count_halos_based_on_mass(mass_1d_array, mass_bin_start_list):
     import numpy as np
     
@@ -62,38 +9,37 @@ def count_halos_based_on_mass(mass_1d_array, mass_bin_start_list):
     return counts_list
 
 def stacked_density_profile(radii_2d_array, densities_2d_array, M200_1d_array, R200_1d_array,
-                            mass_bin_start, h, scale_factor, use_bootstrap=True):
+                            mass_bin_start, h, scale_factor, rho_c, use_bootstrap=True):
     """The function computes the stacked density profiles.
     
     INPUT:
     
-    radii_2d_array:     array (N_halos, N_radial_bins)
-    densities_2d_array: array (N_halos, N_radial_bins)
-    M200_1d_array:      array (N_halos,)  
-    R200_1d_array:      array (N_halos,)                     [10^10 MSun/h]
-    mass_bin_start:     float                                [10^(10+a) MSun/h]
-    h:                  float                                [100 * km / megaparsec / second]   
-    scale_factor:       float   
-        
+    radii_2d_array:     array (N_halos, N_radial_bins)       [kpc]
+    densities_2d_array: array (N_halos, N_radial_bins)       [Msun / (kpc)^3]
+    M200_1d_array:      array (N_halos,)                     [10^10 MSun]
+    R200_1d_array:      array (N_halos,)                     [kpc]
+    mass_bin_start:     float                                [10^(10+a) MSun]
+    h:                  float                                  
+    scale_factor:       float
+    rho_c:              float                                [Msun / (kpc)^3]
+    
     RETURN:
     (   
     radial_centers:     array (N_radial_bins)                [dimless // r200]
     medians:            array (N_radial_bins)                [dimless // rho_c]
     errors:             array with shape (N_radial_bins, 2)  [dimless // rho_c]
     num_halo:           int
-    R200_median:        float                                [ckpc/h]
+    R200_median:        float                                [kpc]
     )
     """
     
-    import os
-    import sys
     import numpy as np
-    from unyt import G, second, megaparsec, km
+    # from unyt import G, second, megaparsec, km
     
     # Initialize the output
     densities_list = [] # [dimensionless]
     radii = []          # [dimensionless]
-    radius200_list = [] # [ckpc/h]
+    radius200_list = [] # [kpc]
     
     ### Load all density profile data ###
     # Iterate over halos
@@ -106,19 +52,19 @@ def stacked_density_profile(radii_2d_array, densities_2d_array, M200_1d_array, R
             radii_dimless = radii / radius200 # [dimensionless]
             radius200_list.append(radius200)
             
-            # Compute the critical density
-            Hubble = h * 100 * km / megaparsec / second
-            rho_c = 3 * Hubble**2 / (8*np.pi*G) 
-            rho_c.convert_to_units('Msun/kiloparsec**3') 
-            rho_c = rho_c * scale_factor**3 / h**2   # [(MSun/h)/(ckpc/h)**3]
+            # # Compute the critical density
+            # Hubble = h * 100 * km / megaparsec / second
+            # rho_c = 3 * Hubble**2 / (8*np.pi*G) 
+            # rho_c.convert_to_units('Msun/kiloparsec**3') 
+            # rho_c = rho_c * scale_factor**3 / h**2   # [(MSun/h)/(ckpc/h)**3]
             
             # density profile
-            densities_list.append(densities / rho_c) # [dimensionless]
+            densities_list.append(densities / rho_c)   # [dimensionless]
         else:
             pass 
     
     # Compute median R200
-    radius200_median = np.median(radius200_list) # [ckpc/h]
+    radius200_median = np.median(radius200_list) # [kpc]
     del radius200_list
     
     # Get the number of DM halos
@@ -147,9 +93,9 @@ def stacked_density_profile(radii_2d_array, densities_2d_array, M200_1d_array, R
                            abs(median_with_error[2]-median_with_error[1])]) # upper bound error
         # Convert the list to array
         medians = np.array(medians) # shape: (N radii, 1)
-        errors = np.array(errors) # shape: (N radii, 2)
+        errors = np.array(errors)   # shape: (N radii, 2)
     else:
-        medians = np.percentile(densities_list, 50, axis=1) # shape: (N radii, 1)
+        medians = np.percentile(densities_list, 50, axis=1)       # shape: (N radii, 1)
         errors = np.percentile(densities_list, [16,84], axis=1).T # shape: (N radii, 2)
     
     # Compute radii centers
@@ -241,7 +187,7 @@ def plot_profile(R200_median, radius, rho, rho_err, slope, slope_err,
     
     fig, axs = plt.subplots(2, 1, figsize=(10, 15))
     axs[0].scatter(radius, rho, s=1, # color='b', 
-                   label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot/h$".format(mass_cut[0]+10, mass_cut[1]+10)
+                   label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
                    # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                    )
     axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, # color = 'b',
@@ -253,7 +199,7 @@ def plot_profile(R200_median, radius, rho, rho_err, slope, slope_err,
     
     # Plot the fitted gradients
     axs[1].scatter(radius, slope, s=1, # color='b',
-                   label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot/h$".format(mass_cut[0]+10, mass_cut[1]+10)
+                   label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
                    # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                    )
     axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, # color = 'b',

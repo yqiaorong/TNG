@@ -5,6 +5,7 @@ plt.style.use('code/style.mplstyle')
 import numpy as np
 import argparse
 from func import *
+import os
 
 # Input arguments
 parser = argparse.ArgumentParser()
@@ -15,7 +16,7 @@ parser.add_argument('--mass_cut',default=None,type=float)
 args = parser.parse_args()
 
 print('')
-print('>>> Plot density profile evolution <<<')
+print('>>> Plot physical density profile evolution <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -23,8 +24,8 @@ print('')
 
 str_mass_cut = float_to_str(args.mass_cut)
 
-stats_dir = 'result/bootstrap_stats/'
-profile_dir = 'result/bootstrap/'
+stats_dir = 'result/bootstrap_stats_phys/'
+profile_dir = 'result/bootstrap_phys/'
 if args.sim == 'TNG300':
     sim_dir = f'TNG300/sim_205_1250_{args.DM}/'
     snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
@@ -52,7 +53,6 @@ cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
 cb.set_label('z')
 
 # Redshift data
-# z = []
 for isnap, snap in enumerate(snaps):
         
     # Load data
@@ -72,9 +72,9 @@ for isnap, snap in enumerate(snaps):
                 f'/mass_cut_{str_mass_cut}/boots_{median_idx[mass_cut_idx]}.npy',
                 allow_pickle=True).item()
         
-        phy_Rsp = data['final_results'][mass_cut_idx, 0, 1]
-        phy_R200 = profile['R200_median'] / h * scale_factor
-        scale_Rsp =  phy_Rsp / phy_R200 # dimensionless
+        phy_Rsp = data['final_results'][mass_cut_idx, 0, 1] # [kpc]
+        phy_R200 = profile['R200_median']                   # [kpc]
+        scale_Rsp =  phy_Rsp / phy_R200                     # [dimensionless]
         del data
 
         # density profile
@@ -107,5 +107,8 @@ axs[0].set_ylabel(r"$\rho$/$\rho_c$")
 axs[1].set_ylabel(r'd log $\rho$ / d log r')
 axs[1].set_ylim(-5, -0.5)
 
-plt.savefig(f'result/bootstrap_plot/full_{args.DM}/Nboots_{args.Nboots}/{args.sim}-{args.DM}_mass_cut_{str_mass_cut}_profiles')
+save_dir = 'result/bootstrap_plot_phys/'
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+plt.savefig(f'{save_dir}/full_{args.DM}/Nboots_{args.Nboots}/{args.sim}-{args.DM}_mass_cut_{str_mass_cut}_profiles')
 plt.close

@@ -16,7 +16,7 @@ parser.add_argument('--bin_end',  default=None, type=float)
 args = parser.parse_args()
 
 print('')
-print(f'>>> Bootstrap Rsp <<<')
+print(f'>>> Bootstrap Physical Rsp <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -25,7 +25,7 @@ print('')
 
 
 # Load redshift values (Alternative!!!)
-halos_dir = f'result/DMhalo_density_profiles/{args.sim}/snap_{args.snapnum}/final_densities/'
+halos_dir = f'result/DMhalo_density_profiles_phys/{args.sim}/snap_{args.snapnum}/final_densities/'
 halos_list = os.listdir(halos_dir)
 sample_file = halos_list[0]
 sample_data = np.load(os.path.join(halos_dir, sample_file), allow_pickle=True).item()
@@ -33,6 +33,7 @@ print(sample_data.keys())
 z = sample_data['z']
 scale_factor = sample_data['scale_factor']
 h = sample_data['h']
+rho_c = sample_data['rho_c'] # [(Msun) / (kpc)^3]
 del sample_data
 
 
@@ -41,7 +42,7 @@ del sample_data
 bin_start, bin_end, bin_width = args.bin_start, args.bin_end, 0.5
 num_bins = int((bin_end-bin_start)/bin_width)
 print(f'The number of mass bins: {num_bins}')
-mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun/h
+mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun
 print(mass_bins[:-1])
 print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun')
 
@@ -56,10 +57,10 @@ for ifname, fname in enumerate(halos_list):
     data = np.load(f'{halos_dir}/{fname}', allow_pickle=True).item()
 
     if ifname == 0:
-        halo_R_Mean200 = data['halo_R_Mean200'] # [ckpc / h]
-        halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 Msun / h]
-        densities = data['densities']           # [(Msun/h) / (ckpc/h)^3]
-        radial_bins = data['radial_bins']       # [ckpc / h]
+        halo_R_Mean200 = data['halo_R_Mean200'] # [kpc]
+        halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 Msun]
+        densities = data['densities']           # [Msun / (kpc)^3]
+        radial_bins = data['radial_bins']       # [kpc]
     else:
         halo_R_Mean200 = np.concatenate((halo_R_Mean200, data['halo_R_Mean200']), axis=0)
         halo_M_Mean200 = np.concatenate((halo_M_Mean200, data['halo_M_Mean200']), axis=0)
@@ -67,14 +68,13 @@ for ifname, fname in enumerate(halos_list):
         radial_bins = np.concatenate((radial_bins, data['radial_bins']), axis=0)
     
     total_num_halos = total_num_halos + data['halo_R_Mean200'].shape[0]
-    # Convert masses to physical masses DIVIDE!!!
-    halo_M_Mean200 = halo_M_Mean200 / h # [10^10 Msun]
+    del data
     
 print(halo_R_Mean200.shape, halo_M_Mean200.shape, densities.shape, radial_bins.shape)
 print(f'total number of halos: {total_num_halos}')
 
 # Save plot dir 
-save_data_dir = f'result/bootstrap/{args.sim}/snap_{args.snapnum}/Nboots_{args.Nboots}/'
+save_data_dir = f'result/bootstrap_phys/{args.sim}/snap_{args.snapnum}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_data_dir):
     os.makedirs(save_data_dir)
     
@@ -88,10 +88,10 @@ while valid_boots < Nboots:
     # Random selection of halos
     indices = np.random.randint(0, total_num_halos, Nsample)
     # Select densities and masses
-    select_radii = radial_bins[indices]     # [ckpc / h]
-    select_densities = densities[indices]   # [(Msun/h) / (ckpc/h)^3]
-    select_masses = halo_M_Mean200[indices] # [10^10 Msun / h]
-    select_r200 = halo_R_Mean200[indices]   # [ckpc / h]
+    select_radii = radial_bins[indices]     # [kpc]
+    select_densities = densities[indices]   # [Msun / (kpc)^3]
+    select_masses = halo_M_Mean200[indices] # [10^10 Msun]
+    select_r200 = halo_R_Mean200[indices]   # [kpc]
 
     del indices
     
@@ -103,9 +103,9 @@ while valid_boots < Nboots:
         for i in range(num_bins):
             # Select halos in the cut and compute density profiles
             raw_profiles = stacked_density_profile(select_radii, select_densities, select_masses, select_r200, 
-                                                   mass_bins[i], h, scale_factor)
+                                                   mass_bins[i], h, scale_factor, rho_c)
             radius, rho, rho_err = raw_profiles[0][1:], raw_profiles[1][1:], raw_profiles[2][1:] # [dimensionless]
-            num_halo, R200_median = raw_profiles[3], raw_profiles[4]                             # [ckpc/h]
+            num_halo, R200_median = raw_profiles[3], raw_profiles[4]                             # [kpc]
             del raw_profiles
 
             # Compute the slope
@@ -134,7 +134,7 @@ while valid_boots < Nboots:
                             save_data=True)
                 
                 # Compute Rsp
-                physical_fitted_radius = fitted_radius * R200_median * scale_factor / h
+                physical_fitted_radius = fitted_radius * R200_median
                 Rsp = physical_fitted_radius[np.argmin(fitted_slope)] # [kpc]
                 
                 # Rsp depth
@@ -187,7 +187,7 @@ for i, cut in enumerate(results):
     
     
 # Save the result
-save_stats_dir = f'result/bootstrap_stats/{args.sim}/Nboots_{Nboots}/'
+save_stats_dir = f'result/bootstrap_stats_phys/{args.sim}/Nboots_{Nboots}/'
 if not os.path.exists(save_stats_dir):
     os.makedirs(save_stats_dir)
     

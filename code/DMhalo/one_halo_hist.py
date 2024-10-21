@@ -122,7 +122,7 @@ for idx, file in enumerate(load_list):
         densities_bins.append(densities) 
         
 densities_bins = np.array(densities_bins)
-sum_densities_bins = np.sum(densities_bins, axis=0) # [Msun/h / (ckpc/h)^3]
+sum_densities_bins = np.sum(densities_bins, axis=0) # [(Msun/h) / (ckpc/h)^3]
 del densities_bins
 
 
@@ -144,7 +144,7 @@ if not os.path.exists(save_plt_dir):
     
 # Save data
 save_dict['radial_bins'] = radial_bins  # [ckpc/h]
-save_dict['densities'] = sum_densities_bins # [(Msun/h)/(ckpc/h)^3]
+save_dict['densities'] = sum_densities_bins # [(Msun/h) / (ckpc/h)^3]
 np.save(os.path.join(save_data_dir, f'halo_{groupnum}'), save_dict)
 
 
