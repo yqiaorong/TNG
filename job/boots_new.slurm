@@ -20,10 +20,13 @@ snap=${snaplist[$SLURM_ARRAY_TASK_ID]}
 bin_end_list=( $(cat job/bin_ends.txt) )
 bin_end=${bin_end_list[$SLURM_ARRAY_TASK_ID]}
 
+bin_start_list=( $(cat job/bin_starts.txt) )
+bin_start=${bin_start_list[$SLURM_ARRAY_TASK_ID]}
+
 echo "# Array ID: " $SLURM_ARRAY_TASK_ID
     
 echo "# Start python processing $SLURM_ARRAY_TASK_ID at: "$(date)
-python3 code/DMhalo_tgt/bootstrap_tgt_phys.py --snapnum $snap --bin_end $bin_end --sim MTNG/DM-Arepo/MTNG-L500-4320-A/ --bin_start 3 
+python3 code/DMhalo_tgt/bootstrap_tgt_phys.py --snapnum $snap --bin_start $bin_start --bin_end $bin_end --sim MTNG/DM-Arepo/MTNG-L500-4320-A/
 echo "# End python processing $SLURM_ARRAY_TASK_ID at: "$(date)
 
 echo "# Ending at: "$(date)
