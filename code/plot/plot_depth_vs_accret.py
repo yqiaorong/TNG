@@ -6,15 +6,15 @@ import numpy as np
 from matplotlib import cm
 from matplotlib import pyplot as plt 
 from matplotlib.colors import BoundaryNorm
-import seaborn as sns
-from scipy.stats import pearsonr
+
+
 plt.style.use('code/style.mplstyle')
 from func import *
 import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM',      default=None,type=str) # [ Hydro /DM ]
+parser.add_argument('--DM',      default=None,type=str) # [ Hydro / DM ]
 parser.add_argument('--Nboots',  default=1024,type=int)
 args = parser.parse_args()
 
@@ -32,13 +32,10 @@ print(feats[feat_idx])
     
     
 
-root_dir = 'result/bootstrap_stats/'
+root_dir = 'result/bootstrap_stats_phys/'
 
 # Set up the plot
 fig, axs = plt.subplots(1, 1, dpi=500)
-
-# # Saved data
-# saved_x1, saved_x2, saved_y, saved_y_max, saved_y_min = [], [], [], [], []
 
 ##############################################################################################
 # Load z
@@ -115,7 +112,7 @@ axs.set_xlabel(r'$\Gamma$')
 axs.set_ylabel("Depth")
 
 # Save the plot
-save_dir = f'result/bootstrap_plot/full_{args.DM}/Nboots_{args.Nboots}/'
+save_dir = f'result/bootstrap_plot_phys/full_{args.DM}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 plt.savefig(f'{save_dir}/{args.DM}_{feats[feat_idx]}_vs_accret_rate')

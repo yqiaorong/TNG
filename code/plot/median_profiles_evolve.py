@@ -107,8 +107,8 @@ axs[0].set_ylabel(r"$\rho$/$\rho_c$")
 axs[1].set_ylabel(r'd log $\rho$ / d log r')
 axs[1].set_ylim(-5, -0.5)
 
-save_dir = 'result/bootstrap_plot_phys/'
+save_dir = f'result/bootstrap_plot_phys/full_{args.DM}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
-plt.savefig(f'{save_dir}/full_{args.DM}/Nboots_{args.Nboots}/{args.sim}-{args.DM}_mass_cut_{str_mass_cut}_profiles')
+plt.savefig(f'{save_dir}/{args.sim}-{args.DM}_mass_cut_{str_mass_cut}_profiles')
 plt.close

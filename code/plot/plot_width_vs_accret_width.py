@@ -33,7 +33,7 @@ print(feats[feat_idx])
     
     
 
-root_dir = 'result/bootstrap_stats/'
+root_dir = 'result/bootstrap_stats_phys/'
 
 # Set up the plot
 fig, axs = plt.subplots(1, 1, dpi=500)
@@ -110,7 +110,7 @@ axs.set_xlabel(f'Accretion rate width {args.width}')
 axs.set_ylabel("Splashback feature width")
 
 # Save the plot
-save_dir = f'result/bootstrap_plot/full_{args.DM}/Nboots_{args.Nboots}/'
+save_dir = f'result/bootstrap_plot_phys/full_{args.DM}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 plt.savefig(f'{save_dir}/{args.DM}_sp_width_vs_accret_width_{args.width}')

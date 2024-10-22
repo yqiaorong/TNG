@@ -31,13 +31,10 @@ print(feats[feat_idx])
     
     
 
-root_dir = 'result/bootstrap_stats/'
+root_dir = 'result/bootstrap_stats_phys/'
 
 # Set up the plot
 fig, axs = plt.subplots(1, 1, dpi=500)
-
-# # Saved data
-# saved_x1, saved_x2, saved_y, saved_y_max, saved_y_min = [], [], [], [], []
 
 ##############################################################################################
 # Load z
@@ -93,10 +90,10 @@ for isnap, snap in enumerate(TNG300_snaps):
     
     data = data['final_results']
 
-    # axs.plot(mass_cuts, data[:, feat_idx, 1], 
-    #          color=cmap(norm(np.round(z, 3))),
-    #         # label=f'z = {np.round(z, 1)}'
-    #         )
+    axs.plot(mass_cuts, data[:, feat_idx, 1], 
+             color=cmap(norm(np.round(z, 3))), alpha=0.2
+            # label=f'z = {np.round(z, 1)}'
+            )
     # axs.fill_between(mass_cuts, data[:, feat_idx, 0], data[:, feat_idx, 2], 
     #                  color=cmap(norm(np.round(z, 3))),
     #                  alpha=0.1)
@@ -105,13 +102,6 @@ for isnap, snap in enumerate(TNG300_snaps):
                        data[:, feat_idx, 2]-data[:, feat_idx, 1]],
                  color=cmap(norm(np.round(z, 3))),
                  fmt='.')
-
-    # # Append to saved data
-    # saved_x1.append(TNG300_mass_cuts[:num_cut])
-    # saved_x2.append([z]*len(TNG300_mass_cuts[:num_cut]))
-    # saved_y.append(data[:, feat_idx, 1])
-    # saved_y_min.append(data[:, feat_idx, 0])
-    # saved_y_max.append(data[:, feat_idx, 2])
 
 #############################################################################################
 # Plot MTNG #
@@ -130,10 +120,10 @@ for isnap, snap in enumerate(MTNG_snaps):
     factors = [1000, 1, 1, 1000]
     data[:, args.feat_idx, :] = data[:, args.feat_idx, :]*factors[args.feat_idx]
 
-    # axs.plot(mass_cuts, data[:, feat_idx, 1], 
-    #          color=cmap(norm(np.round(z, 3))),
-    #         # label=f'z = {np.round(z, 1)}'
-    #         )
+    axs.plot(mass_cuts, data[:, feat_idx, 1], 
+             color=cmap(norm(np.round(z, 3))), alpha=0.2
+            # label=f'z = {np.round(z, 1)}'
+            )
     # axs.fill_between(mass_cuts, data[:, feat_idx, 0], data[:, feat_idx, 2], 
     #                  color=cmap(norm(np.round(z, 3))),
     #                  alpha=0.1)
@@ -142,13 +132,6 @@ for isnap, snap in enumerate(MTNG_snaps):
                     data[:, feat_idx, 2]-data[:, feat_idx, 1]],
                 color=cmap(norm(np.round(z, 3))),
                 fmt='.')
-    
-    # # Append to saved data
-    # saved_x1.append(MTNG_DM_mass_cuts[:num_cut])
-    # saved_x2.append([z]*len(MTNG_DM_mass_cuts[:num_cut]))
-    # saved_y.append(data[:, feat_idx, 1])
-    # saved_y_min.append(data[:, feat_idx, 0])
-    # saved_y_max.append(data[:, feat_idx, 2])
 
 # Final edit
 axs.set_xscale('log')
@@ -167,23 +150,8 @@ elif feat_idx == 3:
 
 
 # Save the plot
-save_dir = f'result/bootstrap_plot/full_{args.DM}/Nboots_{args.Nboots}/'
+save_dir = f'result/bootstrap_plot_phys/full_{args.DM}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 plt.savefig(f'{save_dir}/{args.DM}_{feats[feat_idx]}_vs_mass')
 plt.close()
-
-
-
-# # Flatten the data
-# saved_x1 = np.array(np.concatenate(saved_x1).tolist())
-# saved_x2 = np.array(np.concatenate(saved_x2).tolist())
-# saved_y  = np.array(np.concatenate(saved_y).tolist())
-# saved_y_min = np.array(np.concatenate(saved_y_min).tolist())
-# saved_y_max = np.array(np.concatenate(saved_y_max).tolist())
-
-# # Save the data
-# np.save(f'data/equ_data_{feats[feat_idx]}_Nboots{args.Nboots}{args.DM}', 
-#         {'mass_x1': saved_x1, 'z_x2': saved_x2,
-#          'y': saved_y, 'y_min': saved_y_min, 'y_max': saved_y_max})
-# print('data saved.')

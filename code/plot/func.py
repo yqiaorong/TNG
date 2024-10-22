@@ -80,6 +80,8 @@ def load_accret(dir, width=None):
 
 def plot_data(dir, snaps, acc, axs, cmap, norm, feat='depth'):
     import numpy as np
+    import seaborn as sns
+    from scipy.stats import pearsonr
     
     tot_x, tot_y = [], []
     
@@ -117,12 +119,23 @@ def plot_data(dir, snaps, acc, axs, cmap, norm, feat='depth'):
 
         mask = x!=0
         x, y, y_min, y_max = x[mask], y[mask], y_min[mask], y_max[mask]
+        
+        # Sort according to x
+        x = x[np.argsort(x)]
+        y = y[np.argsort(x)]
+        y_min = y_min[np.argsort(x)]
+        y_max = y_max[np.argsort(x)]
+        
         print('x:', x)
         print('y:', y)
         print('')
         
         axs.plot(x, y, color=cmap(norm(np.round(z, 3))), label=f'z = {z}')
         axs.errorbar(x, y, yerr=[y-y_min, y_max-y], color=cmap(norm(np.round(z, 3))), fmt='.')
+        
+        # Plot correlations
+        # sns.set(style="whitegrid")
+        # axs = sns.regplot(x=x, y=y, ci=95, scatter=False, line_kws={"color": cmap(norm(np.round(z, 3)))})
         
         tot_x = np.concatenate((tot_x, x))
         tot_y = np.concatenate((tot_y, y))

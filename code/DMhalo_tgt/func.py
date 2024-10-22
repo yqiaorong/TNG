@@ -182,55 +182,56 @@ def plot_profile(R200_median, radius, rho, rho_err, slope, slope_err,
                  save_data = False):
     
     import os
-    from matplotlib import pyplot as plt  
-    plt.style.use('code/style.mplstyle')
     
-    fig, axs = plt.subplots(2, 1, figsize=(10, 15))
-    axs[0].scatter(radius, rho, s=1, # color='b', 
-                   label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
-                   # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-                   )
-    axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, # color = 'b',
-                        # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-                        )
-    axs[0].plot(fitted_radius, fitted_rho, lw=0.5, # color='salmon',
-                # label=f'Fit: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-                )
+    # from matplotlib import pyplot as plt  
+    # plt.style.use('code/style.mplstyle')
     
-    # Plot the fitted gradients
-    axs[1].scatter(radius, slope, s=1, # color='b',
-                   label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
-                   # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-                   )
-    axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, # color = 'b',
-                        # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-                        )
-    axs[1].plot(fitted_radius, fitted_slope, lw=0.5, # color='salmon',
-                # label=f'Theory: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-                )
+    # fig, axs = plt.subplots(2, 1, figsize=(10, 15))
+    # axs[0].scatter(radius, rho, s=1, # color='b', 
+    #                label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
+    #                # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
+    #                )
+    # axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, # color = 'b',
+    #                     # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
+    #                     )
+    # axs[0].plot(fitted_radius, fitted_rho, lw=0.5, # color='salmon',
+    #             # label=f'Fit: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
+    #             )
+    
+    # # Plot the fitted gradients
+    # axs[1].scatter(radius, slope, s=1, # color='b',
+    #                label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
+    #                # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
+    #                )
+    # axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, # color = 'b',
+    #                     # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
+    #                     )
+    # axs[1].plot(fitted_radius, fitted_slope, lw=0.5, # color='salmon',
+    #             # label=f'Theory: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
+    #             )
     
 
-    # General settings
-    axs[0].set_xscale('log')
-    axs[0].set_yscale('log')
-    axs[0].set_ylabel(r"$\rho$/$\rho_c$")
-    axs[0].legend()
-    axs[0].set_title(f'Stacked density profiles')
+    # # General settings
+    # axs[0].set_xscale('log')
+    # axs[0].set_yscale('log')
+    # axs[0].set_ylabel(r"$\rho$/$\rho_c$")
+    # axs[0].legend()
+    # axs[0].set_title(f'Stacked density profiles')
 
-    axs[1].set_xscale('log')
-    axs[1].set_xlabel(r"r/$R_{200}$")
-    axs[1].set_ylabel("Slope")
-    axs[1].set_ylim(-6,-0)
-    axs[1].legend()
-    axs[1].set_title(f'Finding splashback radius at snap {snap}')
+    # axs[1].set_xscale('log')
+    # axs[1].set_xlabel(r"r/$R_{200}$")
+    # axs[1].set_ylabel("Slope")
+    # axs[1].set_ylim(-6,-0)
+    # axs[1].legend()
+    # axs[1].set_title(f'Finding splashback radius at snap {snap}')
     
     # Save the plot
     start, _ = float_to_str(mass_cut[0], mass_cut[1])
-    plt_dir = save_dir + f'/plot/mass_cut_{start}'
-    if not os.path.exists(plt_dir):
-        os.makedirs(plt_dir)
-    plt.savefig(os.path.join(plt_dir, fname))
-    plt.close()
+    # plt_dir = save_dir + f'/plot/mass_cut_{start}'
+    # if not os.path.exists(plt_dir):
+    #     os.makedirs(plt_dir)
+    # plt.savefig(os.path.join(plt_dir, fname))
+    # plt.close()
     
     # Save data
     if save_data == True:

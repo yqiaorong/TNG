@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --ntasks-per-node=6
+#SBATCH --ntasks-per-node=11
 #SBATCH -t 4320            
 #SBATCH -p serial_requeue  
 #SBATCH --mem-per-cpu=4000
-#SBATCH --array=0-5
+#SBATCH --array=0-10
 #SBATCH --open-mode=append 
-#SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/boots/MTNG-DM-%A-%a.out
-#SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/boots/MTNG-DM-%A-%a.err
-#SBATCH --mail-type=BEGIN,END    
+#SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/boots/TNG300-Hydro-%A-%a.out
+#SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/boots/TNG300-Hydro-%A-%a.err
+#SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=s_qyu@mit.edu
 
 echo "# Starting at: "$(date)
@@ -26,7 +26,7 @@ bin_start=${bin_start_list[$SLURM_ARRAY_TASK_ID]}
 echo "# Array ID: " $SLURM_ARRAY_TASK_ID
     
 echo "# Start python processing $SLURM_ARRAY_TASK_ID at: "$(date)
-python3 code/DMhalo_tgt/bootstrap_tgt_phys.py --snapnum $snap --bin_start $bin_start --bin_end $bin_end --sim MTNG/DM-Arepo/MTNG-L500-4320-A/
+python3 code/DMhalo_tgt/bootstrap_tgt_phys.py --snapnum $snap --bin_start $bin_start --bin_end $bin_end --sim TNG300/sim_205_1250_Hydro/
 echo "# End python processing $SLURM_ARRAY_TASK_ID at: "$(date)
 
 echo "# Ending at: "$(date)
