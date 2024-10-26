@@ -52,10 +52,10 @@ else:
 
 
     ### Save compiled chunk file ###
-    save_dict = {'halo_R_Mean200': halo_R_Mean200, # [ckpc / h]
-                'halo_M_Mean200': halo_M_Mean200, # [10^10 Msun / h]
-                'densities': densities, # [(Msun/h)/(ckpc/h)^3]
-                'radial_bins': radii, # [ckpc/h]
+    save_dict = {'halo_R_Mean200': halo_R_Mean200, # [ckpc/h]
+                'halo_M_Mean200': halo_M_Mean200,  # [10^10 Msun/h]
+                'densities': densities,            # [(Msun/h)/(ckpc/h)^3]
+                'radial_bins': radii,              # [ckpc/h]
                 'h': h, 'scale_factor': scale_factor, 'z': z}   
 
     # Save 

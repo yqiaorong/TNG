@@ -42,9 +42,9 @@ save_root_dir = args.save_root_dir
 group_fields = ['GroupPos', 'Group_M_Mean200', 'Group_R_Mean200']
 Halos = il.groupcat.loadHalos(basePath, snapnum, fields=group_fields)
 
-GroupPos        = Halos['GroupPos']        # [ckpc/h]
+GroupPos        = Halos['GroupPos']        # [cMpc/h] !!!
 Group_M_Mean200 = Halos['Group_M_Mean200'] # [10^10 MSun/h]
-Group_R_Mean200 = Halos['Group_R_Mean200'] # [ckpc/h]
+Group_R_Mean200 = Halos['Group_R_Mean200'] # [cMpc/h] !!!
 
 # Using physical mass to select subset
 subset_idx = np.where((Group_M_Mean200 >= 10**args.bin_start) & (Group_M_Mean200 < 10**args.bin_end))[0]
@@ -58,26 +58,24 @@ with h5py.File(il.snapshot.snapPath(basePath, snapnum), 'r') as f:
     header = dict(f['Header'].attrs.items())
     Parameters = dict(f['Parameters'].attrs.items())
 
-    BoxSize = Parameters['BoxSize'] # [cMpc / h]
+    BoxSize = Parameters['BoxSize'] # [cMpc/h]
     scale_factor = header['Time']
     h = Parameters['HubbleParam']
-    DMmass = header['MassTable'][1] * 10**10 # [MSun / h]
+    DMmass = header['MassTable'][1] * 10**10 # [MSun/h]
     
 
 
 # Load coordinates ONLY AT ONCE
 load_dir = f'{basePath}/snapdir_{snapnum:03d}/'
-# load_list = os.listdir(load_dir)
-# load_list = [fname for fname in load_list if fname.startswith(f'snapshot_{snapnum:03d}') and fname.endswith('hdf5')]
-
-# snap_path = os.path.join(load_dir, load_list[args.chunk_idx])
 snap_path = os.path.join(load_dir, f'snapshot_{snapnum:03d}.{args.chunk_idx}.hdf5')
+
 with h5py.File(snap_path, 'r') as f:
-    Coordinates = np.array(f['PartType1/Coordinates'], dtype='float32') # [ckpc/h]
-    print(Coordinates.shape)
+    Coordinates = np.array(f['PartType1/Coordinates'], dtype='float32') # [cMpc/h]
+    
 # Move data to GPU!!!
 Coordinates_gpu = cp.asarray(Coordinates)
 print(Coordinates_gpu.nbytes)
+del Coordinates
 
 # Initialising the final data
 global_idx     = np.empty((Ngroups_subset))
@@ -89,23 +87,11 @@ radii          = np.empty((Ngroups_subset, 85))
 
 
 ### SPEED UP!!! ###
-
 def create_mask(Coordinates, xmin, xmax, ymin, ymax, zmin, zmax):
     mask = (xmin <= Coordinates[:, 0]) & (Coordinates[:, 0] <= xmax) & \
            (ymin <= Coordinates[:, 1]) & (Coordinates[:, 1] <= ymax) & \
            (zmin <= Coordinates[:, 2]) & (Coordinates[:, 2] <= zmax)
     return mask
-
-def select_sub_coords(Coordinates, mask):
-    num_coords = Coordinates.shape[0]
-    selected_coords = cp.empty((cp.sum(mask), Coordinates.shape[1]), dtype=Coordinates.dtype)
-    
-    idx = 0
-    for i in range(num_coords):
-        if mask[i]:
-            selected_coords[idx] = Coordinates[i]
-            idx += 1
-    return selected_coords
 
 
 
@@ -114,9 +100,11 @@ ti = time.time()
 for i, idx in enumerate(tqdm(subset_idx, desc=f'chunk {args.chunk_idx}')):
     
     # Initial values 
-    x, y, z = np.round(GroupPos[idx, 0].item(), 1), np.round(GroupPos[idx, 1].item(), 1), np.round(GroupPos[idx, 2].item(), 1)
-    R = np.round(Group_R_Mean200[idx].item(), 3)
-
+    x = np.round(GroupPos[idx, 0].item(), 1)      # [cMpc/h] 
+    y = np.round(GroupPos[idx, 1].item(), 1)      # [cMpc/h]
+    z = np.round(GroupPos[idx, 2].item(), 1)      # [cMpc/h]
+    R = np.round(Group_R_Mean200[idx].item(), 3)  # [cMpc/h]
+    
     # Set halo spatial boundary
     edge = 5 # as a multiple of hal0_R_Mean200
     xmin, xmax = x - edge * R, x + edge * R
@@ -133,25 +121,29 @@ for i, idx in enumerate(tqdm(subset_idx, desc=f'chunk {args.chunk_idx}')):
     
     # Move data back to CPU 
     sub_coords = cp.asnumpy(sub_coords_gpu)
+    del mask, sub_coords_gpu
     
     # Compute the density profile
-    rhos, radial_bins = compt_density_profile(sub_coords, [x,y,z], R, BoxSize*1000)
-    rhos = rhos * DMmass
+    rhos, radial_bins = compt_density_profile(sub_coords, [x,y,z], R, BoxSize) # All in [cMpc/h] !!!
+    rhos = rhos * DMmass / (10**9)   # [(MSun/h) / (ckpc/h)^3]
+    radial_bins = radial_bins * 1000 # [ckpc/h]
+    del sub_coords
     
     # Save the density profile
-    global_idx[i] = idx
-    halo_R_Mean200[i] = Group_R_Mean200[idx]
-    halo_M_Mean200[i] = Group_M_Mean200[idx]
-    densities[i] = rhos
-    radii[i] = radial_bins
+    global_idx[i]     = idx
+    halo_R_Mean200[i] = Group_R_Mean200[idx]*1000 # [ckpc/h]
+    halo_M_Mean200[i] = Group_M_Mean200[idx]      # [10^10 MSun/h]
+    densities[i]      = rhos                      # [(MSun/h) / (ckpc/h)^3]
+    radii[i]          = radial_bins               # [ckpc/h]
+    del rhos, radial_bins
 tf = time.time()
 print(f'The total time: {tf-ti:.4f}')
 
 print(global_idx.shape, halo_R_Mean200.shape, halo_M_Mean200.shape)
 print(densities.shape, radii.shape)
-save_dict = {'halo_R_Mean200': halo_R_Mean200, # [ckpc / h]
-             'halo_M_Mean200': halo_M_Mean200, # [10^10 Msun / h]
-             'h': h, 'scale_factor': scale_factor, 'DMmass': DMmass, # [MSun / h]
+save_dict = {'halo_R_Mean200': halo_R_Mean200, # [ckpc/h]
+             'halo_M_Mean200': halo_M_Mean200, # [10^10 Msun/h]
+             'h': h, 'scale_factor': scale_factor, 'DMmass': DMmass, # [MSun/h]
              'densities': densities,            # [(Msun/h)/(ckpc/h)^3]
              'radial_bins': radii               # [ckpc/h]
             }     

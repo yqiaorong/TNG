@@ -7,7 +7,7 @@ save_dir = f'{parent_dir}/final_densities/'
 import numpy as np
 data = np.load(f'{save_dir}/bin-30-40.npy', allow_pickle=True).item() 
 sample_idx = 10
-sample_densities = data['densities'][sample_idx]
+sample_densities = data['densities'][sample_idx] / (10**9)
 radial_bins = data['radial_bins'][sample_idx]
 
 import matplotlib.pyplot as plt
