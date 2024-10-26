@@ -92,7 +92,7 @@ for isnap, snap in enumerate(snaps):
         #             label=f'z={np.round(z, 3)}') # dimensionless radius
         ax1.plot(profile['fitted_radius'], profile['fitted_slope'], color=cmap(norm(np.round(z, 3))))  # dimensionless radius
         ax1.axvline(x=scale_Rsp, color=cmap(norm(np.round(z, 3))),
-                    linestyle='--', linewidth=1)                                  # dimensionless radius
+                    linestyle='--', linewidth=1)                              # dimensionless radius
         
     except IndexError:
         pass 

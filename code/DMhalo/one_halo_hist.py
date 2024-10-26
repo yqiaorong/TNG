@@ -1,11 +1,8 @@
 import illustris_python as il
-import matplotlib.pyplot as plt
-import matplotlib
 import os
 import numpy as np
 import argparse
 import h5py
-from tqdm import tqdm
 from func import compt_density_profile_hist, compt_density_profile
 
 # Input arguments
@@ -60,6 +57,7 @@ with h5py.File(il.snapshot.snapPath(basePath, snapnum), 'r') as f:
     scale_factor = header['Time']
     h = header['HubbleParam']
     DMmass = header['MassTable'][1] * 10**10 # [MSun / h]
+    print('DM mass:', DMmass)
     # BoxSize = header['BoxSize'] # [ckpc / h]
     
 

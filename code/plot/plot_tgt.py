@@ -16,7 +16,7 @@ cuts = np.linspace(1.5, 4, 6)
 for cut in cuts:
     os.system(f'python3 code/plot/median_profiles_evolve.py --sim TNG300 --DM Hydro --mass_cut {cut}')
 
-cuts = np.linspace(3, 5, 6)
+cuts = np.linspace(3, 5, 5)
 for cut in cuts:
     os.system(f'python3 code/plot/median_profiles_evolve.py --sim MTNG --DM DM --mass_cut {cut}')
     

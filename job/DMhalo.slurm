@@ -24,7 +24,7 @@ bin_end=${bin_end_list[$SLURM_ARRAY_TASK_ID]}
 echo "# Array ID: " $SLURM_ARRAY_TASK_ID
     
 echo "# Start python processing $SLURM_ARRAY_TASK_ID at: "$(date)
-mpirun -np $SLURM_NTASKS python3 code/DMhalo_para/1_subset.py --snapnum $snap --DM _DM --bin_start 1 --bin_end $bin_end 
+mpirun -np $SLURM_NTASKS python3 code/DMhalo/1_subset.py --snapnum $snap --DM _DM --bin_start 1 --bin_end $bin_end 
 echo "# End python processing $SLURM_ARRAY_TASK_ID at: "$(date)
 
 echo "# Ending at: "$(date)

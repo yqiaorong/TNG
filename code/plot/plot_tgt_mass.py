@@ -76,62 +76,13 @@ cb.set_label('z')
 
 
 ##############################################################################################
-### Plot TNG300 ### 
+### Plot ### 
 ##############################################################################################
 
-for isnap, snap in enumerate(TNG300_snaps):
-    
-    # Load data
-    data = np.load(TNG300_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
-    z = data['z']
-    
-    mass_cuts = data['mass_bins']
-    mass_cuts = [10**(10+m) for m in mass_cuts]
-    
-    data = data['final_results']
-
-    axs.plot(mass_cuts, data[:, feat_idx, 1], 
-             color=cmap(norm(np.round(z, 3))), alpha=0.2
-            # label=f'z = {np.round(z, 1)}'
-            )
-    # axs.fill_between(mass_cuts, data[:, feat_idx, 0], data[:, feat_idx, 2], 
-    #                  color=cmap(norm(np.round(z, 3))),
-    #                  alpha=0.1)
-    axs.errorbar(mass_cuts, data[:, feat_idx, 1],
-                 yerr=[data[:, feat_idx, 1]-data[:, feat_idx, 0], 
-                       data[:, feat_idx, 2]-data[:, feat_idx, 1]],
-                 color=cmap(norm(np.round(z, 3))),
-                 fmt='.')
-
-#############################################################################################
+# Plot TNG300
+axs = plot_stats(TNG300_dir, TNG300_snaps, axs, cmap, norm, feat_idx)
 # Plot MTNG #
-#############################################################################################
-
-for isnap, snap in enumerate(MTNG_snaps):
-
-    # Load data
-    data = np.load(MTNG_dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
-    z = data['z']
-    
-    mass_cuts = data['mass_bins']
-    mass_cuts = [10**(10+m) for m in mass_cuts]
-    
-    data = data['final_results']
-    factors = [1000, 1, 1, 1000]
-    data[:, args.feat_idx, :] = data[:, args.feat_idx, :]*factors[args.feat_idx]
-
-    axs.plot(mass_cuts, data[:, feat_idx, 1], 
-             color=cmap(norm(np.round(z, 3))), alpha=0.2
-            # label=f'z = {np.round(z, 1)}'
-            )
-    # axs.fill_between(mass_cuts, data[:, feat_idx, 0], data[:, feat_idx, 2], 
-    #                  color=cmap(norm(np.round(z, 3))),
-    #                  alpha=0.1)
-    axs.errorbar(mass_cuts, data[:, feat_idx, 1],
-                yerr=[data[:, feat_idx, 1]-data[:, feat_idx, 0], 
-                    data[:, feat_idx, 2]-data[:, feat_idx, 1]],
-                color=cmap(norm(np.round(z, 3))),
-                fmt='.')
+axs = plot_stats(MTNG_dir, MTNG_snaps, axs, cmap, norm, feat_idx)
 
 # Final edit
 axs.set_xscale('log')

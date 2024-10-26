@@ -27,9 +27,9 @@ def load_data(dir, snaps, args):
         num_bins = len(mass_bins)
         
         data = data['final_results']
-        if 'MTNG' in dir:
-            factors = [1000, 1, 1, 1000]
-            data[:, args.feat_idx, :] = data[:, args.feat_idx, :]*factors[args.feat_idx] # convert Rsp in [Mpc] to [kpc]
+        # if 'MTNG' in dir:
+        #     factors = [1000, 1, 1, 1000]
+        #     data[:, args.feat_idx, :] = data[:, args.feat_idx, :]*factors[args.feat_idx] # convert Rsp in [Mpc] to [kpc]
         
         # Concatenate data
         if isnap == 0:
@@ -141,3 +141,30 @@ def plot_data(dir, snaps, acc, axs, cmap, norm, feat='depth'):
         tot_y = np.concatenate((tot_y, y))
     
     return tot_x, tot_y
+
+def plot_stats(dir, snaps, axs, cmap, norm, feat_idx):
+    import numpy as np
+    for snap in snaps:
+        
+        # Load data
+        data = np.load(dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+        z = data['z']
+        
+        mass_cuts = data['mass_bins']
+        mass_cuts = [10**(10+m) for m in mass_cuts]
+        
+        data = data['final_results']
+
+        axs.plot(mass_cuts, data[:, feat_idx, 1], 
+                color=cmap(norm(np.round(z, 3))), alpha=0.2
+                # label=f'z = {np.round(z, 1)}'
+                )
+        # axs.fill_between(mass_cuts, data[:, feat_idx, 0], data[:, feat_idx, 2], 
+        #                  color=cmap(norm(np.round(z, 3))),
+        #                  alpha=0.1)
+        axs.errorbar(mass_cuts, data[:, feat_idx, 1],
+                    yerr=[data[:, feat_idx, 1]-data[:, feat_idx, 0], 
+                        data[:, feat_idx, 2]-data[:, feat_idx, 1]],
+                    color=cmap(norm(np.round(z, 3))),
+                    fmt='.')
+    return axs
