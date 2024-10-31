@@ -7,6 +7,10 @@ import argparse
 from func import *
 import os
 
+# The gravitational softening length (after multiplied with 2.8):
+# TNG300: 4kpc
+# MTNG: 10.3kpc
+
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--sim',     default=None,type=str)
@@ -29,9 +33,11 @@ profile_dir = 'result/bootstrap_phys/'
 if args.sim == 'TNG300':
     sim_dir = f'TNG300/sim_205_1250_{args.DM}/'
     snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
+    soften_length = 4    # [kpc]
 elif args.sim == 'MTNG':
     sim_dir = f'MTNG/{args.DM}-Arepo/MTNG-L500-4320-A/'
     snaps = [264, 237, 214, 179, 151, 129]
+    soften_length = 10.3 # [KPC]
     
 
 
@@ -76,6 +82,9 @@ for isnap, snap in enumerate(snaps):
         phy_R200 = profile['R200_median']                   # [kpc]
         scale_Rsp =  phy_Rsp / phy_R200                     # [dimensionless]
         del data
+        
+        # Compute softening length in R200
+        scale_Rsoft = soften_length / phy_R200              # [dimensionless]
 
         # density profile
         ax0 = axs[0]
@@ -85,6 +94,8 @@ for isnap, snap in enumerate(snaps):
         ax0.plot(profile['fitted_radius'], profile['fitted_rho'], color=cmap(norm(np.round(z, 3))))  # dimensionless radius
         ax0.axvline(x=scale_Rsp, color=cmap(norm(np.round(z, 3))),
                     linestyle='--', linewidth=1)                              # dimensionless radius
+        ax0.axvline(x=scale_Rsoft, color=cmap(norm(np.round(z, 3))),
+                    linestyle='-', linewidth=1)                               # dimensionless radius
         
         # gradient profile
         ax1 = axs[1]
@@ -93,6 +104,8 @@ for isnap, snap in enumerate(snaps):
         ax1.plot(profile['fitted_radius'], profile['fitted_slope'], color=cmap(norm(np.round(z, 3))))  # dimensionless radius
         ax1.axvline(x=scale_Rsp, color=cmap(norm(np.round(z, 3))),
                     linestyle='--', linewidth=1)                              # dimensionless radius
+        ax1.axvline(x=scale_Rsoft, color=cmap(norm(np.round(z, 3))),
+                    linestyle='-', linewidth=1)                               # dimensionless radius
         
     except IndexError:
         pass 
