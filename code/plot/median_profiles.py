@@ -82,7 +82,7 @@ z_i, z_f = load_z(f'{stats_dir}/{sim_dir}/Nboots_{args.Nboots}/', snaps)
 cmap = plt.get_cmap(cmap_name, num_z)
 bound = np.linspace(z_f, z_i+0.001, num_z) 
 norm = BoundaryNorm(bound, cmap.N)
-cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), shrink=0.4,
+cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), shrink=1, aspect=30,
                   ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
 cb.set_label('z')
 

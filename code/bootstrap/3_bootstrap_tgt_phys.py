@@ -109,12 +109,14 @@ while valid_boots < Nboots:
             del raw_profiles
             
             ### Remove the radius < gravitational softening length ###
+            
             radius_phys = radius * R200_median # [kpc]
             # Get radius which is larger than the gravitational softening length
             if args.sim.startswith('MTNG'):
-                rsoft = 10.3 # [kpc]
+                rsoft = 80 # [kpc]
                 start_idx = np.where(radius_phys > rsoft)[0][0]
                 radius, rho, rho_err = radius[start_idx:], rho[start_idx:], rho_err[start_idx:]
+                print(start_idx)
                 
             # Compute the slope
             radius, rho, rho_err = filter_profile(radius, rho, rho_err) # Remove zero densities in the centre
