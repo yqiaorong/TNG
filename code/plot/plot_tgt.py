@@ -6,6 +6,8 @@ for idx in range(3):
     os.system(f'python3 code/plot/plot_tgt_mass.py --DM Hydro --feat_idx {idx}')
     os.system(f'python3 code/plot/plot_tgt_redshift.py --DM DM --feat_idx {idx}')
     os.system(f'python3 code/plot/plot_tgt_redshift.py --DM Hydro --feat_idx {idx}')
+    os.system(f'python3 code/plot/plot_tgt_redshift_zoom-in.py --DM DM --feat_idx {idx} --zmax 2')
+    os.system(f'python3 code/plot/plot_tgt_redshift_zoom-in.py --DM Hydro --feat_idx {idx} --zmax 2')
     
     
     
