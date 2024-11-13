@@ -142,29 +142,42 @@ def plot_data(dir, snaps, acc, axs, cmap, norm, feat='depth'):
     
     return tot_x, tot_y
 
-def plot_stats(dir, snaps, axs, cmap, norm, feat_idx):
+def plot_stats(args, dir, snaps, axs, cmap, norm, feat_idx):
     import numpy as np
+    
+    if args.zmax == '':
+            zmax = 10
+    else:
+        zmax = int(args.zmax) 
+            
     for snap in snaps:
         
         # Load data
         data = np.load(dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
         z = data['z']
         
-        mass_cuts = data['mass_bins']
-        mass_cuts = [10**(10+m) for m in mass_cuts]
-        
-        data = data['final_results']
-
-        axs.plot(mass_cuts, data[:, feat_idx, 1], 
-                color=cmap(norm(np.round(z, 3))), alpha=0.2
-                # label=f'z = {np.round(z, 1)}'
-                )
-        # axs.fill_between(mass_cuts, data[:, feat_idx, 0], data[:, feat_idx, 2], 
-        #                  color=cmap(norm(np.round(z, 3))),
-        #                  alpha=0.1)
-        axs.errorbar(mass_cuts, data[:, feat_idx, 1],
-                    yerr=[data[:, feat_idx, 1]-data[:, feat_idx, 0], 
-                        data[:, feat_idx, 2]-data[:, feat_idx, 1]],
-                    color=cmap(norm(np.round(z, 3))),
-                    fmt='.')
+        if zmax >= z:
+            
+            mass_cuts = data['mass_bins']
+            mass_cuts = [10**(10+m) for m in mass_cuts]
+            
+            data = data['final_results']
+            
+            if args.charac == 'Charac_':
+                mass_cuts = mass_cuts/(1+z)
+                
+            axs.plot(mass_cuts, data[:, feat_idx, 1], 
+                    color=cmap(norm(np.round(z, 3))), alpha=0.2
+                    )
+            
+            axs.errorbar(mass_cuts, data[:, feat_idx, 1],
+                        yerr=[data[:, feat_idx, 1]-data[:, feat_idx, 0], 
+                            data[:, feat_idx, 2]-data[:, feat_idx, 1]],
+                        color=cmap(norm(np.round(z, 3))),
+                        fmt='.')
+            # axs.errorbar(mass_cuts, np.log10(data[:, feat_idx, 1]),
+            #             yerr=[data[:, feat_idx, 1]/(mass_cuts*np.log(10))-data[:, feat_idx, 0]/(mass_cuts*np.log(10)), 
+            #                   data[:, feat_idx, 2]/(mass_cuts*np.log(10))-data[:, feat_idx, 1]/(mass_cuts*np.log(10))],
+            #             color=cmap(norm(np.round(z, 3))),
+            #             fmt='.')
     return axs

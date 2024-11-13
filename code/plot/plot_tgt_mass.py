@@ -15,6 +15,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--DM',      default=None,type=str) # [ Hydro /DM ]
 parser.add_argument('--Nboots',  default=1024,type=int)
 parser.add_argument('--feat_idx',default=0,   type=int) # Feature index [Rsp = 0, depth = 1, width = 2]
+parser.add_argument('--charac',  default='',  type=str) 
+parser.add_argument('--zmax',    default='',  type=str)
 args = parser.parse_args()
 
 print('')
@@ -80,20 +82,22 @@ cb.set_label('z')
 ##############################################################################################
 
 # Plot TNG300
-axs = plot_stats(TNG300_dir, TNG300_snaps, axs, cmap, norm, feat_idx)
+axs = plot_stats(args, TNG300_dir, TNG300_snaps, axs, cmap, norm, feat_idx)
 # Plot MTNG #
-axs = plot_stats(MTNG_dir, MTNG_snaps, axs, cmap, norm, feat_idx)
+axs = plot_stats(args, MTNG_dir, MTNG_snaps, axs, cmap, norm, feat_idx)
 
 # Final edit
 axs.set_xscale('log')
-axs.set_xlabel('Mass [$M_\\odot$]')
+axs.set_xlabel(args.charac+'mass [$M_\\odot$]')
 if feat_idx == 0:
     axs.set_ylabel(r"$R_{sp}$ [kpc]")
     axs.set_yscale('log')
 elif feat_idx == 1:
-    axs.set_ylabel("depth")
+    axs.set_ylabel("log (depth)")
+    axs.set_yscale('log')
 elif feat_idx == 2:
     axs.set_ylabel(r'width [$R_{200}$]')
+    # axs.set_yscale('log')
 elif feat_idx == 3:
     axs.set_ylabel(r"wdith [kpc]")
     axs.set_yscale('log')
@@ -104,5 +108,9 @@ elif feat_idx == 3:
 save_dir = f'result/bootstrap_plot_phys/full_{args.DM}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
-plt.savefig(f'{save_dir}/{args.DM}_{feats[feat_idx]}_vs_mass')
+if args.zmax == '':
+    save_name = f'{save_dir}/{args.DM}_{feats[feat_idx]}_vs_'+args.charac+f'mass'
+else:
+    save_name = f'{save_dir}/{args.DM}_{feats[feat_idx]}_vs_'+args.charac+f'mass-zoom-in-zmax-{args.zmax}'
+plt.savefig(save_name)
 plt.close()
