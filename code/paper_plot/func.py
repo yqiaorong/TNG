@@ -118,3 +118,29 @@ def plot_data(dir, snaps, acc, axs, cmap, norm, feat='depth'):
         tot_y = np.concatenate((tot_y, y))
     
     return tot_x, tot_y
+
+def delta_c(z):
+    import astropy.units as u
+    from astropy.constants import M_sun, G
+    from astropy.cosmology import FlatLambdaCDM
+    
+    # Define own cosmology
+    h = 0.6774
+    Om0 = 0.3089
+    Ob0 = 0.0486
+    cosmo = FlatLambdaCDM(H0 = h * 100 * u.km / u.s / u.Mpc, 
+                            Om0=Om0, Ob0=Ob0, Tcmb0=2.725)
+    
+    # Compute the critical density
+    H = cosmo.H(z) # km / (Mpc s)
+    H = H.to(u.m / u.s / u.m)
+    rho_c = 3 * H**2 / ( 8 * np.pi * G ) 
+    rho_c = rho_c.to(M_sun / u.kpc**3) # Msun / kpc**3
+    
+    # Compute the characteristic overdensity
+    delta_rho = rho_c * 1.686
+    
+    return delta_rho
+
+def character_mass(char_r, char_rho):
+    return 4/3 * np.pi * char_r**3 * char_rho

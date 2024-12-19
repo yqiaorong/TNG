@@ -58,7 +58,7 @@ blue_list = ['#89CAEA','#4596CD','#0B75B3','#015696','#012A61','#053061', ] # li
 cmap = LinearSegmentedColormap.from_list('my_cmap', blue_list)
 # cmap = plt.get_cmap('plasma', num_bins)
 
-bound = np.logspace(min_bin, max_bin+0.1, num_bins) 
+bound = np.logspace(9, max_bin+0.1, num_bins) 
 norm = BoundaryNorm(bound, cmap.N)
 cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
                   ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)

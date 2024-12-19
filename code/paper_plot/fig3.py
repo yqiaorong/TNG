@@ -25,7 +25,8 @@ fig, axs = plt.subplots(2, 1, figsize=(4, 6), dpi=500, sharex=True)
 # Set up the colorbar
 # ============================================================================================
 
-TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
+TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8
+                ]
 TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_Hydro/Nboots_1024/'
 TNG300_z_i, TNG300_z_f = load_z(TNG300_dir, TNG300_snaps)
 
@@ -35,49 +36,21 @@ MTNG_z_i, MTNG_z_f = load_z(MTNG_dir, MTNG_snaps)
 
 z_i, z_f = max(TNG300_z_i, MTNG_z_i), min(TNG300_z_f, MTNG_z_f)
 print(z_i, z_f)
-# # Set the mass range
-# def set_cb(root_dir, simu):
-        
-#         # Load TNG300
-#         TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
-#         TNG300_snap = 99
-#         TNG300_data = np.load(f'{TNG300_dir}/snap_{TNG300_snap}_Rsp_stats.npy', allow_pickle=True).item()
-
-#         TNG300_mass_bins     = TNG300_data['mass_bins']
-
-#         # Load MTNG
-#         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
-#         MTNG_snap = 264
-#         MTNG_data = np.load(f'{MTNG_dir}//snap_{MTNG_snap}_Rsp_stats.npy', allow_pickle=True).item()
-
-#         MTNG_mass_bins     = MTNG_data['mass_bins']
-
-#         min_mass = min(min(TNG300_mass_bins), min(MTNG_mass_bins))
-#         max_mass = max(max(TNG300_mass_bins), max(MTNG_mass_bins))
-#         print(min_mass, max_mass)
-#         num_mass_bins = int((max_mass - min_mass) / 0.5)
-#         print(num_mass_bins)
-        
-#         return min_mass, max_mass
-
-# hydro_min_mass, hydro_max_mass = set_cb(root_dir, 'Hydro')
-# DM_min_mass, DM_max_mass = set_cb(root_dir, 'DM')
-
-# min_mass = min(hydro_min_mass, DM_min_mass)
-# max_mass = max(hydro_max_mass, DM_max_mass)
-# num_mass_bins = int((max_mass - min_mass) / 0.5)
 
 # Set up the colorbar
+# -----------------------------------------------------------------------------------------
 from matplotlib.colors import LinearSegmentedColormap
-red_list = [# '#EE9D9F', '#DE6A69', 
-            '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
+red_list = [# '#EE9D9F', 
+            '#DE6A69', '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
 blue_list = ['#89CAEA','#4596CD', '#0B75B3', '#015696', '#012A61']
 cmap = LinearSegmentedColormap.from_list('my_cmap', red_list)
-# cmap = plt.get_cmap('viridis', len(TNG300_snaps))
+
+# cmap = plt.get_cmap('autumn', len(TNG300_snaps))
 bound = np.linspace(z_f, z_i, len(TNG300_snaps))
 norm = BoundaryNorm(bound, cmap.N)
 cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
                   ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
+# -----------------------------------------------------------------------------------------
 
 # Reduce colormap ticks sf
 from matplotlib.ticker import FuncFormatter
@@ -123,26 +96,9 @@ def plot_width(z, mass_bins, final_results, simu):
                               final_results[:, 2, 2]-final_results[:, 2, 1]],
                         color=cmap(norm(z)), fmt='.')
                 
-# def plot_width(mass_bins, final_results, simu):
-#         if simu == 'DM':
-#                 ls = '--'
-#         elif simu == 'Hydro':
-#                 ls = '-'
-                
-#         for imass, mass in enumerate(mass_bins):
-                
-#                 axs[1].plot(mass, final_results[imass, 2, 1], color=cmap(norm(mass)))
-#                 if imass < len(mass_bins)-1:
-#                         axs[1].plot([mass_bins[imass], mass_bins[imass+1]], 
-#                                     [final_results[imass, 2, 1], final_results[imass+1, 2, 1]], 
-#                                      color=cmap(norm(mass_bins[imass])), lw=1, alpha=0.5, linestyle=ls)  
-#                 axs[1].errorbar(mass, final_results[imass, 2, 1],
-#                                 yerr=[[final_results[imass, 2, 1]-final_results[imass, 2, 0]], 
-#                                       [final_results[imass, 2, 2]-final_results[imass, 2, 1]]],
-#                                 color=cmap(norm(mass)), fmt='.')
-
-
-simus = ['Hydro', 'DM']
+simus = ['Hydro', 
+         # 'DM'
+         ]
 for simu in simus:
         
         # Plot TNG300
