@@ -53,7 +53,7 @@ fig, axs = plt.subplots(2, 1, figsize = (4, 6), dpi=500, sharex=True, constraine
 min_bin, max_bin = 9, 15
 num_bins = int((max_bin - min_bin)/0.5)
 
-cmap = plt.get_cmap('managua', num_bins)
+cmap = plt.get_cmap('vanimo', num_bins)
 # from matplotlib.colors import LinearSegmentedColormap
 # red_list = [# '#EE9D9F', '#DE6A69', 
 #             '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark

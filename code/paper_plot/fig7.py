@@ -49,7 +49,7 @@ num_z = len(TNG300_snaps)
 #             '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
 # blue_list = ['#89CAEA','#4596CD', '#0B75B3', '#015696', '#012A61']
 # cmap = LinearSegmentedColormap.from_list('my_cmap', red_list)
-cmap = plt.get_cmap('vanimo', num_z)
+cmap = plt.get_cmap('managua', num_z)
 bound = all_z
 norm = BoundaryNorm(bound, cmap.N)
 cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),

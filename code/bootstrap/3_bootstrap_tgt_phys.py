@@ -80,7 +80,7 @@ if not os.path.exists(save_data_dir):
     
 # Bootstrap setup
 Nsample, Nboots = args.Nsample, args.Nboots
-results = np.empty((num_bins, 4, Nboots))
+results = np.empty((num_bins, 5, Nboots))
 
 valid_boots = 0
 while valid_boots < Nboots: 
@@ -167,7 +167,7 @@ while valid_boots < Nboots:
                 width_dimless = fitted_radius[right_idx] - fitted_radius[left_idx]
                 
                 # Append results
-                results[i, :, valid_boots] = Rsp, depth, width_dimless, width
+                results[i, :, valid_boots] = Rsp, depth, width_dimless, width, min_grad
        
         ### Only the for loop is complete, update valid_boots
         else:
@@ -184,6 +184,7 @@ for i in range(num_bins):
     print(f'depth: {final_results[i, 1]}')
     print(f'width dimless: {final_results[i, 2]}')
     print(f'width physical: {final_results[i, 3]}')
+    print(f'depth absolute: {final_results[i, 4]}')
     print('')
     
 # Check the index of median value

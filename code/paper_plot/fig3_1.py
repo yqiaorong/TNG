@@ -1,4 +1,5 @@
-""""This script plots depth (top panel) and width (bottom panel) as a function of mass for a few redshifts.
+""""This script plots depth (top panel) and width (bottom panel) as a function of characteristic 
+    mass for a few redshifts.
     Both Hydro and DM-only simulations."""
 
 import os
@@ -10,7 +11,7 @@ plt.style.use('code/style.mplstyle')
 from func import *
 
 print('')
-print('>>> Plot Depth and width vs mass for a few redshifts <<<')
+print('>>> Plot Depth and width vs charac mass for a few redshifts <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats_phys/'
@@ -22,20 +23,22 @@ root_dir = 'result/bootstrap_stats_phys/'
 fig, axs = plt.subplots(2, 1, figsize=(4, 6), dpi=500, sharex=True, constrained_layout=True)
 
 # ============================================================================================
-# Set up the colorbar
+# Load data 
 # ============================================================================================
 
-TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
+# Load TNG300
 TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_Hydro/Nboots_1024/'
-TNG300_z_i, TNG300_z_f = load_z(TNG300_dir, TNG300_snaps)
+TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
+TNG300_z, _, _ = load_data(TNG300_dir, TNG300_snaps)
 
 all_z = load_all_z(TNG300_dir, TNG300_snaps)
 
-MTNG_snaps = [264, 237, 214, 179, 151, 129]
+# Load MTNG
 MTNG_dir = f'{root_dir}/MTNG/Hydro-Arepo/MTNG-L500-4320-A/Nboots_1024/'
-MTNG_z_i, MTNG_z_f = load_z(MTNG_dir, MTNG_snaps)
+MTNG_snaps = [264, 237, 214, 179, 151, 129]
+MTNG_z, _, _ = load_data(MTNG_dir, MTNG_snaps)
 
-z_i, z_f = max(TNG300_z_i, MTNG_z_i), min(TNG300_z_f, MTNG_z_f)
+z_i, z_f = max(max(TNG300_z), max(MTNG_z)), min(min(TNG300_z), min(MTNG_z))
 print(z_i, z_f)
 
 # Set up the colorbar
@@ -104,22 +107,35 @@ for simu in simus:
         # Plot TNG300
         for snap in TNG300_snaps:
                 TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
-                TNG300_z, TNG300_mass_bins, TNG300_final_results = load_stats(TNG300_dir, snap)
-                plot_depth(TNG300_z, TNG300_mass_bins, TNG300_final_results, simu)
-                plot_width(TNG300_z, TNG300_mass_bins, TNG300_final_results, simu)
+                TNG300_z, _, TNG300_final_results = load_stats(TNG300_dir, snap)
+                print(TNG300_z)
+                # Compute the characteristic mass
+                # -----------------------------------------------------------------------------
+                Rsp = TNG300_final_results[:, 0, 1]
+                delta_rho = delta_c(TNG300_z)
+                TNG200_char = character_mass(Rsp, delta_rho)
+                # -----------------------------------------------------------------------------
+                plot_depth(TNG300_z, TNG200_char, TNG300_final_results, simu)
+                plot_width(TNG300_z, TNG200_char, TNG300_final_results, simu)
                 
         # Plot MTNG
         for snap in MTNG_snaps:
                 MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
-                MTNG_z, MTNG_mass_bins, MTNG_final_results = load_stats(MTNG_dir, snap)
-                plot_depth(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
-                plot_width(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
+                MTNG_z, _, MTNG_final_results = load_stats(MTNG_dir, snap)
+                # Compute the characteristic mass
+                # -----------------------------------------------------------------------------
+                Rsp = MTNG_final_results[:, 0, 1]
+                delta_rho = delta_c(MTNG_z)
+                MTNG_char = character_mass(Rsp, delta_rho)
+                # -----------------------------------------------------------------------------
+                plot_depth(MTNG_z, MTNG_char, MTNG_final_results, simu)
+                plot_width(MTNG_z, MTNG_char, MTNG_final_results, simu)
 
 axs[0].set_xscale('log')
 axs[0].set_ylabel(r"$\mathcal{D}$")
 
 axs[1].set_xscale('log')
-axs[1].set_xlabel('Mass [$M_\\odot$]')
+axs[1].set_xlabel('Characteristic Mass [$M_\\odot$]')
 axs[1].set_ylabel(r"$\mathcal{W}$")
 
 # ============================================================================================
@@ -130,5 +146,5 @@ save_dir = f'result/paper_plots/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-plt.savefig(f'{save_dir}/fig3')
+plt.savefig(f'{save_dir}/fig3_1')
 plt.close()

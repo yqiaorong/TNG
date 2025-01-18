@@ -17,21 +17,17 @@ print('')
 root_dir = 'result/bootstrap_stats_phys/'
 
 # ============================================================================================
-# Loadd data 
+# Load data 
 # ============================================================================================
 
 # Load TNG300
 TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_Hydro/Nboots_1024/'
-TNG300_list = os.listdir(TNG300_dir)
-
 TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
 
 TNG300_z, TNG300_bins, TNG300_data = load_data(TNG300_dir, TNG300_snaps)
 
 # Load MTNG
 MTNG_dir = f'{root_dir}/MTNG/Hydro-Arepo/MTNG-L500-4320-A/Nboots_1024/'
-MTNG_list = os.listdir(MTNG_dir)
-
 MTNG_snaps = [264, 237, 214, 179, 151, 129]
 
 MTNG_z, MTNG_bins, MTNG_data = load_data(MTNG_dir, MTNG_snaps)
@@ -54,7 +50,7 @@ fig, axs = plt.subplots(2, 1, figsize = (4, 6), dpi=500, sharex=True, constraine
 min_bin, max_bin = 9, 15
 num_bins = int((max_bin - min_bin)/0.5)
 
-cmap = plt.get_cmap('managua', num_bins)
+cmap = plt.get_cmap('vanimo', num_bins)
 # from matplotlib.colors import LinearSegmentedColormap
 # red_list = [# '#EE9D9F', '#DE6A69', 
 #             '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark

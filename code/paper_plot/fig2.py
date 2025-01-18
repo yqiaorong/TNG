@@ -54,7 +54,7 @@ print(num_mass_bins)
 
 fig, axs = plt.subplots(2, 1, figsize=(4, 6), dpi=500, sharex=True, constrained_layout=True)
 
-cmap = plt.get_cmap('vanimo', len(all_z))
+cmap = plt.get_cmap('managua', len(all_z))
 bound = all_z
 norm = BoundaryNorm(bound, cmap.N)
 
