@@ -37,28 +37,30 @@ MTNG_z, MTNG_bins, MTNG_data = load_data(MTNG_dir, MTNG_snaps)
 
 # Concatenate all data
 z = np.concatenate((TNG300_z, MTNG_z))
+data = np.concatenate((TNG300_data, MTNG_data), axis=0)
+
 bins = np.concatenate((TNG300_bins, MTNG_bins))
 bins = np.log10(bins)
-data = np.concatenate((TNG300_data, MTNG_data), axis=0)
+uniq_bins = np.unique(bins)
 
 # ============================================================================================
 # Set up the plot
 # ============================================================================================
 
-fig, axs = plt.subplots(2, 1, figsize = (4, 6), dpi=500, sharex=True)
+fig, axs = plt.subplots(2, 1, figsize = (4, 6), dpi=500, sharex=True, constrained_layout=True)
     
-uniq_bins = np.unique(bins)
-num_bins = len(uniq_bins)
-min_bin, max_bin = np.min(bins), np.max(bins)
+# Set up the colorbar
+min_bin, max_bin = 9, 15
+num_bins = int((max_bin - min_bin)/0.5)
 
-from matplotlib.colors import LinearSegmentedColormap
-red_list = [# '#EE9D9F', '#DE6A69', 
-            '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
-blue_list = ['#89CAEA','#4596CD','#0B75B3','#015696','#012A61','#053061', ] # light to dark
-cmap = LinearSegmentedColormap.from_list('my_cmap', blue_list)
-# cmap = plt.get_cmap('plasma', num_bins)
+cmap = plt.get_cmap('managua', num_bins)
+# from matplotlib.colors import LinearSegmentedColormap
+# red_list = [# '#EE9D9F', '#DE6A69', 
+#             '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
+# blue_list = ['#89CAEA','#4596CD','#0B75B3','#015696','#012A61','#053061', ] # light to dark
+# cmap = LinearSegmentedColormap.from_list('my_cmap', blue_list)
 
-bound = np.logspace(9, max_bin+0.1, num_bins) 
+bound = np.logspace(min_bin, max_bin+0.1, num_bins) 
 norm = BoundaryNorm(bound, cmap.N)
 cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
                   ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
@@ -97,10 +99,10 @@ for b in uniq_bins:
                     )
     
 # Final edit
-axs[0].set_ylabel("Depth")
+axs[0].set_ylabel(r"$\mathcal{D}$")
 
 axs[1].set_xlabel('z')
-axs[1].set_ylabel("Width")
+axs[1].set_ylabel(r"$\mathcal{W}$")
 
 # ============================================================================================
 # Save the plot
@@ -110,5 +112,6 @@ save_dir = f'result/paper_plots/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
+# plt.tight_layout()
 plt.savefig(f'{save_dir}/fig4.png')
 plt.close()

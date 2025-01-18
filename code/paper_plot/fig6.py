@@ -17,9 +17,6 @@ print('')
 
 root_dir = 'result/bootstrap_stats_phys/'
 
-# Set up the plot
-fig, axs = plt.subplots(1, 1, dpi=500)
-
 # ============================================================================================
 # Load z
 # ============================================================================================
@@ -28,6 +25,8 @@ fig, axs = plt.subplots(1, 1, dpi=500)
 TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_Hydro/Nboots_1024/'
 TNG300_snaps = [99, 67, 40, 25, 13, 8]
 TNG300_z_i, TNG300_z_f = load_z(TNG300_dir, TNG300_snaps)
+
+all_z = load_all_z(TNG300_dir, TNG300_snaps)
 
 # Load MTNG
 MTNG_dir = f'{root_dir}/MTNG/Hydro-Arepo/MTNG-L500-4320-A/Nboots_1024/'
@@ -42,18 +41,15 @@ num_z = len(TNG300_snaps)
 # Set up the plot
 # ============================================================================================
 
-fig, axs = plt.subplots(1, 1, figsize=(4.5,4), dpi=500)
-    
-z_i, z_f = load_z(TNG300_dir, [99, 8])
+fig, axs = plt.subplots(2, 1, figsize = (4, 6), dpi=500, sharex=True, constrained_layout=True)
 
 from matplotlib.colors import LinearSegmentedColormap
-red_list = [# '#EE9D9F', '#DE6A69', 
-            '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
-blue_list = ['#89CAEA','#4596CD', '#0B75B3', '#015696', '#012A61']
-cmap = LinearSegmentedColormap.from_list('my_cmap', red_list)
-
-# cmap = plt.get_cmap('viridis', num_z)
-bound = np.linspace(z_f, z_i+0.01, num_z) 
+# red_list = [# '#EE9D9F', '#DE6A69', 
+#             '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
+# blue_list = ['#89CAEA','#4596CD', '#0B75B3', '#015696', '#012A61']
+# cmap = LinearSegmentedColormap.from_list('my_cmap', red_list)
+cmap = plt.get_cmap('vanimo', num_z)
+bound = all_z
 norm = BoundaryNorm(bound, cmap.N)
 cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
                   ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
@@ -76,19 +72,16 @@ MTNG_mass_cuts, MTNG_z, MTNG_accret_med = load_accret(f'result/accretion_rate_pl
 # Plot 
 # ============================================================================================
 
-tot_x, tot_y = [], []
+_, _ = plot_data(TNG300_dir, TNG300_snaps, [TNG300_z, TNG300_mass_cuts, TNG300_accret_med], axs[0], cmap, norm, feat='depth')
+_, _ = plot_data(MTNG_dir, MTNG_snaps, [MTNG_z, MTNG_mass_cuts, MTNG_accret_med], axs[0], cmap, norm, feat='depth')
 
-x, y = plot_data(TNG300_dir, TNG300_snaps, [TNG300_z, TNG300_mass_cuts, TNG300_accret_med], axs, cmap, norm)
-tot_x = np.concatenate((tot_x, x))
-tot_y = np.concatenate((tot_y, y))
-
-x, y = plot_data(MTNG_dir, MTNG_snaps, [MTNG_z, MTNG_mass_cuts, MTNG_accret_med], axs, cmap, norm)
-tot_x = np.concatenate((tot_x, x))
-tot_y = np.concatenate((tot_y, y))
+_, _ = plot_data(TNG300_dir, TNG300_snaps, [TNG300_z, TNG300_mass_cuts, TNG300_accret_med], axs[1], cmap, norm, feat='width')
+_, _ = plot_data(MTNG_dir, MTNG_snaps, [MTNG_z, MTNG_mass_cuts, MTNG_accret_med], axs[1], cmap, norm, feat='width')
 
 # Final edit
-axs.set_xlabel(r'$\Gamma$')
-axs.set_ylabel("Depth")
+axs[0].set_ylabel(r"$\mathcal{D}$")
+axs[1].set_ylabel(r"$\mathcal{W}$")
+axs[1].set_xlabel(r'$\Gamma$')
 
 # ============================================================================================
 # Save the plot

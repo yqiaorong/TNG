@@ -33,11 +33,24 @@ def load_z(dir, snaps):
     z_f = np.round(data['z'], 2)
     return z_i, z_f
 
+def load_all_z(dir, snaps):
+    all_z = []
+    for snap in snaps:
+        data = np.load(dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+        all_z.append(np.round(data['z'], 2))
+    return all_z
+
 
 ### Used in plot depth vs accretion rate
 
 def load_accret(dir, width=None):
     import numpy as np
+    """
+    return:
+        mass_cuts:  (N,)
+        z:          (M,)
+        accret_med: (M, N,)
+        accret_std: (M, N,)"""
     
     acc = np.load(dir, allow_pickle=True).item()
     mass_cuts = acc['mass_cuts'][:-1]
@@ -55,11 +68,21 @@ def load_accret(dir, width=None):
     else:
         return mass_cuts, z, accret_med 
     
-def plot_data(dir, snaps, acc, axs, cmap, norm, feat='depth'):
+def plot_data(dir, snaps, acc, axs, cmap, norm, feat=None):
     import numpy as np
     import seaborn as sns
     from scipy.stats import pearsonr
     
+    """
+    Params:
+        dir:    str
+        snaps:  list
+        acc:    list 
+                [acc_z:         (M,)
+                 acc_mass_cuts: (N,) 
+                 acc_data:      (M, N,)]
+        feat:   str ('depth' or 'width')
+        """
     tot_x, tot_y = [], []
     
     acc_z, acc_mass_cuts, acc_data = acc[0], acc[1], acc[2]

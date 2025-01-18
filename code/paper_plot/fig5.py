@@ -48,17 +48,18 @@ uniq_bins = np.unique(bins)
 # Set up the plot
 # ============================================================================================
 
-fig, axs = plt.subplots(2, 1, figsize = (4, 6), dpi=500, sharex=True)
-    
-from matplotlib.colors import LinearSegmentedColormap
-red_list = [# '#EE9D9F', '#DE6A69', 
-            '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
-blue_list = ['#89CAEA','#4596CD','#0B75B3','#015696','#012A61','#053061', ] # light to dark
-cmap = LinearSegmentedColormap.from_list('my_cmap', blue_list)
-# cmap = plt.get_cmap('plasma', num_bins)
+fig, axs = plt.subplots(2, 1, figsize = (4, 6), dpi=500, sharex=True, constrained_layout=True)
 
+# Set up the colorbar
 min_bin, max_bin = 9, 15
 num_bins = int((max_bin - min_bin)/0.5)
+
+cmap = plt.get_cmap('managua', num_bins)
+# from matplotlib.colors import LinearSegmentedColormap
+# red_list = [# '#EE9D9F', '#DE6A69', 
+#             '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
+# blue_list = ['#89CAEA','#4596CD','#0B75B3','#015696','#012A61','#053061'] # light to dark
+# cmap = LinearSegmentedColormap.from_list('my_cmap', blue_list)
 
 bound = np.logspace(min_bin, max_bin+0.1, num_bins) 
 norm = BoundaryNorm(bound, cmap.N)
@@ -90,12 +91,7 @@ for b in uniq_bins:
     delta_rho = delta_c(current_z[sorted_idx]) # Msun / kpc**3
     # Compute the characteristic mass
     char = character_mass(Rsp, delta_rho) # Msun
-    # -------------------------------------------------------------------------------------------
-    
-    # # Rescale the mass 
-    # log_char = np.log10(char.value)
-    # print(char.value)
-    
+    # -------------------------------------------------------------------------------------------    
 
     for iz, cu_z in enumerate(current_z[sorted_idx]):
         # Plot depth
@@ -114,27 +110,12 @@ for b in uniq_bins:
                 ],
             fmt='.', color=cmap(norm(char.value[iz])),
         )
-    # axs[0].scatter(current_z[sorted_idx], current_data[:, 1, 1][sorted_idx], color=cmap(norm(10**log_char)), 
-    #             lw=1, alpha=0.5) 
-    # axs[0].errorbar(current_z[sorted_idx], current_data[:, 1, 1][sorted_idx], 
-    #             yerr=[current_data[:, 1, 1][sorted_idx]-current_data[:, 1, 0][sorted_idx], 
-    #                   current_data[:, 1, 2][sorted_idx]-current_data[:, 1, 1][sorted_idx]],
-    #             fmt='.', color=cmap(norm(char.value))
-    #                 )
-
-    # axs[1].plot(current_z[sorted_idx], current_data[:, 2, 1][sorted_idx], color=cmap(norm(10**log_char)), 
-    #             lw=1, alpha=0.5) 
-    # axs[1].errorbar(current_z[sorted_idx], current_data[:, 2, 1][sorted_idx], 
-    #             yerr=[current_data[:, 2, 1][sorted_idx]-current_data[:, 2, 0][sorted_idx], 
-    #                   current_data[:, 2, 2][sorted_idx]-current_data[:, 2, 1][sorted_idx]],
-    #             fmt='.', color=cmap(norm(char.value))
-    #                 )
     
 # Final edit
-axs[0].set_ylabel("Depth")
+axs[0].set_ylabel(r"$\mathcal{D}$")
 
 axs[1].set_xlabel('z')
-axs[1].set_ylabel("Width")
+axs[1].set_ylabel(r"$\mathcal{W}$")
 
 # ============================================================================================
 # Save the plot

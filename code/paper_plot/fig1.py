@@ -44,7 +44,7 @@ scale_Rsoft = 4 / phy_R200              # [dimensionless]
 # Plot
 # =============================================================================
    
-fig, axs = plt.subplots(2, 1, figsize=(4,6), sharex=True, dpi=500)
+fig, axs = plt.subplots(2, 1, figsize=(4,6), dpi=500, sharex=True, constrained_layout=True)
 
 # Color
 from matplotlib.colors import LinearSegmentedColormap
@@ -114,6 +114,4 @@ if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
 plt.savefig(f'{save_dir}/fig1.png')
-plt.close()
-
 plt.close()

@@ -7,12 +7,10 @@ mathtext.fontset: stix
 # Label options
 axes.labelsize: 12
 axes.labelpad : 1
+
 # Automatically make the plots look nice
 figure.constrained_layout.use: True
-figure.constrained_layout.h_pad: 0.005
-figure.constrained_layout.w_pad: 0.005
-figure.constrained_layout.hspace: 0.005
-figure.constrained_layout.wspace: 0.005
+
 # LaTeX options
 text.usetex: False
 text.latex.preamble : r"\usepackage{amsmath}"
