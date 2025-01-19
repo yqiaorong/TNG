@@ -26,7 +26,7 @@ bin_start=${bin_start_list[$SLURM_ARRAY_TASK_ID]}
 echo "# Array ID: " $SLURM_ARRAY_TASK_ID
     
 echo "# Start python processing $SLURM_ARRAY_TASK_ID at: "$(date)
-python3 code/bootstrap/3_bootstrap_tgt_phys.py --snapnum $snap --bin_start $bin_start --bin_end $bin_end --sim TNG300/sim_205_1250_DM/
+python3 /n/home01/sqyu/AstroLab/TNG/code/bootstrap/3_bootstrap_tgt_phys.py --snapnum $snap --bin_start $bin_start --bin_end $bin_end --sim TNG300/sim_205_1250_DM/
 echo "# End python processing $SLURM_ARRAY_TASK_ID at: "$(date)
 
 echo "# Ending at: "$(date)
