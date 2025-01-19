@@ -60,6 +60,7 @@ from matplotlib.ticker import FuncFormatter
 def custom_format(x, pos):
     return f'{x:.1f}'  
 cb.ax.xaxis.set_major_formatter(FuncFormatter(custom_format)) 
+cb.ax.tick_params(axis='x', rotation=70) 
 cb.set_label('z')
 
 # ============================================================================================

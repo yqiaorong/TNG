@@ -1,4 +1,4 @@
-""""This script plots depth (top panel) and width (bottom panel) as a function of mass for a few redshifts.
+""""This script plots the absolute depth as a function of mass for a few redshifts.
     Both Hydro and DM-only simulations."""
 
 import os
@@ -10,7 +10,7 @@ plt.style.use('code/style.mplstyle')
 from func import *
 
 print('')
-print('>>> Plot Depth and width vs mass for a few redshifts <<<')
+print('>>> Plot absolute depth vs mass for a few redshifts <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats_phys/'
@@ -19,7 +19,7 @@ root_dir = 'result/bootstrap_stats_phys/'
 # Set up the plot
 # ============================================================================================
 
-fig, axs = plt.subplots(2, 1, figsize=(4, 6), dpi=500, sharex=True, constrained_layout=True)
+fig, axs = plt.subplots(1, 1, figsize=(4, 3.5), dpi=500, sharex=True, constrained_layout=True)
 
 # ============================================================================================
 # Set up the colorbar
@@ -73,29 +73,24 @@ def load_stats(dir, snap):
         
         return z, mass_bins, final_results
 
-def plot_depth(z, mass_bins, final_results, simu):
+def plot_abs_depth(z, mass_bins, final_results, simu):
         if simu == 'DM':
                 ls = '--'
         else:
                 ls = '-'
-                       
-        axs[0].plot(mass_bins, final_results[:, 1, 1], color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
-        axs[0].errorbar(mass_bins, final_results[:, 1, 1],
-                        yerr=[final_results[:, 1, 1]-final_results[:, 1, 0], 
-                              final_results[:, 1, 2]-final_results[:, 1, 1]],
-                        color=cmap(norm(z)), fmt='.')
         
-def plot_width(z, mass_bins, final_results, simu):
-        if simu == 'DM':
-                ls = '--'
-        else:
-                ls = '-'
-                       
-        axs[1].plot(mass_bins, final_results[:, 2, 1], color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
-        axs[1].errorbar(mass_bins, final_results[:, 2, 1],
-                        yerr=[final_results[:, 2, 1]-final_results[:, 2, 0], 
-                              final_results[:, 2, 2]-final_results[:, 2, 1]],
+        # -----------------------------------------------------------------------------------------
+        axs.plot(mass_bins, final_results[:, 4, 1], color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
+        axs.errorbar(mass_bins, final_results[:, 4, 1],
+                        yerr=[final_results[:, 4, 1]-final_results[:, 4, 0], 
+                              final_results[:, 4, 2]-final_results[:, 4, 1]],
                         color=cmap(norm(z)), fmt='.')
+        # axs.plot(mass_bins, abs(final_results[:, 4, 1]), color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
+        # axs.errorbar(mass_bins, abs(final_results[:, 4, 1]),
+        #                 yerr=[abs(final_results[:, 4, 1]-final_results[:, 4, 0]), 
+        #                       abs(final_results[:, 4, 2]-final_results[:, 4, 1])],
+        #                 color=cmap(norm(z)), fmt='.')
+        # -----------------------------------------------------------------------------------------
                 
 simus = ['Hydro', 
          # 'DM'
@@ -106,22 +101,17 @@ for simu in simus:
         for snap in TNG300_snaps:
                 TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
                 TNG300_z, TNG300_mass_bins, TNG300_final_results = load_stats(TNG300_dir, snap)
-                plot_depth(TNG300_z, TNG300_mass_bins, TNG300_final_results, simu)
-                plot_width(TNG300_z, TNG300_mass_bins, TNG300_final_results, simu)
+                plot_abs_depth(TNG300_z, TNG300_mass_bins, TNG300_final_results, simu)
                 
         # Plot MTNG
         for snap in MTNG_snaps:
                 MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
                 MTNG_z, MTNG_mass_bins, MTNG_final_results = load_stats(MTNG_dir, snap)
-                plot_depth(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
-                plot_width(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
+                plot_abs_depth(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
 
-axs[0].set_xscale('log')
-axs[0].set_ylabel(r"$\mathcal{D}$")
-
-axs[1].set_xscale('log')
-axs[1].set_xlabel('Mass [$M_\\odot$]')
-axs[1].set_ylabel(r"$\mathcal{W}$")
+axs.set_xscale('log')
+axs.set_ylabel(r"abs $\mathcal{D}$")
+axs.set_xlabel('Mass [$M_\\odot$]')
 
 # ============================================================================================
 # Save the plot
@@ -131,5 +121,5 @@ save_dir = f'result/paper_plots/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-plt.savefig(f'{save_dir}/fig3')
+plt.savefig(f'{save_dir}/fig8')
 plt.close()

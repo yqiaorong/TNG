@@ -1,0 +1,116 @@
+""""This script plots absolute depth as a function of redshift for a few mass cuts.
+    Hydro simulation only."""
+
+import os
+import numpy as np
+from func import *
+from matplotlib import cm
+from matplotlib import pyplot as plt 
+from matplotlib.colors import BoundaryNorm
+plt.style.use('code/style.mplstyle')
+
+print('')
+print(f'>>> Plot abs depth vs z <<<')
+print('')
+
+root_dir = 'result/bootstrap_stats_phys/'
+
+# ============================================================================================
+# Loadd data 
+# ============================================================================================
+
+# Load TNG300
+TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_Hydro/Nboots_1024/'
+TNG300_list = os.listdir(TNG300_dir)
+
+TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
+
+TNG300_z, TNG300_bins, TNG300_data = load_data(TNG300_dir, TNG300_snaps)
+
+# Load MTNG
+MTNG_dir = f'{root_dir}/MTNG/Hydro-Arepo/MTNG-L500-4320-A/Nboots_1024/'
+MTNG_list = os.listdir(MTNG_dir)
+
+MTNG_snaps = [264, 237, 214, 179, 151, 129]
+
+MTNG_z, MTNG_bins, MTNG_data = load_data(MTNG_dir, MTNG_snaps)
+
+# Concatenate all data
+z = np.concatenate((TNG300_z, MTNG_z))
+data = np.concatenate((TNG300_data, MTNG_data), axis=0)
+
+bins = np.concatenate((TNG300_bins, MTNG_bins))
+bins = np.log10(bins)
+uniq_bins = np.unique(bins)
+
+# ============================================================================================
+# Set up the plot
+# ============================================================================================
+
+fig, axs = plt.subplots(1, 1, figsize = (4, 3.5), dpi=500, sharex=True, constrained_layout=True)
+    
+# Set up the colorbar
+min_bin, max_bin = 9, 15
+num_bins = int((max_bin - min_bin)/0.5)
+
+cmap = plt.get_cmap('vanimo', num_bins)
+# from matplotlib.colors import LinearSegmentedColormap
+# red_list = [# '#EE9D9F', '#DE6A69', 
+#             '#C84747', '#982B2D','#6A0624', '#3D011A'] # light to dark
+# blue_list = ['#89CAEA','#4596CD','#0B75B3','#015696','#012A61','#053061', ] # light to dark
+# cmap = LinearSegmentedColormap.from_list('my_cmap', blue_list)
+
+bound = np.logspace(min_bin, max_bin+0.1, num_bins) 
+norm = BoundaryNorm(bound, cmap.N)
+cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
+                  ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
+cb.set_label('Mass [$M_\\odot$]')
+cb._set_scale('log')
+
+# ============================================================================================
+# Plot
+# ============================================================================================
+
+# Iterate over mass bins
+for b in uniq_bins:
+    print('mass cut: ', b)
+    idx = np.where(bins == b)
+    
+    current_z = z[idx]
+    current_data = data[idx]
+    
+    # Plot SORTED data
+    sorted_idx = np.argsort(current_z)
+    # Plot abs depth
+    # -----------------------------------------------------------------------------------------
+    axs.plot(current_z[sorted_idx], current_data[:, 4, 1][sorted_idx], color=cmap(norm(10**b)), 
+                lw=1, alpha=0.5) 
+    axs.errorbar(current_z[sorted_idx], current_data[:, 4, 1][sorted_idx], 
+                yerr=[current_data[:, 4, 1][sorted_idx]-current_data[:, 4, 0][sorted_idx], 
+                      current_data[:, 4, 2][sorted_idx]-current_data[:, 4, 1][sorted_idx]],
+                fmt='.', color=cmap(norm(10**b))
+                    )
+    # axs.plot(current_z[sorted_idx], abs(current_data[:, 4, 1][sorted_idx]), color=cmap(norm(10**b)), 
+    #             lw=1, alpha=0.5) 
+    # axs.errorbar(current_z[sorted_idx], abs(current_data[:, 4, 1][sorted_idx]), 
+    #             yerr=[abs(current_data[:, 4, 1][sorted_idx]-current_data[:, 4, 0][sorted_idx]), 
+    #                   abs(current_data[:, 4, 2][sorted_idx]-current_data[:, 4, 1][sorted_idx])],
+    #             fmt='.', color=cmap(norm(10**b))
+    #                 )
+    # -----------------------------------------------------------------------------------------
+    
+# Final edit
+axs.set_ylabel(r"$\mathcal{D}$")
+axs.set_xlabel('z')
+
+# ============================================================================================
+# Save the plot
+# ============================================================================================
+
+save_dir = f'result/paper_plots/'
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+
+# plt.tight_layout()
+plt.savefig(f'{save_dir}/fig9.png')
+plt.close()
