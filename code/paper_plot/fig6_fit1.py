@@ -1,4 +1,4 @@
-""""This script plots depth and width as a function of accretion rate.
+""""This script plots depth as a function of accretion rate.
     Hydro simulation only."""
 
 import os
@@ -41,8 +41,7 @@ num_z = len(TNG300_snaps)
 # Set up the plot
 # ============================================================================================
 
-fig, axs = plt.subplots(2, 1, figsize = (4, 6), dpi=500, sharex=True, constrained_layout=True)
-
+fig, axs = plt.subplots(1, 1, figsize = (5, 4), dpi=500, sharex=True, constrained_layout=True)
 cmap = plt.get_cmap('managua', num_z)
 bound = all_z
 norm = BoundaryNorm(bound, cmap.N)
@@ -64,19 +63,65 @@ TNG300_mass_cuts, TNG300_z, TNG300_accret_med = load_accret(f'result/accretion_r
 MTNG_mass_cuts, MTNG_z, MTNG_accret_med = load_accret(f'result/accretion_rate_plot/MTNG/Hydro-Arepo/MTNG_Hydro_accret_stats.npy')
 
 # ============================================================================================
+# Load accretion rate width
+# ============================================================================================
+
+_, _, _, TNG300_accret_width = load_accret(f'result/accretion_rate_plot/TNG300/sim_205_1250_Hydro/TNG300_Hydro_accret_stats.npy', 
+                                                                 width='percentile')
+
+_, _, _, MTNG_accret_width = load_accret(f'result/accretion_rate_plot/MTNG/Hydro-Arepo/MTNG_Hydro_accret_stats.npy', 
+                                                           width='percentile')
+
+# ============================================================================================
 # Plot 
 # ============================================================================================
 
-_, _, _ = plot_data(TNG300_dir, TNG300_snaps, [TNG300_z, TNG300_mass_cuts, TNG300_accret_med], axs[0], cmap, norm, feat='depth')
-_, _, _ = plot_data(MTNG_dir, MTNG_snaps, [MTNG_z, MTNG_mass_cuts, MTNG_accret_med], axs[0], cmap, norm, feat='depth')
+X_d, Xerr_d, Y_d, Yerr_d, z_d = [], [], [], [], []
+x, xerr, z, y, yerr = plot_data(TNG300_dir, TNG300_snaps, [TNG300_z, TNG300_mass_cuts, TNG300_accret_med, TNG300_accret_width], 
+                                axs, cmap, norm, feat='depth')
+X_d.append(x)
+Xerr_d.append(xerr)
+Y_d.append(y)
+Yerr_d.append(yerr)
+z_d.append(z)
+x, xerr, z, y, yerr = plot_data(MTNG_dir, MTNG_snaps, [MTNG_z, MTNG_mass_cuts, MTNG_accret_med, MTNG_accret_width], 
+                                axs, cmap, norm, feat='depth')
+X_d.append(x)
+Xerr_d.append(xerr)
+Y_d.append(y)
+Yerr_d.append(yerr)
+z_d.append(z)
 
-_, _, _ = plot_data(TNG300_dir, TNG300_snaps, [TNG300_z, TNG300_mass_cuts, TNG300_accret_med], axs[1], cmap, norm, feat='width')
-_, _, _ = plot_data(MTNG_dir, MTNG_snaps, [MTNG_z, MTNG_mass_cuts, MTNG_accret_med], axs[1], cmap, norm, feat='width')
+X_d = np.concatenate(X_d)
+Xerr_d = np.concatenate(Xerr_d)
+Y_d = np.concatenate(Y_d)
+Yerr_d = np.concatenate(Yerr_d, axis=1)
+
+z_d = np.concatenate(z_d)
+print(X_d.shape, Xerr_d.shape, Y_d.shape, Yerr_d.shape, z_d.shape)
+
+save_dict = {'accret_rate': X_d,
+            'accret_rate_err': Xerr_d, 
+            'depth': Y_d,
+            'depth_err': Yerr_d,
+            'z': z_d}
+np.save('depth_data.npy', save_dict)
+
+# ============================================================================================
+# Fitting 
+# ============================================================================================
+
+# # if the array in x shares the same z value, then concatenate the array
+# DoF = 1
+# poly_fit(X_d, Y_d, z_d, axs, cmap, norm, DoF)
+
+# Fit two params, y(x, z) at the same time
+x_z_fit_d(X_d, z_d, Y_d, Yerr_d, axs, cmap, norm)
 
 # Final edit
-axs[0].set_ylabel(r"$\mathcal{D}$")
-axs[1].set_ylabel(r"$\mathcal{W}$")
-axs[1].set_xlabel(r'$\Gamma$')
+axs.set_ylabel(r"$\mathcal{D}$")
+axs.set_xlabel(r'$\Gamma$')
+axs.legend()
 
 # ============================================================================================
 # Save the plot
@@ -86,5 +131,5 @@ save_dir = f'result/paper_plots/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-plt.savefig(f'{save_dir}/fig6.png')
+plt.savefig(f'{save_dir}/fig6_fit_D.png')
 plt.close()

@@ -83,9 +83,11 @@ def plot_data(dir, snaps, acc, axs, cmap, norm, feat=None):
                  acc_data:      (M, N,)]
         feat:   str ('depth' or 'width')
         """
-    tot_x, tot_y = [], []
+    tot_x, tot_xerr = [], []
+    tot_z = []
+    tot_y, tot_y_min, tot_y_max = [], [], []
     
-    acc_z, acc_mass_cuts, acc_data = acc[0], acc[1], acc[2]
+    acc_z, acc_mass_cuts, acc_data, acc_err = acc[0], acc[1], acc[2], acc[3]
 
     for snap in snaps:
 
@@ -110,6 +112,8 @@ def plot_data(dir, snaps, acc, axs, cmap, norm, feat=None):
         print(y_mass_idx, mass_cuts[y_mass_idx])
         
         x = acc_data[acc_snap_idx, x_mass_idx]
+        xerr = acc_err[acc_snap_idx, x_mass_idx]/2
+        
         if feat == 'depth':
             y = data[y_mass_idx, 1, 1]
             y_min, y_max = data[y_mass_idx, 1, 0], data[y_mass_idx, 1, 2]
@@ -118,29 +122,35 @@ def plot_data(dir, snaps, acc, axs, cmap, norm, feat=None):
             y_min, y_max = data[y_mass_idx, 2, 0], data[y_mass_idx, 2, 2]
 
         mask = x!=0
-        x, y, y_min, y_max = x[mask], y[mask], y_min[mask], y_max[mask]
+        x, xerr, y, y_min, y_max = x[mask], xerr[mask], y[mask], y_min[mask], y_max[mask]
         
         # Sort according to x
         x = x[np.argsort(x)]
+        xerr = xerr[np.argsort(x)]
         y = y[np.argsort(x)]
         y_min = y_min[np.argsort(x)]
         y_max = y_max[np.argsort(x)]
         
-        print('x:', x)
-        print('y:', y)
-        print('')
-        
-        axs.plot(x, y, color=cmap(norm(np.round(z, 3))), label=f'z = {z}')
-        axs.errorbar(x, y, yerr=[y-y_min, y_max-y], color=cmap(norm(np.round(z, 3))), fmt='.')
-        
-        # Plot correlations
-        # sns.set(style="whitegrid")
-        # axs = sns.regplot(x=x, y=y, ci=95, scatter=False, line_kws={"color": cmap(norm(np.round(z, 3)))})
-        
-        tot_x = np.concatenate((tot_x, x))
-        tot_y = np.concatenate((tot_y, y))
-    
-    return tot_x, tot_y
+        if len(x) != 0:
+            
+            print('x:', x)
+            print('y:', y)
+            print('')
+            # axs.plot(x, y, color=cmap(norm(np.round(z, 3))), 
+            #          #label=f'z = {z}'
+            #          )
+            axs.errorbar(x, y, yerr=[y-y_min, y_max-y], xerr=xerr, color=cmap(norm(np.round(z, 3))), fmt='.')
+            
+            tot_x = np.concatenate((tot_x, x))
+            tot_xerr = np.concatenate((tot_xerr, xerr))
+            tot_z.append([z]*len(x))
+            
+            tot_y = np.concatenate((tot_y, y))
+            tot_y_min = np.concatenate((tot_y_min, y-y_min))
+            tot_y_max = np.concatenate((tot_y_max, y_max-y))
+            
+    tot_z = np.concatenate(tot_z)
+    return tot_x, tot_xerr, tot_z, tot_y, [tot_y_min, tot_y_max]
 
 def delta_c(z):
     import astropy.units as u
@@ -167,3 +177,99 @@ def delta_c(z):
 
 def character_mass(char_r, char_rho):
     return 4/3 * np.pi * char_r**3 * char_rho
+
+# Fitting
+# def poly_fit(X, Y, redshifts, axs, cmap, norm, DoF):
+#     """Params:
+#         X: 1d array
+#         Y: 1d array
+#         redshifts: 1d array"""
+
+#     for z in np.unique(redshifts):
+#         fit_X = X[np.where(np.round(redshifts, 1) == np.round(z, 1))]
+#         fit_Y = Y[np.where(np.round(redshifts, 1) == np.round(z, 1))]
+        
+#         if len(fit_X) > DoF+1:
+#             # fit            
+#             popt, _ = np.polyfit(fit_X, fit_Y, deg=DoF, cov=True)
+#             poly = np.poly1d(popt)
+            
+#             # find the reduced chi-square
+#             chi2 = np.sum((fit_Y - poly(fit_X))**2)
+#             red_chi2 = chi2 / (len(fit_X) - DoF)
+#             print(f'z = {z}, reduced chi2 = {red_chi2}')
+            
+#             # Plot
+#             axs.plot(np.linspace(fit_X[0], fit_X[-1], 100), 
+#                      poly(np.linspace(fit_X[0], fit_X[-1], 100)), 
+#                      color=cmap(norm(np.round(z, 3))),
+#                      label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+#     return axs
+
+def x_z_fit_d(X, redshifts, Y, Yerr, axs):
+    from scipy.optimize import curve_fit
+    
+    def func(Inputs, a, b, c, d, e):
+        """Params:
+            Inputs: (x, redshifts)
+        """
+        x, z = Inputs
+        return a*x + b*z + d + c*x/(z-e)
+
+    popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*5, maxfev=10000)
+    
+    Y_fit = func((X, redshifts), *popt)
+
+    # Calculate the reduced chi-square
+    if np.ndim(Yerr) == 2:
+       Yerr = np.mean(Yerr, axis=0)
+       
+    # Compute effective errors
+    red_chi2 = np.sum((Y - Y_fit)**2 / Yerr**2) / (len(Y) - len(popt))
+    # Plot
+    for z in np.unique(redshifts):
+        iz = np.where(redshifts == z)[0]
+        if 0 in iz:
+            axs.plot(X[iz], Y_fit[iz], c='black', label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+        else:
+            axs.plot(X[iz], Y_fit[iz], c='black')
+
+    # Confidence interval
+    perr = np.sqrt(np.diag(pcov))
+
+    dof = max(1, len(Y)-len(popt)) 
+    
+    # 99% confidence level
+    from scipy.stats import t
+    alpha = 0.01 
+    t_score = t.ppf(1 - alpha/2, dof)
+
+    # Confidence interval = popt ± (t-score * std_err)
+    ci_lower = popt - t_score * perr
+    ci_upper = popt + t_score * perr
+
+    # Print results
+    for i, (p, lo, up) in enumerate(zip(popt, ci_lower, ci_upper)):
+        print(f"Parameter {i}: {p:.4f} (99% CI: {lo:.4f} to {up:.4f})")
+
+def x_z_fit_w(X, redshifts, Y, axs, cmap, norm):
+    from scipy.optimize import curve_fit
+    
+    def func(Inputs, a, b, c, d, A, B, C, D, E, F):
+        """Params:
+            Inputs: (x, redshifts)
+        """
+        x, z = Inputs
+        return a*x + b*z + c*x*z + d + B*z**2 + A*x**2 + C*x**3 + D*z**3 + E*x*z**2 + F*x**2*z
+
+    popt, _ = curve_fit(func, (X, redshifts), Y, p0=[1]*10, maxfev=10000)
+    
+    Y_fit = func((X, redshifts), *popt)
+
+    # Calculate the reduced chi-square
+    chi2 = np.sum((Y - Y_fit)**2)
+    red_chi2 = chi2 / (len(Y) - len(popt))
+    # Plot
+    axs.scatter(X, Y_fit, c='black', marker='x', s=20,
+                label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+    
