@@ -93,12 +93,12 @@ for z in np.unique(TNG300_z):
     iz = np.where(TNG300_z == z)[0]
     axs.errorbar(TNG300_mass_cuts[iz], TNG300_accret_med[iz], 
                  yerr = MTNG_accret_err[iz]/2,
-                 color=cmap(norm(np.round(z, 3))))
+                 color=cmap(norm(np.round(z, 2))), fmt='.')
 for z in np.unique(MTNG_z):
     iz = np.where(MTNG_z == z)[0]
     axs.errorbar(MTNG_mass_cuts[iz], MTNG_accret_med[iz], 
                  yerr = MTNG_accret_err[iz]/2,
-                 color=cmap(norm(np.round(z, 3))), ls='--')
+                 color=cmap(norm(np.round(z, 2))), fmt='.')
 axs.set_xscale('log')
 axs.set_xlabel(r'$M_{200m}. [M_\odot]$')
 axs.set_ylabel(r'$\Gamma$')
@@ -112,26 +112,39 @@ tot_z         = np.concatenate((TNG300_z, MTNG_z))
 tot_accret    = np.concatenate((TNG300_accret_med, MTNG_accret_med))
 tot_accret_err = np.concatenate((TNG300_accret_err, MTNG_accret_err))
 
+# reduce the error
+tot_accret_err = tot_accret_err/5
 from scipy.optimize import curve_fit
 
 def fit_func(Inputs, 
-             # a, b, 
-             c, d
+             a, b, c, d,
+            #  A, B, C, D, E
              ):
     """Params:
         Inputs: (x, redshifts)
     """
     x, z = Inputs
-    return c*x*z**d # + a*x**b
+    return c*x*z**d + a*x**b # + A*x + B*z + C*x**2 + D*z**2 + E/x
 
-popt, pcov = curve_fit(fit_func, (np.log10(tot_mass_cuts), tot_z), tot_accret, p0=[1]*2, maxfev=10000)
+popt, pcov = curve_fit(fit_func, (np.log10(tot_mass_cuts), tot_z), tot_accret, p0=[1]*4, maxfev=10000)
 fit_accret = fit_func((np.log10(tot_mass_cuts), tot_z), *popt)
 
 # Calculate the reduced chi-square
 red_chi2  = np.sum(((tot_accret - fit_accret)/ tot_accret_err)**2) / (len(tot_accret) - len(popt))
 # Plot
-axs.scatter(tot_mass_cuts, fit_accret, c='black', marker='x', s=20,
-            label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+print(tot_z)
+for z in np.unique(tot_z):
+    iz = np.where(tot_z == z)[0]
+    # iz = np.argsort(tot_mass_cuts[iz])
+    x, y = tot_mass_cuts[iz], fit_accret[iz]
+    sort_idx = np.argsort(tot_mass_cuts[iz])
+    if 0 in iz:
+        axs.plot(x[sort_idx], y[sort_idx], c=cmap(norm(np.round(z, 2))), ls='--', label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+    else:
+        axs.plot(x[sort_idx], y[sort_idx], c=cmap(norm(np.round(z, 2))), ls='--')
+# axs.scatter(tot_mass_cuts, fit_accret, c='black', marker='x', s=20,
+#             label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+# axs.plot(tot_mass_cuts, fit_accret, c=cmap(norm(np.round(z, 2))), ls='--')
 axs.set_xscale('log')
 axs.legend()
 

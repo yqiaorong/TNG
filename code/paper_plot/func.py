@@ -80,7 +80,8 @@ def plot_data(dir, snaps, acc, axs, cmap, norm, feat=None):
         acc:    list 
                 [acc_z:         (M,)
                  acc_mass_cuts: (N,) 
-                 acc_data:      (M, N,)]
+                 acc_data:      (M, N,)
+                 acc_data_err:  (M, N,)]    
         feat:   str ('depth' or 'width')
         """
     tot_x, tot_xerr = [], []
@@ -136,11 +137,10 @@ def plot_data(dir, snaps, acc, axs, cmap, norm, feat=None):
             print('x:', x)
             print('y:', y)
             print('')
-            # axs.plot(x, y, color=cmap(norm(np.round(z, 3))), 
-            #          #label=f'z = {z}'
-            #          )
-            axs.errorbar(x, y, yerr=[y-y_min, y_max-y], xerr=xerr, color=cmap(norm(np.round(z, 3))), fmt='.')
-            
+            # axs.plot(x, y, color=cmap(norm(np.round(z, 2))))
+            axs.errorbar(x, y, yerr=[y-y_min, y_max-y], # xerr=xerr, 
+                         color=cmap(norm(np.round(z, 2))), fmt='.')
+        
             tot_x = np.concatenate((tot_x, x))
             tot_xerr = np.concatenate((tot_xerr, xerr))
             tot_z.append([z]*len(x))
@@ -179,44 +179,18 @@ def character_mass(char_r, char_rho):
     return 4/3 * np.pi * char_r**3 * char_rho
 
 # Fitting
-# def poly_fit(X, Y, redshifts, axs, cmap, norm, DoF):
-#     """Params:
-#         X: 1d array
-#         Y: 1d array
-#         redshifts: 1d array"""
 
-#     for z in np.unique(redshifts):
-#         fit_X = X[np.where(np.round(redshifts, 1) == np.round(z, 1))]
-#         fit_Y = Y[np.where(np.round(redshifts, 1) == np.round(z, 1))]
-        
-#         if len(fit_X) > DoF+1:
-#             # fit            
-#             popt, _ = np.polyfit(fit_X, fit_Y, deg=DoF, cov=True)
-#             poly = np.poly1d(popt)
-            
-#             # find the reduced chi-square
-#             chi2 = np.sum((fit_Y - poly(fit_X))**2)
-#             red_chi2 = chi2 / (len(fit_X) - DoF)
-#             print(f'z = {z}, reduced chi2 = {red_chi2}')
-            
-#             # Plot
-#             axs.plot(np.linspace(fit_X[0], fit_X[-1], 100), 
-#                      poly(np.linspace(fit_X[0], fit_X[-1], 100)), 
-#                      color=cmap(norm(np.round(z, 3))),
-#                      label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
-#     return axs
-
-def x_z_fit_d(X, redshifts, Y, Yerr, axs):
+def x_z_fit_d(X, redshifts, Y, Yerr, axs, cmap, norm):
     from scipy.optimize import curve_fit
     
-    def func(Inputs, a, b, c, d, e):
+    def func(Inputs, a, b, c, d, e, f, g, h, i):
         """Params:
             Inputs: (x, redshifts)
         """
         x, z = Inputs
-        return a*x + b*z + d + c*x/(z-e)
+        return a*x + b*z + d + c*x/(z-e) + f*z*(x-g*z)**2 + h*z/(x-i*z)
 
-    popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*5, maxfev=10000)
+    popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*9, maxfev=10000)
     
     Y_fit = func((X, redshifts), *popt)
 
@@ -230,9 +204,9 @@ def x_z_fit_d(X, redshifts, Y, Yerr, axs):
     for z in np.unique(redshifts):
         iz = np.where(redshifts == z)[0]
         if 0 in iz:
-            axs.plot(X[iz], Y_fit[iz], c='black', label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+            axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
         else:
-            axs.plot(X[iz], Y_fit[iz], c='black')
+            axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), ls='--')
 
     # Confidence interval
     perr = np.sqrt(np.diag(pcov))
@@ -252,24 +226,98 @@ def x_z_fit_d(X, redshifts, Y, Yerr, axs):
     for i, (p, lo, up) in enumerate(zip(popt, ci_lower, ci_upper)):
         print(f"Parameter {i}: {p:.4f} (99% CI: {lo:.4f} to {up:.4f})")
 
-def x_z_fit_w(X, redshifts, Y, axs, cmap, norm):
+def x_z_fit_w(X, redshifts, Y,Yerr, axs, cmap, norm):
     from scipy.optimize import curve_fit
     
-    def func(Inputs, a, b, c, d, A, B, C, D, E, F):
+    def func(Inputs, a, b, d, A, D, E, F):
         """Params:
             Inputs: (x, redshifts)
         """
         x, z = Inputs
-        return a*x + b*z + c*x*z + d + B*z**2 + A*x**2 + C*x**3 + D*z**3 + E*x*z**2 + F*x**2*z
+        return a*x + b*z + d + A*x**2 + D*z**3 + F*x**2*z + E*x*z**2 # + G*z/x  
+    
+    # def func(Inputs, a, d, A, G):
+    #     """Params:
+    #         Inputs: (x, redshifts)
+    #     """
+    #     x, z = Inputs
+    #     return a*x + d + A*x**2 + G/x 
+    
+    # def func(Inputs, a, b, c, d, e):
+    #     """Params:
+    #             Inputs: (x, redshifts)
+    #     """
+    #     x, z = Inputs
+    #     return a*z/x*np.tanh(-b*z*(x-d)) + c*np.tanh(-e*x)
+    
+    # def func(Inputs, a, b, c, e):
+    #     """Params:
+    #         Inputs: (x, redshifts)
+    #     """
+    #     x, z = Inputs
+    #     return (z/x+c)*np.exp(-(a*(x-e)**2)/b)+1/x
 
-    popt, _ = curve_fit(func, (X, redshifts), Y, p0=[1]*10, maxfev=10000)
+    popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*7, maxfev=10000)
     
     Y_fit = func((X, redshifts), *popt)
 
     # Calculate the reduced chi-square
-    chi2 = np.sum((Y - Y_fit)**2)
-    red_chi2 = chi2 / (len(Y) - len(popt))
+    red_chi2 = np.sum((Y - Y_fit)**2 / Yerr**2) / (len(Y) - len(popt))
     # Plot
-    axs.scatter(X, Y_fit, c='black', marker='x', s=20,
-                label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+    for z in np.unique(redshifts):
+        iz = np.where(redshifts == z)[0]
+        if 0 in iz:
+            axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
+        else:
+            axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), ls='--')
+    # axs.scatter(X, Y_fit, c=cmap(norm(np.round(z, 2))), marker='x', s=20,
+    #             label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
     
+    # 99% confidence level
+    from scipy.stats import t
+    perr = np.sqrt(np.diag(pcov))
+    dof = max(1, len(Y)-len(popt))
+    
+    alpha = 0.01 
+    t_score = t.ppf(1 - alpha/2, dof)
+
+    # Confidence interval = popt ± (t-score * std_err)
+    ci_lower = popt - t_score * perr
+    ci_upper = popt + t_score * perr
+
+    # Print results
+    for i, (p, lo, up) in enumerate(zip(popt, ci_lower, ci_upper)):
+        print(f"Parameter {i}: {p:.4f} (99% CI: {lo:.4f} to {up:.4f})")
+
+# def poly_fit(X, Y, Yerr, redshifts, axs, cmap, norm, DoF):
+#     """Params:
+#         X: 1d array
+#         Y: 1d array
+#         redshifts: 1d array"""
+
+#     for z in np.unique(redshifts):
+        
+#         fit_X = X[np.where(np.round(redshifts, 1) == np.round(z, 1))]
+#         fit_Y = Y[np.where(np.round(redshifts, 1) == np.round(z, 1))]
+#         print(fit_X)
+        
+#         if len(fit_X) > DoF+1:
+#             # fit            
+#             popt, _ = np.polyfit(fit_X, fit_Y, deg=DoF, cov=True)
+#             poly = np.poly1d(popt)
+#             Y_fit = poly(X)
+            
+#             # find the reduced chi-square
+#             red_chi2 = np.sum((Y - Y_fit)**2 / Yerr**2) / (len(Y) - len(popt))
+#             print(f'z = {z}, reduced chi2 = {red_chi2}')
+            
+#             # Plot
+#             axs.plot(np.linspace(fit_X[0], fit_X[-1], 100), 
+#                      poly(np.linspace(fit_X[0], fit_X[-1], 100)), 
+#                      color=cmap(norm(np.round(z, 3))),
+#                      label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+            
+#             # Print the fitted polynomial
+#             print(f'z = {z}:')
+#             print(poly)
+#     return axs

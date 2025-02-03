@@ -63,21 +63,40 @@ TNG300_mass_cuts, TNG300_z, TNG300_accret_med = load_accret(f'result/accretion_r
 MTNG_mass_cuts, MTNG_z, MTNG_accret_med = load_accret(f'result/accretion_rate_plot/MTNG/Hydro-Arepo/MTNG_Hydro_accret_stats.npy')
 
 # ============================================================================================
+# Load accretion rate width
+# ============================================================================================
+
+_, _, _, TNG300_accret_width = load_accret(f'result/accretion_rate_plot/TNG300/sim_205_1250_Hydro/TNG300_Hydro_accret_stats.npy', 
+                                                                 width='percentile')
+
+_, _, _, MTNG_accret_width = load_accret(f'result/accretion_rate_plot/MTNG/Hydro-Arepo/MTNG_Hydro_accret_stats.npy', 
+                                                           width='percentile')
+
+# ============================================================================================
 # Plot 
 # ============================================================================================
 
-X_w, Y_w, z_w = [], [], []
-x, y, z = plot_data(TNG300_dir, TNG300_snaps, [TNG300_z, TNG300_mass_cuts, TNG300_accret_med], axs, cmap, norm, feat='width')
+X_w, Xerr_w, Y_w, Yerr_w, z_w = [], [], [], [], []
+x, xerr, z, y, yerr = plot_data(TNG300_dir, TNG300_snaps, [TNG300_z, TNG300_mass_cuts, TNG300_accret_med, TNG300_accret_width], 
+                                axs, cmap, norm, feat='width')
 X_w.append(x)
+Xerr_w.append(xerr)
 Y_w.append(y)
+Yerr_w.append(yerr)
 z_w.append(z)
-x, y, z = plot_data(MTNG_dir, MTNG_snaps, [MTNG_z, MTNG_mass_cuts, MTNG_accret_med], axs, cmap, norm, feat='width')
+x, xerr, z, y, yerr = plot_data(MTNG_dir, MTNG_snaps, [MTNG_z, MTNG_mass_cuts, MTNG_accret_med, MTNG_accret_width], 
+                                axs, cmap, norm, feat='width')
 X_w.append(x)
+Xerr_w.append(xerr)
 Y_w.append(y)
+Yerr_w.append(yerr)
 z_w.append(z)
 
 X_w = np.concatenate(X_w)
+Xerr_w = np.concatenate(Xerr_w)
 Y_w = np.concatenate(Y_w)
+Yerr_w = np.concatenate(Yerr_w, axis=1)
+
 z_w = np.concatenate(z_w)
 
 # ============================================================================================
@@ -85,21 +104,16 @@ z_w = np.concatenate(z_w)
 # ============================================================================================
 
 # if the array in x shares the same z value, then concatenate the array
-DoF = 2
-poly_fit(X_w, Y_w, z_w, axs, cmap, norm, DoF)
+# poly_fit(X_w, Y_w, Yerr_w, z_w, axs, cmap, norm, 4)
 
 # Fit two params, y(x, z) at the same time
-x_z_fit_w(X_w, z_w, Y_w, axs, cmap, norm)
+x_z_fit_w(X_w, z_w, Y_w, Yerr_w, axs, cmap, norm)
+# x_z_fit_w(X_w[z_w == 0], z, Y_w[z_w == 0], Yerr_w[:, z_w == 0], axs)
 
 # Final edit
 axs.set_ylabel(r"$\mathcal{W}$")
 axs.set_xlabel(r'$\Gamma$')
-axs.legend(loc='upper right', title=f'ploy deg = {DoF}')
-
-# axs.figtext(0.5, -0.1, 
-#         fr"""Poly fit deg for each redshift: {DoF}
-#                 Poly fit deg for all redshifts: $\mathcal{{W}}$($\Gamma$, z): 3""", ha="center", fontsize=12)
-
+axs.legend()
 
 # ============================================================================================
 # Save the plot

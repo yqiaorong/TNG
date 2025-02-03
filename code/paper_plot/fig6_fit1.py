@@ -72,6 +72,7 @@ _, _, _, TNG300_accret_width = load_accret(f'result/accretion_rate_plot/TNG300/s
 _, _, _, MTNG_accret_width = load_accret(f'result/accretion_rate_plot/MTNG/Hydro-Arepo/MTNG_Hydro_accret_stats.npy', 
                                                            width='percentile')
 
+
 # ============================================================================================
 # Plot 
 # ============================================================================================
@@ -92,19 +93,23 @@ Y_d.append(y)
 Yerr_d.append(yerr)
 z_d.append(z)
 
+
 X_d = np.concatenate(X_d)
 Xerr_d = np.concatenate(Xerr_d)
 Y_d = np.concatenate(Y_d)
 Yerr_d = np.concatenate(Yerr_d, axis=1)
 
+# # add 0.01 to every element in Yerr_d
+# Yerr_d = [Yerr_d[i] + 0 for i in range(len(Yerr_d))]
+
 z_d = np.concatenate(z_d)
-print(X_d.shape, Xerr_d.shape, Y_d.shape, Yerr_d.shape, z_d.shape)
+# print(X_d.shape, Xerr_d.shape, Y_d.shape, Yerr_d.shape, z_d.shape)
 
 save_dict = {'accret_rate': X_d,
-            'accret_rate_err': Xerr_d, 
-            'depth': Y_d,
-            'depth_err': Yerr_d,
-            'z': z_d}
+             'accret_rate_err': Xerr_d, 
+             'depth': Y_d,
+             'depth_err': Yerr_d,
+             'z': z_d}
 np.save('depth_data.npy', save_dict)
 
 # ============================================================================================
