@@ -107,6 +107,16 @@ def stacked_density_profile(radii_2d_array, densities_2d_array, M200_1d_array, R
         
     return (radii_dimless, medians, errors, num_halo, radius200_median)
 
+def compute_median_mass(M200_1d_array, mass_bin_start):
+    import numpy as np
+    mass_bin_end = mass_bin_start + 0.5
+    # Select masses in the bin
+    indices = np.where((M200_1d_array >= 10**mass_bin_start) & (M200_1d_array < 10**mass_bin_end))
+    masses = M200_1d_array[indices]
+    # Compute the median mass
+    median_mass = np.median(masses)
+    return median_mass
+    
 def bootstrap(x, statfunc, Nboots=32):
     import numpy as np
     

@@ -1,5 +1,31 @@
 import numpy as np
 
+def load_stats(dir, snap, xlabel, ylabel):
+        data = np.load(f'{dir}/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+
+        z = np.round(data['z'], 3)
+        # mass_bins     = [10**(10+mass) for mass in data['mass_bins']]
+        x, xmin, xmax = data[xlabel][1], data[xlabel][0], data[xlabel][2]
+        y, ymin, ymax = data[ylabel][1], data[ylabel][0], data[ylabel][2]
+
+        x_dict = {'median': x, f'min': xmin, f'max': xmax}
+        y_dict = {'median': y, f'min': ymin, f'max': ymax}
+        return z, x_dict, y_dict
+
+def plot_feature(simu, z, x_dict, y_dict, plot_info):
+        
+        axs, cmap, norm = plot_info
+        if simu == 'DM':
+                ls = '--'
+        else:
+                ls = '-'
+                       
+        # axs.plot(x_dict['median'], y_dict['median'], color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
+        axs.errorbar(x_dict['median'], y_dict['median'],
+                        xerr=[x_dict['median']-x_dict['min'], x_dict['max']-x_dict['median']],
+                        yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
+                        color=cmap(norm(z)), fmt='.')
+
 def load_data(dir, snaps):
     
     for isnap, snap in enumerate(snaps): # from low z to high z (present)
@@ -26,17 +52,17 @@ def load_data(dir, snaps):
     
     return np.array(tot_z), np.array(tot_mass_cuts), tot_data
 
-def load_z(dir, snaps):
-    data = np.load(dir+f'/snap_{min(snaps)}_Rsp_stats.npy', allow_pickle=True).item()
-    z_i = np.round(data['z'], 2)
-    data = np.load(dir+f'/snap_{max(snaps)}_Rsp_stats.npy', allow_pickle=True).item()
-    z_f = np.round(data['z'], 2)
-    return z_i, z_f
+# def load_z(dir, snaps):
+#     data = np.load(dir+f'/snap_{min(snaps)}_Rsp_stats.npy', allow_pickle=True).item()
+#     z_i = np.round(data['z'], 2)
+#     data = np.load(dir+f'/snap_{max(snaps)}_Rsp_stats.npy', allow_pickle=True).item()
+#     z_f = np.round(data['z'], 2)
+#     return z_i, z_f
 
-def load_all_z(dir, snaps):
+def load_all_z(Dir, snaps):
     all_z = []
     for snap in snaps:
-        data = np.load(dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+        data = np.load(Dir+f'/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
         all_z.append(np.round(data['z'], 2))
     return all_z
 

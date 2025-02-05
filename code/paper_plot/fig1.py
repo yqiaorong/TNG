@@ -8,10 +8,10 @@ import os
 # Load sample data
 # =============================================================================
 
-root_dir = 'result/bootstrap_stats_phys/'
 sim_dir = f'TNG300/sim_205_1250_Hydro/'
 
 # Load stat data
+root_dir = 'result/bootstrap_old_stats/'
 data = np.load(f'{root_dir}/{sim_dir}/Nboots_1024/snap_99_Rsp_stats.npy', allow_pickle = True).item()
 
 z = data['z']
@@ -26,7 +26,7 @@ median_idx = data['median_idx_in_boots']
 phy_Rsp = data['final_results'][mass_cut_idx, 0, 1] # [kpc]
 
 # Load profile data
-profile_dir = 'result/bootstrap_phys/'
+profile_dir = 'result/bootstrap_old_profiles/'
 profile = np.load(f'{profile_dir}/{sim_dir}/snap_99/Nboots_1024/data/'+
                     f'/mass_cut_{cut}/boots_{median_idx[mass_cut_idx]}.npy',
                     allow_pickle=True).item()

@@ -9,8 +9,8 @@ parser.add_argument('--sim',      default=None, type=str)
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--Nsample',  default=10000,type=int)
 parser.add_argument('--Nboots',   default=1024, type=int)
-parser.add_argument('--bin_start',default=None, type=float)
-parser.add_argument('--bin_end',  default=None, type=float)
+# parser.add_argument('--bin_start',default=None, type=float)
+# parser.add_argument('--bin_end',  default=None, type=float)
 args = parser.parse_args()
 
 print('')
@@ -22,23 +22,30 @@ print('')
 
 
 
-# Load redshift values (Alternative!!!)
+# Load halos data
 halos_dir = f'result/DMhalo_density_profiles/{args.sim}/snap_{args.snapnum}/final_densities/'
-halos_list = os.listdir(halos_dir)
-print(halos_list)
-sample_file = halos_list[0]
-sample_data = np.load(os.path.join(halos_dir, sample_file), allow_pickle=True).item()
-print(sample_data.keys())
-z = sample_data['z']
-scale_factor = sample_data['scale_factor']
-h = sample_data['h']
-rho_c = sample_data['rho_c'] # [(Msun) / (kpc)^3]
-del sample_data
+halos_fname = os.listdir(halos_dir)[0]
+print(halos_fname)
+data = np.load(os.path.join(halos_dir, halos_fname), allow_pickle=True).item()
+
+z            = data['z']
+scale_factor = data['scale_factor']
+h            = data['h']
+rho_c        = data['rho_c']            # [(Msun) / (kpc)^3]
+halo_R_Mean200 = data['halo_R_Mean200'] # [kpc]
+halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 Msun]
+densities      = data['densities']      # [Msun / (kpc)^3]
+radial_bins    = data['radial_bins']    # [kpc]
+del data
+
+total_num_halos = halo_M_Mean200.shape[0]
+print(f'total number of halos: {total_num_halos}')
+print(halo_R_Mean200.shape, halo_M_Mean200.shape, densities.shape, radial_bins.shape)
 
 
 
 # Make mass cuts
-bin_start, bin_end, bin_width = args.bin_start, args.bin_end, 0.5
+bin_start, bin_end, bin_width = int(halos_fname[4:6])/10, int(halos_fname[7:9])/10, 0.5
 num_bins = int((bin_end-bin_start)/bin_width)
 print(f'The number of mass bins: {num_bins}')
 mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x where x: 10^x of 10^10 Msun
@@ -46,45 +53,10 @@ print(mass_bins[:-1])
 print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun')
 
 
-
-# Load halos data
-total_num_halos = 0
-halo_R_Mean200, halo_M_Mean200, densities, radial_bins = [], [], [], []
-for ifname, fname in enumerate(halos_list):
-    data = np.load(f'{halos_dir}/{fname}', allow_pickle=True).item()
-
-    if ifname == 0:
-        halo_R_Mean200 = data['halo_R_Mean200'] # [kpc]
-        halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 Msun]
-        densities = data['densities']           # [Msun / (kpc)^3]
-        radial_bins = data['radial_bins']       # [kpc]
-    else:
-        halo_R_Mean200 = np.concatenate((halo_R_Mean200, data['halo_R_Mean200']), axis=0)
-        halo_M_Mean200 = np.concatenate((halo_M_Mean200, data['halo_M_Mean200']), axis=0)
-        densities = np.concatenate((densities, data['densities']), axis=0)
-        radial_bins = np.concatenate((radial_bins, data['radial_bins']), axis=0)
-    
-    total_num_halos = total_num_halos + data['halo_R_Mean200'].shape[0]
-    del data
-    
-print(halo_R_Mean200.shape, halo_M_Mean200.shape, densities.shape, radial_bins.shape)
-print(f'total number of halos: {total_num_halos}')
-
-
-
-# 弃用
-# -------------------------------------------------------------------------
-# # Save plot dir 
-# save_data_dir = f'result/bootstrap_phys/{args.sim}/snap_{args.snapnum}/Nboots_{args.Nboots}/'
-# if not os.path.exists(save_data_dir):
-#     os.makedirs(save_data_dir)
-# -------------------------------------------------------------------------
-    
-    
     
 # Bootstrap setup
 Nsample, Nboots = args.Nsample, args.Nboots
-results = np.empty((num_bins, 5, Nboots))   # [Rsp, depth, width_dimless, width_physical, min_grad]
+results = np.empty((num_bins, 6, Nboots))   # [med_mass, Rsp, depth, min_grad, width_dimless, width_physical]
 
 valid_boots = 0
 while valid_boots < Nboots: 
@@ -92,11 +64,10 @@ while valid_boots < Nboots:
     # Random selection of halos
     indices = np.random.randint(0, total_num_halos, Nsample)
     # Select densities and masses
-    select_radii = radial_bins[indices]     # [kpc]
-    select_densities = densities[indices]   # [Msun / (kpc)^3]
-    select_masses = halo_M_Mean200[indices] # [10^10 Msun]
-    select_r200 = halo_R_Mean200[indices]   # [kpc]
-
+    select_radii     = radial_bins[indices]    # [kpc]
+    select_densities = densities[indices]      # [Msun / (kpc)^3]
+    select_masses    = halo_M_Mean200[indices] # [10^10 Msun]
+    select_r200      = halo_R_Mean200[indices] # [kpc]
     del indices
     
     # Calculating the number of halos in each cut
@@ -112,8 +83,8 @@ while valid_boots < Nboots:
             num_halo, R200_median = raw_profiles[3], raw_profiles[4]                             # [kpc]
             del raw_profiles
             
-            ### Remove the radius < gravitational softening length ###
-    
+            # Remove the radius < gravitational softening length ###
+            # -----------------------------------------------------------------------------------------
             radius_phys = radius * R200_median # [kpc]
             # Get radius which is larger than the gravitational softening length
             if args.sim.startswith('MTNG'):
@@ -140,20 +111,14 @@ while valid_boots < Nboots:
                 # Fit the slope
                 fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho)) # [dimensionless]
                 
-                # 弃用
-                # -------------------------------------------------------------------------
-                # # Plot the profile
-                # plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
-                #             fitted_radius, fitted_rho, fitted_slope, 
-                #             [mass_bins[i], mass_bins[i+1]], num_halo, args.snapnum, 
-                #              f'boots_{valid_boots}')
-                # -------------------------------------------------------------------------
+                # Compute the median mass in the mass cut
+                med_mass = compute_median_mass(select_masses, mass_bins[i])
                 
                 # Compute Rsp
                 physical_fitted_radius = fitted_radius * R200_median
                 Rsp = physical_fitted_radius[np.argmin(fitted_slope)] # [kpc]
                 
-                # Rsp depth
+                # depth
                 min_grad = np.min(fitted_slope)
                 min_grad_idx = np.argmin(fitted_slope)
                 print(f'min grad index: {min_grad_idx}')
@@ -173,36 +138,43 @@ while valid_boots < Nboots:
                 width_dimless = fitted_radius[right_idx] - fitted_radius[left_idx]
                 
                 # Append results
-                results[i, :, valid_boots] = Rsp, depth, width_dimless, width, min_grad
+                results[i, :, valid_boots] = med_mass, Rsp, depth, min_grad, width_dimless, width
        
         ### Only the for loop is complete, update valid_boots
-        else:
-            # Updata counts
-            valid_boots += 1
-            print(f'Nboots: {valid_boots}')
-            print('')
+        # Updata counts
+        valid_boots += 1
+        print(f'Nboots: {valid_boots}')
+        print('')
             
             
-            
-# Get the statistical results           
-final_results = np.percentile(results, [16, 50, 84], axis=2).transpose(1,2,0)
-print(f'final_results shape (bin, type, percentile): {final_results.shape}')
-for i in range(num_bins):
-    print(f'bin {i}: ')
-    print(f'Rsp: {final_results[i, 0]}')
-    print(f'depth: {final_results[i, 1]}')
-    print(f'width dimless: {final_results[i, 2]}')
-    print(f'width physical: {final_results[i, 3]}')
-    print(f'depth absolute: {final_results[i, 4]}')
-    print('')
+        
+# Get the statistical results 
+final_results = {'z': z, 'h': h, 'mass_bins': mass_bins[:-1]}
+final_results['med_mass']       = np.percentile(results[:, 0, :], [16, 50, 84], axis=1)
+final_results['Rsp']            = np.percentile(results[:, 1, :], [16, 50, 84], axis=1)
+final_results['depth']          = np.percentile(results[:, 2, :], [16, 50, 84], axis=1)
+final_results['abs_depth']      = np.percentile(results[:, 3, :], [16, 50, 84], axis=1)    
+final_results['width_dimless']  = np.percentile(results[:, 4, :], [16, 50, 84], axis=1)
+final_results['width_physical'] = np.percentile(results[:, 5, :], [16, 50, 84], axis=1)  
+final_results['full_results']   = results    
+
+# print(f'final_results shape (bin, type, percentile): {final_results.shape}')
+# for i in range(num_bins):
+#     print(f'bin {i}: ')
+#     print(f'Rsp: {final_results[i, 0]}')
+#     print(f'depth: {final_results[i, 1]}')
+#     print(f'width dimless: {final_results[i, 2]}')
+#     print(f'width physical: {final_results[i, 3]}')
+#     print(f'depth absolute: {final_results[i, 4]}')
+#     print('')
     
-# Check the index of median value
-origin_indices = []
-for i, cut in enumerate(results):
-    indices = np.argsort(cut[0,:]) # Rsp
-    origin_idx = np.where(indices == int(Nboots/2))[0][0]
-    print(f'cut {mass_bins[i]}: median boots idx = {origin_idx}')
-    origin_indices.append(origin_idx)
+# # Check the index of median value
+# origin_indices = []
+# for i, cut in enumerate(results):
+#     indices = np.argsort(cut[0,:]) # Rsp
+#     origin_idx = np.where(indices == int(Nboots/2))[0][0]
+#     print(f'cut {mass_bins[i]}: median boots idx = {origin_idx}')
+#     origin_indices.append(origin_idx)
     
     
     
@@ -211,8 +183,8 @@ save_stats_dir = f'result/bootstrap_stats/with_mass/{args.sim}/Nboots_{Nboots}/'
 if not os.path.exists(save_stats_dir):
     os.makedirs(save_stats_dir)
     
-save_data = {'z': z, 'h': h, 'mass_bins': mass_bins[:-1],
-             'full_results': results, 
-             'final_results': final_results, 
-             'median_idx_in_boots': origin_indices}
-np.save(save_stats_dir+f'snap_{args.snapnum}_Rsp_stats', save_data)
+# save_data = {'z': z, 'h': h, 'mass_bins': mass_bins[:-1],
+#              'full_results': results, 
+#              'final_results': final_results, 
+#              'median_idx_in_boots': origin_indices}
+np.save(save_stats_dir+f'snap_{args.snapnum}_Rsp_stats', final_results)
