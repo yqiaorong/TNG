@@ -1,3 +1,5 @@
+"""All the data computed in this script is saved in result/DMhalo_density_profiles"""
+
 import pandas as pd
 import numpy as np
 from accret_func import *

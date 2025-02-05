@@ -1,4 +1,5 @@
-"""WARNINGS: Commmented parts are finished which should never to run again."""
+"""WARNINGS: Commmented parts are finished which should never to run again.
+   All the data computed in this script is saved in result/DMhalo_density_profiles_phys"""
 
 import os
 import numpy as np

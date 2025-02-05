@@ -1,3 +1,5 @@
+"""All the data computed in this script is saved in result/DMhalo_density_profiles_raw2"""
+
 import os
 import numpy as np
 
