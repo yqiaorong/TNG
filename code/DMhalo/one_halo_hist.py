@@ -20,7 +20,6 @@ parser.add_argument('--z', default=0,  type=float) # [ckpc/h]
 parser.add_argument('--M', default=0,  type=float) # [10^10 Msun/h]
 parser.add_argument('--R', default=0,  type=float) # [ckpc/h]
 
-parser.add_argument('--method', default=None,  type=str)
 parser.add_argument('--save_root_dir', default=None,  type=str)
 args = parser.parse_args()
 
@@ -108,15 +107,9 @@ for idx, file in enumerate(load_list):
         
     # Compute the density profile
     if sub_coords.shape[0] != 0:
-        if args.method == 'hist':
-            radial_bins = np.logspace(np.log10(0.01*halo_R_Mean200), 
-                                      np.log10(5*halo_R_Mean200), 85) # [ckpc/h]
-            DM_masses = [DMmass] * sub_coords.shape[0] # [Msun/h]
-            densities = compt_density_profile_hist(sub_coords, DM_masses, haloPos, radial_bins)
-        elif args.method == 'old':
-            densities, radial_bins = compt_density_profile(sub_coords, haloPos, halo_R_Mean200,
-                                                           boxsize*1000)
-            densities = densities * DMmass
+        densities, radial_bins = compt_density_profile(sub_coords, haloPos, halo_R_Mean200,
+                                                        boxsize*1000)
+        densities = densities * DMmass
         densities_bins.append(densities) 
         
 densities_bins = np.array(densities_bins)

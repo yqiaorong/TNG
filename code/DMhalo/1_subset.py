@@ -8,14 +8,13 @@ from mpi4py import MPI
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',  default=205,  type=int)
 parser.add_argument('--res',      default=1250, type=int)
-parser.add_argument('--DM',       default=None,   type=str)
+parser.add_argument('--DM',       default=None, type=str)
 
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--bin_start',default=None, type=float) # [10^{10+x} Msun/h]
 parser.add_argument('--bin_end',  default=None, type=float) # [10^{10+x} Msun/h]
-parser.add_argument('--method', default='old',  type=str)
 
-parser.add_argument('--save_root_dir',default='DMhalo_density_profiles',type=str)
+parser.add_argument('--save_root_dir',default='DMhalo_density_profiles_raw',type=str)
 args = parser.parse_args()
 
 print('')
@@ -40,7 +39,7 @@ res     = args.res
 
 
 # Save root dir
-save_root_dir = args.save_root_dir +'_'+args.method
+save_root_dir = args.save_root_dir
     
     
 
@@ -94,7 +93,9 @@ for idx in subset_idx[start_idx_per_core:]:
             f' --boxsize {boxsize} --res {res} --snapnum {snapnum} --groupnum {idx} --DM {args.DM}'+
             f' --x {x} --y {y} --z {z}'+
             f' --M {Group_M_Mean200[idx]} --R {R}'+
-            f' --save_root_dir {save_root_dir} --method {args.method}')
+            f' --save_root_dir {save_root_dir}'# +
+            # f' --method {args.method}'
+            )
     else:
         print(f'Processor {rank}: At snap {snapnum}, DM halo local index {idx}/{Ngroups_subset-1} already exists.')
 

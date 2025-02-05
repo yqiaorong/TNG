@@ -23,7 +23,7 @@ print('')
 
 
 
-root_dir = 'DMhalo_density_profiles_old'
+root_dir = 'DMhalo_density_profiles_raw'
 boxsize = 205
 res = 1250
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
@@ -86,12 +86,12 @@ else:
 
     ### Save the compiled data
     save_dict = {'halo_R_Mean200': total_R200, # [ckpc/h]
-                'halo_M_Mean200': total_M200, # [10^10 Msun/h]
-                'densities': total_rho, # [(Msun/h)/(ckpc/h)^3]
-                'radial_bins': total_r, # [ckpc/h]
+                'halo_M_Mean200':  total_M200, # [10^10 Msun/h]
+                'densities':       total_rho,  # [(Msun/h)/(ckpc/h)^3]
+                'radial_bins':     total_r,    # [ckpc/h]
                 'h': h, 'scale_factor': scale_factor, 'z': z}  
 
-    save_dir = f'result/DMhalo_density_profiles/TNG300/sim_{boxsize}_{res}_{args.DM}/snap_{snap}/final_densities/'
+    save_dir = f'result/DMhalo_density_profiles_raw2/TNG300/sim_{boxsize}_{res}_{args.DM}/snap_{snap}/final_densities/'
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
     np.save(f'{save_dir}/bin-{int(bin_start*10)}-{int(bin_end*10)}', save_dict) 

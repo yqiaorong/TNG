@@ -18,7 +18,7 @@ from astropy.cosmology import Planck15
 
 # for snap in snaps:
     
-#     load_dir = f'result/DMhalo_density_profiles/{sim}/snap_{snap}/final_densities/'
+#     load_dir = f'result/DMhalo_density_profiles_raw2/{sim}/snap_{snap}/final_densities/'
 #     save_dir = f'result/DMhalo_density_profiles_phys/{sim}/snap_{snap}/final_densities/'
 #     if not os.path.exists(save_dir):
 #         os.makedirs(save_dir)
