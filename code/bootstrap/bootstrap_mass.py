@@ -1,8 +1,6 @@
-import h5py
 import os
 import numpy as np
 from func import *
-import illustris_python as il
 import argparse
 
 # Input arguments
@@ -16,7 +14,7 @@ parser.add_argument('--bin_end',  default=None, type=float)
 args = parser.parse_args()
 
 print('')
-print(f'>>> Bootstrap Physical Rsp <<<')
+print(f'>>> Bootstrap splashback features per mass cuts <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -25,8 +23,9 @@ print('')
 
 
 # Load redshift values (Alternative!!!)
-halos_dir = f'result/DMhalo_density_profiles_phys/{args.sim}/snap_{args.snapnum}/final_densities/'
+halos_dir = f'result/DMhalo_density_profiles/{args.sim}/snap_{args.snapnum}/final_densities/'
 halos_list = os.listdir(halos_dir)
+print(halos_list)
 sample_file = halos_list[0]
 sample_data = np.load(os.path.join(halos_dir, sample_file), allow_pickle=True).item()
 print(sample_data.keys())
@@ -46,9 +45,7 @@ mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width) # mass_bin = x wh
 print(mass_bins[:-1])
 print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun')
 
-# Halos data root dir
 
-print(halos_list)
 
 # Load halos data
 total_num_halos = 0
@@ -73,14 +70,21 @@ for ifname, fname in enumerate(halos_list):
 print(halo_R_Mean200.shape, halo_M_Mean200.shape, densities.shape, radial_bins.shape)
 print(f'total number of halos: {total_num_halos}')
 
-# Save plot dir 
-save_data_dir = f'result/bootstrap_phys/{args.sim}/snap_{args.snapnum}/Nboots_{args.Nboots}/'
-if not os.path.exists(save_data_dir):
-    os.makedirs(save_data_dir)
+
+
+# 弃用
+# -------------------------------------------------------------------------
+# # Save plot dir 
+# save_data_dir = f'result/bootstrap_phys/{args.sim}/snap_{args.snapnum}/Nboots_{args.Nboots}/'
+# if not os.path.exists(save_data_dir):
+#     os.makedirs(save_data_dir)
+# -------------------------------------------------------------------------
+    
+    
     
 # Bootstrap setup
 Nsample, Nboots = args.Nsample, args.Nboots
-results = np.empty((num_bins, 5, Nboots))
+results = np.empty((num_bins, 5, Nboots))   # [Rsp, depth, width_dimless, width_physical, min_grad]
 
 valid_boots = 0
 while valid_boots < Nboots: 
@@ -109,7 +113,7 @@ while valid_boots < Nboots:
             del raw_profiles
             
             ### Remove the radius < gravitational softening length ###
-            
+    
             radius_phys = radius * R200_median # [kpc]
             # Get radius which is larger than the gravitational softening length
             if args.sim.startswith('MTNG'):
@@ -135,13 +139,15 @@ while valid_boots < Nboots:
             else:
                 # Fit the slope
                 fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho)) # [dimensionless]
-
-                # Plot the profile
-                plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
-                            fitted_radius, fitted_rho, fitted_slope, 
-                            [mass_bins[i], mass_bins[i+1]], num_halo, args.snapnum, 
-                            save_data_dir, f'boots_{valid_boots}',
-                            save_data=True)
+                
+                # 弃用
+                # -------------------------------------------------------------------------
+                # # Plot the profile
+                # plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
+                #             fitted_radius, fitted_rho, fitted_slope, 
+                #             [mass_bins[i], mass_bins[i+1]], num_halo, args.snapnum, 
+                #              f'boots_{valid_boots}')
+                # -------------------------------------------------------------------------
                 
                 # Compute Rsp
                 physical_fitted_radius = fitted_radius * R200_median
@@ -176,6 +182,9 @@ while valid_boots < Nboots:
             print(f'Nboots: {valid_boots}')
             print('')
             
+            
+            
+# Get the statistical results           
 final_results = np.percentile(results, [16, 50, 84], axis=2).transpose(1,2,0)
 print(f'final_results shape (bin, type, percentile): {final_results.shape}')
 for i in range(num_bins):
@@ -197,8 +206,8 @@ for i, cut in enumerate(results):
     
     
     
-# Save the result
-save_stats_dir = f'result/bootstrap_stats_phys/{args.sim}/Nboots_{Nboots}/'
+# Save the results
+save_stats_dir = f'result/bootstrap_stats/with_mass/{args.sim}/Nboots_{Nboots}/'
 if not os.path.exists(save_stats_dir):
     os.makedirs(save_stats_dir)
     

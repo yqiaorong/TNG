@@ -1,13 +1,14 @@
-result/accretion_rate_plot
-result/bootstrap_phys
-
-result/bootstrap_stats_phys
 result/DM halos mass histogram
-result/DMhalo_coords_table
+
+result/DMhalo_density_profiles_raw
+result/DMhalo_density_profiles_raw2
 result/DMhalo_density_profiles_phys
-result/DMhalo_idx_table
-result/DMhalo_mass_table
-result/fitting_full
+result/DMhalo_density_profiles
+
+result/DMhalo_table_chunk_idx
+result/DMhalo_table_mass
+
+result/temp_archive
 
 output/
 data/
