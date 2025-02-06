@@ -13,20 +13,23 @@ print('>>> Plot the absolute depth and width vs mass for a few redshifts <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_mass/'
-simus = [# 'Hydro', 
-       'DM'
+simus = [
+    # 'Hydro', 
+     'DM'
          ]
+feature = 'abs_depth'
+
 # ============================================================================================
 # Set up the plot
 # ============================================================================================
 
-fig, axs = plt.subplots(2, 1, figsize=(4, 6), dpi=500, sharex=True, constrained_layout=True)
+fig, axs = plt.subplots(1, 1, figsize=(4, 3.5), dpi=500, sharex=True, constrained_layout=True)
 
 # ============================================================================================
 # Set up the colorbar
 # ============================================================================================
 
-TNG300_snaps = [99, 78, 67, 50, 40, 33, 21, 17, 8]
+TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
 TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simus[0]}/Nboots_1024/'
 TNG300_z_i, TNG300_z_f = load_all_z(TNG300_dir, [min(TNG300_snaps), max(TNG300_snaps)])
 
@@ -63,10 +66,8 @@ for simu in simus:
         # Plot TNG300
         for snap in TNG300_snaps:
                 TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
-                TNG300_z, TNG300_mass, TNG300_depths = load_stats(TNG300_dir, snap, 'med_mass', 'abs_depth')
-                _, _, TNG300_widths = load_stats(TNG300_dir, snap, 'med_mass', 'width_dimless')
-                plot_feature(simu, TNG300_z, TNG300_mass, TNG300_depths, [axs[0], cmap, norm])
-                plot_feature(simu, TNG300_z, TNG300_mass, TNG300_widths, [axs[1], cmap, norm])
+                TNG300_z, TNG300_mass, TNG300_feat = load_stats(TNG300_dir, snap, 'med_mass', feature)
+                plot_feature(simu, TNG300_z, TNG300_mass, TNG300_feat, [axs, cmap, norm])
                 
         # # Plot MTNG
         # for snap in MTNG_snaps:
@@ -75,12 +76,14 @@ for simu in simus:
         #         plot_depth(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
         #         plot_width(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
 
-axs[0].set_xscale('log')
-axs[0].set_ylabel(r"|$\mathcal{D}$|")
-
-axs[1].set_xscale('log')
-axs[1].set_xlabel('Mass [$M_\\odot$]')
-axs[1].set_ylabel(r"$\mathcal{W}$")
+axs.set_xscale('log')
+if feature == 'abs_depth':
+    Y_label = r"|$\mathcal{D}$|"
+elif feature == 'width_dimless':
+    Y_label = r"$\mathcal{W}$"
+else:
+    Y_label = r"$\mathcal{D}$"
+axs.set_ylabel(Y_label)
 
 # ============================================================================================
 # Save the plot
@@ -90,5 +93,5 @@ save_dir = f'result/paper_plots/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-plt.savefig(f'{save_dir}/fig3_{simus[0]}')
+plt.savefig(f'{save_dir}/fig3_{simus[0]}_{feature}')
 plt.close()
