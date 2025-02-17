@@ -4,7 +4,6 @@ evolution of the first progenitor of the halos."""
 import os
 import h5py
 import argparse
-from func import *
 import numpy as np
 import illustris_python as il
 from tqdm import tqdm
@@ -149,7 +148,7 @@ else:
     print(snaps, min_snap)
     # Remove the files that are not the latest snapshot
     for snap in snaps:
-        if snap != min_snap:
+        if snap != min_snap and snap not in [51, 69, 94, 129, 151, 179, 214, 237, 264]:
             print(f'remove {snap}')
             os.remove(f'{save_dir}/snap_{snap}_FPGr.npy')
     print('')
@@ -170,11 +169,11 @@ for snap in tqdm(range(min_snap, 15, -1)):
         FPGr_indices = np.array([SubGr_map.get(Sub_idx, -1) for Sub_idx in FPSub_indices]) # Index into selected halos 
         np.save(f'{save_dir}/snap_{snap}_FPGr.npy', FPGr_indices) # This saved the group indices in the snapshot in filename
         # Remove the useless files in the later snapshot
-        if os.path.exists(f'{save_dir}/snap_{snap+1}_FPGr.npy'):
+    
+        if os.path.exists(f'{save_dir}/snap_{snap+1}_FPGr.npy') and snap+1 not in [51, 69, 94, 129, 151, 179, 214, 237, 264]:
             os.remove(f'{save_dir}/snap_{snap+1}_FPGr.npy')
     print(FPGr_indices.shape)
     print('')
-    
         
     ### Load the group catalog in current snapshot ###
     print(f'load halos in snap {snap}...')
@@ -192,7 +191,7 @@ for snap in tqdm(range(min_snap, 15, -1)):
     FPGrMass = np.array([GrMass_map.get(Gr_idx, -1) for Gr_idx in FPGr_indices])
     print(FPGrMass.shape)
     print(FPGrMass)
-    if snap in [51, 69, 94, 151, 214, 264]:
+    if snap in [51, 69, 94, 129, 151, 179, 214, 237, 264]:
        np.save(f'{save_dir}/snap_{snap}_FPGrMass.npy', FPGrMass)
        print(f'snap_{snap}_FPGrMass.npy saved!')
        

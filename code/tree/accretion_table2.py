@@ -1,14 +1,13 @@
 import illustris_python as il
 import h5py
-import pandas as pd
 import numpy as np
-import os
 import argparse
 from tqdm import tqdm
+from func import calc_tdyn
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim', default='Hydro-Arepo/MTNG-L500-4320-A/', type=str)
+parser.add_argument('--sim', default='DM-Arepo/MTNG-L500-4320-A/', type=str)
 args = parser.parse_args()
 
 print('')
@@ -21,15 +20,18 @@ print('')
 
 # BasePath
 basePath = f'/virgotng/mpa/MTNG/{args.sim}/'
-snaps = [264, 214, 151, 94, 69, 51]
+snaps = [264, 237, 214, 179, 151, 129, 94, 69, 94]
 
-# Load scale factors
-a = []
-for snap in tqdm(snaps, desc='loading scale factors'):
-    with h5py.File(il.snapshot.snapPath(basePath+'output', snap), 'r') as f:
+# Load scale factors and redshifts
+z_dict, a_dict = {}, {}
+for snap in snaps:
+    with h5py.File(il.snapshot.snapPath(basePath+'/output/', int(snap)), 'r') as f:
         header = dict(f['Header'].attrs.items())
         scale_factor = header['Time']
-    a.append(scale_factor)
+        z = 1 / scale_factor - 1
+        
+        z_dict[snap] = z
+        a_dict[snap] = scale_factor
     
 # Load mass tables
 load_dir = f'result/DMhalo_mass_table_new/{args.sim}/'
@@ -40,12 +42,20 @@ Nhalos = len(np.load(load_dir+fname.format(snaps[0])))
 print(f'Number of halos: {Nhalos}')
 
 accretions = np.zeros((Nhalos, len(snaps) - 1))
-for i in tqdm(range(len(snaps)-1), desc='calculating accretion rates'):
+for isnap, snap in tqdm(enumerate(snaps[:-1]), desc='calculating accretion rates'):
     
-    current_snap = np.load(load_dir+fname.format(snaps[i]))
-    prev_snap = np.load(load_dir+fname.format(snaps[i+1]))
+    current_snap_mass = np.load(load_dir+fname.format(snap))
     
-    mask = (current_snap != -1) & (prev_snap != -1) & (current_snap != 0) & (prev_snap != 0)
-    accretions[mask, i] = np.log10(current_snap[mask]/prev_snap[mask]) / np.log10(a[i]/a[i+1])
+    # Find the snapshot which is one t_dyn later
+    prev_snap, _ = calc_tdyn(f'{basePath}/output/', z_dict, snap)
+    prev_snap_mass = np.load(load_dir+fname.format(prev_snap))
+    
+    # Get the scalar factors
+    a_f, a_i = a_dict[snap], a_dict[prev_snap]
+    
+    # Compute the accretion rates
+    mask = (current_snap_mass != -1) & (prev_snap_mass != -1) & (current_snap_mass != 0) & (prev_snap_mass != 0)
+    accretions[mask, isnap] = np.log10(current_snap_mass[mask]/prev_snap_mass[mask]) / np.log10(a_f/a_i)
 
-np.save(f'{load_dir}/accretion_rates.npy', accretions)
+np.save(f'{load_dir}/accretion_rates.npy', {'accretions', accretions,
+                                            'snaps', snaps[:-1]})
