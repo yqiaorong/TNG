@@ -17,10 +17,10 @@ echo "# Running in directory: "$(pwd)
 snaplist=( $(cat job/boots_TNG300/snap_list.txt) )
 snap=${snaplist[$SLURM_ARRAY_TASK_ID]}
 
-accret_starts=( $(cat job/boots_TNG300/accret_starts.txt) )
+accret_starts=( $(cat job/boots_TNG300/accret_starts_Hydro.txt) )
 accret_start=${accret_starts[$SLURM_ARRAY_TASK_ID]}
 
-accret_ends=( $(cat job/boots_TNG300/accret_ends.txt) )
+accret_ends=( $(cat job/boots_TNG300/accret_ends_Hydro.txt) )
 accret_end=${accret_ends[$SLURM_ARRAY_TASK_ID]}
 
 echo "# Array ID: " $SLURM_ARRAY_TASK_ID
