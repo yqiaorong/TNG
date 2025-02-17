@@ -92,6 +92,7 @@ while valid_boots < Nboots:
     # Calculating the number of halos in each cut
     num_halos_per_bin = count_halos(select_accrets, accret_bins[:-1], accret_bins[1:])
     print(num_halos_per_bin)
+    
     if all(x > 2 for x in num_halos_per_bin):
         
         for i in range(num_bins):
@@ -141,29 +142,35 @@ while valid_boots < Nboots:
                 min_grad = np.min(fitted_slope)
                 min_grad_idx = np.argmin(fitted_slope)
                 print(f'min grad index: {min_grad_idx}')
-                left_data = fitted_slope[:min_grad_idx]
-                right_data = fitted_slope[min_grad_idx:]
-                
-                max_grad = np.max(right_data)
-                depth = max_grad - min_grad
-                
-                # Width
-                half_grad = min_grad + depth/2
-                
-                left_idx = np.argmin(np.abs(left_data - half_grad))
-                right_idx = min_grad_idx + np.argmin(np.abs(right_data - half_grad))
-                
-                width = physical_fitted_radius[right_idx] - physical_fitted_radius[left_idx]
-                width_dimless = fitted_radius[right_idx] - fitted_radius[left_idx]
-                
-                # Append results
-                results[i, :, valid_boots] = med_accret, Rsp, depth, min_grad, width_dimless, width
+                if min_grad_idx < 100:
+                    print('This bootstrap is abandoned! ')
+                    results[:, :, valid_boots] = -1
+                    break
+                else:
+                    left_data = fitted_slope[:min_grad_idx]
+                    right_data = fitted_slope[min_grad_idx:]
+                    
+                    max_grad = np.max(right_data)
+                    depth = max_grad - min_grad
+                    
+                    # Width
+                    half_grad = min_grad + depth/2
+                    
+                    left_idx = np.argmin(np.abs(left_data - half_grad))
+                    right_idx = min_grad_idx + np.argmin(np.abs(right_data - half_grad))
+                    
+                    width = physical_fitted_radius[right_idx] - physical_fitted_radius[left_idx]
+                    width_dimless = fitted_radius[right_idx] - fitted_radius[left_idx]
+                    
+                    # Append results
+                    results[i, :, valid_boots] = med_accret, Rsp, depth, min_grad, width_dimless, width
        
         ### Only the for loop is complete, update valid_boots
         # Updata counts
-        valid_boots += 1
-        print(f'Nboots: {valid_boots}')
-        print('')
+        if np.all(results[:, :, valid_boots] != -1):
+            valid_boots += 1
+            print(f'Nboots: {valid_boots}')
+            print('')
             
             
         

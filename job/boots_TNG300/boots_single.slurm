@@ -4,8 +4,8 @@
 #SBATCH -p serial_requeue  
 #SBATCH --mem-per-cpu=4000
 #SBATCH --open-mode=append 
-#SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/boots/TNG300-DM-%A-%a.out
-#SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/boots/TNG300-DM-%A-%a.err
+#SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/boots_mass/TNG300-DM-%A-%a.out
+#SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/boots_mass/TNG300-DM-%A-%a.err
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=s_qyu@mit.edu
 
