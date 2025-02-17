@@ -185,19 +185,27 @@ def get_field_values_of_lifeline(simpath, df, group_field=None, coords_idx=None)
     
     return df
 
-def calc_tdyn(redshit_list, basePath, current_snap):
-    import os
+def calc_tdyn(basePath, snap_dict, current_snap):
     import h5py
     import numpy as np
     import astropy.units as u
     import illustris_python as il
     from astropy.cosmology import Planck15, z_at_value, FlatLambdaCDM
     
-    # Load the last snapshot
-    with h5py.File(il.snapshot.snapPath(basePath+'output', current_snap), 'r') as f:
+    # # Load redshifts in the snap_list
+    # z_list = []
+    # for snap in snap_list:
+    #     with h5py.File(il.snapshot.snapPath(basePath, int(snap[5:])), 'r') as f:
+    #         header = dict(f['Header'].attrs.items())
+    #         scale_factor = header['Time']
+    #         z = 1 / scale_factor - 1
+    #     z_list.append(z)
+    
+    # Load the current snapshot redshift
+    with h5py.File(il.snapshot.snapPath(basePath, current_snap), 'r') as f:
         header = dict(f['Header'].attrs.items())
         scale_factor = header['Time']
-        z = 1 / scale_factor - 1
+        current_z = 1 / scale_factor - 1
 
     # Define own cosmology
     h = 0.6774
@@ -206,19 +214,28 @@ def calc_tdyn(redshit_list, basePath, current_snap):
     cosmo = FlatLambdaCDM(H0 = h * 100 * u.km / u.s / u.Mpc, 
                             Om0=Om0, Ob0=Ob0, Tcmb0=2.725)
     
-    t = cosmo.age(z) # The cosmological time at current snapshot / z
-    H = cosmo.H(z)   # The Hubble parameter at current snapshot / z
+    t = cosmo.age(current_z) # The cosmological time at current snapshot / z
+    H = cosmo.H(current_z)   # The Hubble parameter at current snapshot / z
     
     # Cosmological dynamic time
     t_H   = 1 / H
     t_dyn = t_H / (5 * np.sqrt(Om0))
     t_dyn = t_dyn.to('yr').value * 1E-9 # t_dyn in unit Gyr
-    print(f"One dynamical time: {t_dyn} Gyr at z = {z}")
+    print(f"One dynamical time: {t_dyn} Gyr at current z = {current_z}")
     
     # Find z one dynamical time before current z
-    prev_z = z_at_value(cosmo.age,  t - t_dyn * u.Gyr) # t_dyn in unit Gyr
-    print(f'The previous redshift: {prev_z}')
+    p_z = z_at_value(cosmo.age,  t - t_dyn * u.Gyr) # t_dyn in unit Gyr
+    prev_snap = min(snap_dict, key=lambda snap: abs(snap_dict[snap] - p_z))
+    prev_z = snap_dict[prev_snap]
     
-    # Find the most matching previous snapshot index
-    prev_snap_idx = min(range(len(redshit_list)), key=lambda i: abs(redshit_list[i]-prev_z))
-    return prev_snap_idx, prev_z
+    # Find z one dynamical time after current z
+    if np.round(current_z, 2) < 0.5:
+        l_z = 0.00
+    else:
+        l_z = z_at_value(cosmo.age, t + t_dyn * u.Gyr) # t_dyn in unit Gyr
+    later_snap = min(snap_dict, key=lambda snap: abs(snap_dict[snap] - l_z))
+    later_z = snap_dict[later_snap]
+
+    print('The previous redshift: ', prev_snap, prev_z)
+    print('The later redshift: ', later_snap, later_z)
+    return prev_snap, later_snap

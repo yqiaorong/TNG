@@ -1,15 +1,15 @@
-def count_halos_based_on_mass(mass_1d_array, mass_bin_start_list):
+def count_halos(array_1d, bin_start_list, bin_end_list):
     import numpy as np
     
     counts_list = []
-    for mass_bin_start in mass_bin_start_list:
-        count = int(np.sum((mass_1d_array >= 10**mass_bin_start) 
-                         & (mass_1d_array < 10**(mass_bin_start+0.5))))
+    for bin_start, bin_end in zip(bin_start_list, bin_end_list):
+        count = int(np.sum((array_1d >= bin_start) 
+                         & (array_1d < bin_end)))
         counts_list.append(count)
     return counts_list
 
-def stacked_density_profile(radii_2d_array, densities_2d_array, M200_1d_array, R200_1d_array,
-                            mass_bin_start, h, scale_factor, rho_c, use_bootstrap=True):
+def stacked_density_profile(radii_2d_array, densities_2d_array, target_1d_array, R200_1d_array, 
+                            bin_start, bin_end, rho_c, use_bootstrap=True):
     """The function computes the stacked density profiles.
     
     INPUT:
@@ -43,11 +43,11 @@ def stacked_density_profile(radii_2d_array, densities_2d_array, M200_1d_array, R
     
     ### Load all density profile data ###
     # Iterate over halos
-    for radii, densities, mass, radius200 in zip(radii_2d_array, densities_2d_array, M200_1d_array, R200_1d_array):
+    for radii, densities, target, radius200 in zip(radii_2d_array, densities_2d_array, target_1d_array, R200_1d_array):
         # Load data
 
         # Apply the mass criteria 
-        if (mass >= 10**mass_bin_start) & (mass < 10**(mass_bin_start+0.5)):
+        if (target >= bin_start) & (target < bin_end):
             # radius profile
             radii_dimless = radii / radius200 # [dimensionless]
             radius200_list.append(radius200)
@@ -107,15 +107,15 @@ def stacked_density_profile(radii_2d_array, densities_2d_array, M200_1d_array, R
         
     return (radii_dimless, medians, errors, num_halo, radius200_median)
 
-def compute_median_mass(M200_1d_array, mass_bin_start):
+def compute_median(target_1d_array, bin_start, bin_end):
     import numpy as np
-    mass_bin_end = mass_bin_start + 0.5
+   
     # Select masses in the bin
-    indices = np.where((M200_1d_array >= 10**mass_bin_start) & (M200_1d_array < 10**mass_bin_end))
-    masses = M200_1d_array[indices]
+    indices = np.where((target_1d_array >= bin_start) & (target_1d_array < bin_end))
+    values = target_1d_array[indices]
     # Compute the median mass
-    median_mass = np.median(masses)
-    return median_mass
+    median = np.median(values)
+    return median
     
 def bootstrap(x, statfunc, Nboots=32):
     import numpy as np
@@ -130,7 +130,6 @@ def bootstrap(x, statfunc, Nboots=32):
         resampled_stat.append(stat_value)
     
     return resampled_stat
-
 
 # Compute d log rho / d log r
 
@@ -263,7 +262,6 @@ from scipy.optimize import curve_fit
 
 evaluate_profile_at_edges = np.logspace(-2, np.log10(5), 1024)
 evaluate_profile_at = 0.5 * (evaluate_profile_at_edges[1:] + evaluate_profile_at_edges[:-1])
-
 
 def density_profile_inner(
         r,

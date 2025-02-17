@@ -13,13 +13,17 @@ def add_accret(sim_type, snapnum, snap_idx_table, snap_accret_table):
     
     # Load halo density profiles
     halos_dir = f'result/DMhalo_density_profiles_phys/TNG300/sim_205_1250_{sim_type}/snap_{snapnum}/final_densities/'
-    halos_list = ['bin-10-45.npy', #'bin-15-20.npy', # 'bin-20-25.npy', 'bin-25-30.npy',
-                  #'bin-30-35.npy', 'bin-35-40.npy', 'bin-40-45.npy'
-                  ]
-    bin_starts = [1]
-    bin_ends = [4.5]
-    
+    halos_list = os.listdir(halos_dir)
+    # sort the list
+    halos_list = sorted(halos_list)
+    print(halos_list)
+    # Get the bin starts and ends
+    bin_starts = [float(halo.split('-')[1])/10 for halo in halos_list]
+    bin_ends = [float(halo.split('-')[2].split('.')[0])/10 for halo in halos_list]
+    print(bin_starts)
+    print(bin_ends)    
 
+    # Load the data
     halo_M, halo_R, bins, densities, accretions = [], [], [], [], []
     for fname, start, end in zip(halos_list, bin_starts, bin_ends):
         print(fname)
@@ -30,17 +34,6 @@ def add_accret(sim_type, snapnum, snap_idx_table, snap_accret_table):
         bins.append(data['radial_bins'])
         densities.append(data['densities'])
         
-        # # Get the indices in snap_mass_table where the COMOVING mass is in the range
-        # num = 0
-        # for s, e in zip([1, 1.5, 2, 2.5], [1.5, 2, 2.5, 3]):
-        #     snap_mass_table_idx = np.where((snap_all_mass >= 10**s) & (snap_all_mass < 10**e))[0]
-        #     num += snap_mass_table_idx.shape[0]
-        # print(num, data['halo_M_Mean200'].shape, np.unique(data['halo_M_Mean200']).shape)
-        # # # Convert them to the physical mass and sort from the smallest to the largest
-        # # sorted_snap_mass = np.sort(snap_mass_table[snap_mass_table_idx]/0.6774)
-        # # # Check if its equal to the sorted halo masses
-        # # print(np.all(sorted_snap_mass == np.sort(data['halo_M_Mean200'])))
-
         # Get the halo snap indices
         subset_idx = np.where((snap_all_mass >= 10**start) & (snap_all_mass < 10**end))[0]
         print(subset_idx.shape, data['halo_M_Mean200'].shape)
@@ -56,7 +49,7 @@ def add_accret(sim_type, snapnum, snap_idx_table, snap_accret_table):
         for idx in tqdm(subset_idx):
             find_idx = np.where(snap_idx_table == idx)[0]
             if len(find_idx) == 0:
-                add_accret.append([-1])
+                add_accret.append([np.nan])
             elif len(find_idx) == 1:
                 add_accret.append([snap_accret_table.iloc[find_idx].values[0]])
             else:
@@ -65,7 +58,7 @@ def add_accret(sim_type, snapnum, snap_idx_table, snap_accret_table):
                 # print(snap_accret_table[find_idx])
                 add_accret.append([np.mean(snap_accret_table.iloc[find_idx])])
         add_accret = np.concatenate(add_accret)
-        print(add_accret.shape)
+        # print(add_accret)
         
         # Accretions
         accretions.append(add_accret)
