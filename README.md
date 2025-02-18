@@ -6,15 +6,13 @@ The codes in this branch are designed for simulation [MillenniumTNG](https://www
 
 Install [illustris_python](https://github.com/illustristng/illustris_python) to ../code/illustris_python
 
+### ../code/
+
 * add_accret.py
 
   This script adds the accretion rate to the corresponding DM halo density profile dataset.
 
-### tree
-
-../code/tree
-
-The following scripts compute the accretion rates of DM halos.
+### ../code/tree/
 
 * mass_table2.py 
 
