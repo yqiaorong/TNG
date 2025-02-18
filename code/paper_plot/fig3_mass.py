@@ -14,10 +14,10 @@ print('')
 
 root_dir = 'result/bootstrap_stats/with_mass/'
 simus = [
-    # 'Hydro', 
-     'DM'
+    'Hydro', 
+    # 'DM'
          ]
-feature = 'abs_depth'
+feature = 'abs_depth' # [abs_depth / depth / width_dimless]
 
 # ============================================================================================
 # Set up the plot
@@ -35,10 +35,8 @@ TNG300_z_i, TNG300_z_f = load_all_z(TNG300_dir, [min(TNG300_snaps), max(TNG300_s
 
 all_z = load_all_z(TNG300_dir, TNG300_snaps)
 
-# MTNG_snaps = [264, 237, 214, 179, 151, 129]
-# MTNG_dir = f'{root_dir}/MTNG/Hydro-Arepo/MTNG-L500-4320-A/Nboots_1024/'
-# MTNG_z_i, MTNG_z_f = load_z(MTNG_dir, MTNG_snaps)
-
+MTNG_snaps = [264, 237, 214, 179, 151, 129]
+MTNG_dir = f'{root_dir}/MTNG/{simus[0]}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
 
 # Set up the colorbar
 # -----------------------------------------------------------------------------------------
@@ -60,21 +58,16 @@ cb.set_label('z')
 # ============================================================================================
 # Plot
 # ============================================================================================
-
-for simu in simus:
         
-        # Plot TNG300
-        for snap in TNG300_snaps:
-                TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
-                TNG300_z, TNG300_mass, TNG300_feat = load_stats(TNG300_dir, snap, 'med_mass', feature)
-                plot_feature(simu, TNG300_z, TNG300_mass, TNG300_feat, [axs, cmap, norm])
-                
-        # # Plot MTNG
-        # for snap in MTNG_snaps:
-        #         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
-        #         MTNG_z, MTNG_mass_bins, MTNG_final_results = load_stats(MTNG_dir, snap)
-        #         plot_depth(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
-        #         plot_width(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
+# Plot TNG300
+for snap in TNG300_snaps:
+    TNG300_z, TNG300_mass, TNG300_feat = load_stats(TNG300_dir, snap, 'med_mass', feature)
+    plot_feature(simus[0], TNG300_z, TNG300_mass, TNG300_feat, [axs, cmap, norm])
+        
+# Plot MTNG
+for snap in MTNG_snaps:
+    MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, snap, 'med_mass', feature)
+    plot_feature(simus[0], MTNG_z, MTNG_mass, MTNG_feat, [axs, cmap, norm])
 
 axs.set_xscale('log')
 if feature == 'abs_depth':
@@ -93,5 +86,5 @@ save_dir = f'result/paper_plots/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-plt.savefig(f'{save_dir}/fig3_{simus[0]}_{feature}')
+plt.savefig(f'{save_dir}/fig3_mass_{simus[0]}_{feature}')
 plt.close()

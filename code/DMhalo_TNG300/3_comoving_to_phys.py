@@ -11,9 +11,7 @@ from astropy.cosmology import Planck15
 # Convwet the comoving data to physical data
 ###########################################################################################
 
-# sim = 'MTNG/Hydro-Arepo/MTNG-L500-4320-A/'
-# snaps = [129, 151, 179, 214, 237, 264]
-
+# sim = 'TNG300/sim_205_1250_DM/'
 # sim = 'TNG300/sim_205_1250_Hydro/'
 # snaps = [8, 13, 17, 21, 25, 33, 40, 50, 67, 78, 99]
 
