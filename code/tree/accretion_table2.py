@@ -20,7 +20,7 @@ print('')
 
 # BasePath
 basePath = f'/virgotng/mpa/MTNG/{args.sim}/'
-snaps = [264, 237, 214, 179, 151, 129, 94, 69, 94]
+snaps = [264, 237, 214, 179, 151, 129, 94, 69, 51]
 
 # Load scale factors and redshifts
 z_dict, a_dict = {}, {}
@@ -56,6 +56,7 @@ for isnap, snap in tqdm(enumerate(snaps[:-1]), desc='calculating accretion rates
     # Compute the accretion rates
     mask = (current_snap_mass != -1) & (prev_snap_mass != -1) & (current_snap_mass != 0) & (prev_snap_mass != 0)
     accretions[mask, isnap] = np.log10(current_snap_mass[mask]/prev_snap_mass[mask]) / np.log10(a_f/a_i)
-
-np.save(f'{load_dir}/accretion_rates.npy', {'accretions', accretions,
-                                            'snaps', snaps[:-1]})
+    print('')
+    
+np.save(f'{load_dir}/accretion_rates.npy', {'accretions': accretions,
+                                            'snaps': snaps[:-1]})

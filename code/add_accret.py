@@ -1,12 +1,15 @@
 import os
+import numpy as np
 import illustris_python as il
 from tqdm import tqdm
 
-sim_type, snapnum='DM', 237
+sim_type, snapnum='Hydro', 264
+print(sim_type, snapnum)
+print('')
 
 # Load halo density profiles
 # ------------------------------------------------------------------------------
-halos_dir = f'../result/DMhalo_density_profiles_phys/MTNG/{sim_type}-Arepo/MTNG-L500-4320-A/snap_{snapnum}/final_densities/'
+halos_dir = f'result/DMhalo_density_profiles_phys/MTNG/{sim_type}-Arepo/MTNG-L500-4320-A/snap_{snapnum}/final_densities/'
 halos_list = os.listdir(halos_dir)
 # sort the list
 halos_list = sorted(halos_list)
@@ -17,7 +20,6 @@ bin_ends = [float(halo.split('-')[2].split('.')[0])/10 for halo in halos_list]
 print(bin_starts)
 print(bin_ends)  
 
-
 # Load all halo masses
 # ------------------------------------------------------------------------------
 sim = f'{sim_type}-Arepo/MTNG-L500-4320-A'
@@ -27,18 +29,17 @@ print(snap_all_mass.shape)
 
 # Load FPG mass, idx
 # ------------------------------------------------------------------------------
-import numpy as np
 # This is physical mass!
-FPGrMass = np.load(f'../result/DMhalo_mass_table_new/{sim_type}-Arepo/MTNG-L500-4320-A/snap_{snapnum}_FPGrMass.npy')
+FPGrMass = np.load(f'result/DMhalo_mass_table_new/{sim_type}-Arepo/MTNG-L500-4320-A/snap_{snapnum}_FPGrMass.npy')
 print(FPGrMass.shape)
-FPGr = np.load(f'../result/DMhalo_mass_table_new/{sim_type}-Arepo/MTNG-L500-4320-A/snap_{snapnum}_FPGr.npy')
+FPGr = np.load(f'result/DMhalo_mass_table_new/{sim_type}-Arepo/MTNG-L500-4320-A/snap_{snapnum}_FPGr.npy')
 print(FPGr.shape)
 
 # Load accretion rates
 # ------------------------------------------------------------------------------
-accret_data = np.load(f'../result/DMhalo_mass_table_new/{sim_type}-Arepo/MTNG-L500-4320-A/accretion_rates.npy',
+accret_data = np.load(f'result/DMhalo_mass_table_new/{sim_type}-Arepo/MTNG-L500-4320-A/accretion_rates.npy',
                           allow_pickle=True).item()
-snap_idx = np.where(snapnum=accret_data['snaps'])[0][0]
+snap_idx = np.where(accret_data['snaps'] == np.array(snapnum))[0][0]
 accret_rates = accret_data['accretions'][:, snap_idx]
 print(accret_rates.shape)
 del accret_data
@@ -67,14 +68,17 @@ for fname, start, end in zip(halos_list, bin_starts, bin_ends):
         idx_in_FPGr = np.where(FPGr == idx)[0]
         # print(FPGrMass[idx_in_FPGr].shape, snap_all_mass[idx])
         # print(np.all(FPGrMass[idx_in_FPGr] == FPGrMass[idx_in_FPGr][0]), FPGrMass[idx_in_FPGr][0])
-        if np.all(FPGrMass[idx_in_FPGr] == FPGrMass[idx_in_FPGr][0]) and FPGrMass[idx_in_FPGr][0] == snap_all_mass[idx]:
-            # Extract the corresponding accretion rates and get the mean
-            mean_accret = np.mean(accret_rates[idx_in_FPGr])
-            print(mean_accret)
-            accret.append(mean_accret)
+        
+        if FPGrMass[idx_in_FPGr].shape[0] == 0:
+            accret.append(np.nan)
         else:
-            exit()
-    print('')
+            if np.all(FPGrMass[idx_in_FPGr] == FPGrMass[idx_in_FPGr][0]) and FPGrMass[idx_in_FPGr][0] == snap_all_mass[idx]:
+                # Extract the corresponding accretion rates and get the mean
+                mean_accret = np.mean(accret_rates[idx_in_FPGr])
+                # print(mean_accret)
+                accret.append(mean_accret)
+            else:
+                exit()
     
     # Check the added accertion rates shape
     accretions.append(accret)
