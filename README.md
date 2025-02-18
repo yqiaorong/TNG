@@ -6,38 +6,22 @@ The codes in this branch are designed for simulation [MillenniumTNG](https://www
 
 Install [illustris_python](https://github.com/illustristng/illustris_python) to ../code/illustris_python
 
-### DMhalo
+* add_accret.py
 
-../code/DMhalo
+  This script adds the accretion rate to the corresponding DM halo density profile dataset.
 
-The following scripts compute DM halo densities in old (slow) way. 
+### tree
 
-* 1_subset.py --sim --snapnum --mass_range --save_root_dir
+../code/tree
 
-  * one_halo_hist.py 
+The following scripts compute the accretion rates of DM halos.
 
-* 3_bootstrap_all.py
+* mass_table2.py 
 
-  * bootstrap.py --sim --snapnum --Nsample
+  This script generates the mass table and the local index table of DM halos at each snapshot.
 
-### DMhalo_tgt
+  e.g., Group_M_Mean200[index_table[i]] = mass_table[i]
 
-The following scripts compute DM halo densities in new (fast) way. 
-
-* 1_subset_tgt_all.py
-
-  * subset_tgt_chunk.py
-
-* 2_compile_chunk_profile.py
-
-* bootstrap_tgt.py
-
-### plot
-
-../code/plot
-
-* mass_hist.py --sim --snapnum --bin_start --bin_end 
-
-* Rspfeats_mass.py
-
-* Rspfeats_redshift.py
+* accretion_table2.py
+  
+  This script calculates the accretion rate of DM halos per dynamical time.
