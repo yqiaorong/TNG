@@ -12,6 +12,10 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
   This script adds the accretion rate to the corresponding DM halo density profile dataset.
 
+* add_formation_time.py
+
+  This script adds the formation time to the corresponding DM halo density profile dataset.
+
 ### ../code/tree/
 
 * mass_table2.py 
