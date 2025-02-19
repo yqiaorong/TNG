@@ -4,9 +4,9 @@ def load_stats(dir, snap, xlabel, ylabel):
         data = np.load(f'{dir}/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
 
         z = np.round(data['z'], 3)
-        # mass_bins     = [10**(10+mass) for mass in data['mass_bins']]
         x, xmin, xmax = data[xlabel][1], data[xlabel][0], data[xlabel][2]
         y, ymin, ymax = data[ylabel][1], data[ylabel][0], data[ylabel][2]
+        
 
         x_dict = {'median': x, f'min': xmin, f'max': xmax}
         y_dict = {'median': y, f'min': ymin, f'max': ymax}

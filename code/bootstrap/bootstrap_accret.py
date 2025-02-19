@@ -80,6 +80,7 @@ results = np.empty((num_bins, 6, Nboots))   # [med_accret, Rsp, depth, min_grad,
 valid_boots = 0
 while valid_boots < Nboots: 
     
+    print('Current boots: ', valid_boots)
     # Random selection of halos
     indices = np.random.randint(0, total_num_halos, Nsample)
     # Select densities and masses
@@ -126,6 +127,7 @@ while valid_boots < Nboots:
             ### If the optimal params are not found! ###
             if np.all(fitted_rho) == 0:
                 print('This bootstrap is abandoned! ')
+                results[:, :, valid_boots] = -1
                 break
             else:
                 # Fit the slope
@@ -164,18 +166,21 @@ while valid_boots < Nboots:
                     
                     # Append results
                     results[i, :, valid_boots] = med_accret, Rsp, depth, min_grad, width_dimless, width
-       
+                    print(med_accret, Rsp, depth, min_grad, width_dimless, width)
+                    
         ### Only the for loop is complete, update valid_boots
         # Updata counts
         if np.all(results[:, :, valid_boots] != -1):
             valid_boots += 1
-            print(f'Nboots: {valid_boots}')
-            print('')
+            print(f'Nboots updated: {valid_boots}')
+        else:
+            print(f'Nboots not updated: {valid_boots} ')
+        print('')
             
             
         
 # Get the statistical results 
-final_results = {'z': z, 'h': h, 'mass_bins': accret_bins[:-1]}
+final_results = {'z': z, 'h': h, 'accret_bins': accret_bins[:-1]}
 final_results['med_accret']     = np.percentile(results[:, 0, :], [16, 50, 84], axis=1)
 final_results['Rsp']            = np.percentile(results[:, 1, :], [16, 50, 84], axis=1)
 final_results['depth']          = np.percentile(results[:, 2, :], [16, 50, 84], axis=1)
