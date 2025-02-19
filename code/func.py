@@ -1,4 +1,3 @@
-
 def add_formation_time(sim, snapnum, idx_dict, mass_dict):
     import os
     import h5py
@@ -76,7 +75,6 @@ def add_formation_time(sim, snapnum, idx_dict, mass_dict):
     np.save(f'{halos_dir}/{halos_fname}', data)
     print('data saved')
     
-
 def compute_formation_time(mass, snapnum, z_dict):
     
     """
