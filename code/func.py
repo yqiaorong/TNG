@@ -23,7 +23,7 @@ def add_formation_time(sim, snapnum, idx_dict, mass_dict):
     # -------------------------------------------------------------------------------------------------
     halos_dir = f'result/DMhalo_density_profiles/MTNG/{sim}/snap_{snapnum}/final_densities/'
     halos_fname = os.listdir(halos_dir)[0]
-    data = np.load(os.path.join(halos_dir, halos_fname), allow_pickle=True).item()
+    data = np.load(halos_dir+halos_fname, allow_pickle=True).item()
     
     # Check halo numbers
     # -------------------------------------------------------------------------------------------------
@@ -35,13 +35,6 @@ def add_formation_time(sim, snapnum, idx_dict, mass_dict):
     # Get the halo snap indices
     subset_idx = np.where((snap_all_mass >= 10**bin_start) & (snap_all_mass < 10**bin_end))[0]
     print(subset_idx.shape, data['halo_M_Mean200'].shape)
-    
-    # # Check if the data shape matches
-    # if subset_idx.shape != data['halo_M_Mean200'].shape:
-    #     # Stop the script
-    #     os._exit(0)
-    # else:
-    #     pass
         
     # Add the corresponding formation time
     # -------------------------------------------------------------------------------------------------
