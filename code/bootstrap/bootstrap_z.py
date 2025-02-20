@@ -6,7 +6,7 @@ from boots_func import *
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',      default='MTNG/DM-Arepo/MTNG-L500-4320-A/', type=str)
+parser.add_argument('--sim',      default=None, type=str)
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--Nsample',  default=10000,type=int)
 parser.add_argument('--Nboots',   default=1024, type=int)
