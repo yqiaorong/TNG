@@ -9,7 +9,7 @@ from accret_func import *
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--sim',    default='TNG300/sim_205_1250_DM/', type=str)
-parser.add_argument('--snapnum',default=None, type=int)
+parser.add_argument('--snapnum',default=25, type=int)
 args = parser.parse_args()
 
 print('')

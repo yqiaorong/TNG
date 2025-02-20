@@ -21,3 +21,5 @@ code/illustris_python
 archive/
 
 code/illustris_python/
+
+__pycache__/
