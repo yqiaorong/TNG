@@ -166,7 +166,6 @@ while valid_boots < Nboots:
                     
                     # Append results
                     results[i, :, valid_boots] = med_accret, Rsp, depth, min_grad, width_dimless, width
-                    print(med_accret, Rsp, depth, min_grad, width_dimless, width)
                     
         ### Only the for loop is complete, update valid_boots
         # Updata counts
