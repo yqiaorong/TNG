@@ -185,74 +185,7 @@ def float_to_str(bin_start, bin_end):
         end = int(bin_end)
     return start, end
 
-# def plot_profile(R200_median, radius, rho, rho_err, slope, slope_err, 
-#                  fitted_radius, fitted_rho, fitted_slope, 
-#                  mass_cut, num_halo, snap, fname,
-#                  save_dir=None, save_data = False):
-    
-#     import os
-    
-#     # from matplotlib import pyplot as plt  
-#     # plt.style.use('code/style.mplstyle')
-    
-#     # fig, axs = plt.subplots(2, 1, figsize=(10, 15))
-#     # axs[0].scatter(radius, rho, s=1, # color='b', 
-#     #                label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
-#     #                # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-#     #                )
-#     # axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, # color = 'b',
-#     #                     # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-#     #                     )
-#     # axs[0].plot(fitted_radius, fitted_rho, lw=0.5, # color='salmon',
-#     #             # label=f'Fit: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-#     #             )
-    
-#     # # Plot the fitted gradients
-#     # axs[1].scatter(radius, slope, s=1, # color='b',
-#     #                label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
-#     #                # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-#     #                )
-#     # axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, # color = 'b',
-#     #                     # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-#     #                     )
-#     # axs[1].plot(fitted_radius, fitted_slope, lw=0.5, # color='salmon',
-#     #             # label=f'Theory: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-#     #             )
-    
 
-#     # # General settings
-#     # axs[0].set_xscale('log')
-#     # axs[0].set_yscale('log')
-#     # axs[0].set_ylabel(r"$\rho$/$\rho_c$")
-#     # axs[0].legend()
-#     # axs[0].set_title(f'Stacked density profiles')
-
-#     # axs[1].set_xscale('log')
-#     # axs[1].set_xlabel(r"r/$R_{200}$")
-#     # axs[1].set_ylabel("Slope")
-#     # axs[1].set_ylim(-6,-0)
-#     # axs[1].legend()
-#     # axs[1].set_title(f'Finding splashback radius at snap {snap}')
-    
-#     # Save the plot
-#     start, _ = float_to_str(mass_cut[0], mass_cut[1])
-#     # plt_dir = save_dir + f'/plot/mass_cut_{start}'
-#     # if not os.path.exists(plt_dir):
-#     #     os.makedirs(plt_dir)
-#     # plt.savefig(os.path.join(plt_dir, fname))
-#     # plt.close()
-    
-#     # Save data
-#     if save_data == True:
-#         data = {'radius': radius, 'rho': rho, 'rho_err': rho_err,
-#                 'slope': slope, 'slope_err': slope_err, 
-#                 'fitted_radius': fitted_radius, 'fitted_rho': fitted_rho, 'fitted_slope': fitted_slope,
-#                 'R200_median': R200_median}
-        
-#         data_dir = save_dir + f'/data/mass_cut_{start}'
-#         if not os.path.exists(data_dir):
-#            os.makedirs(data_dir)
-#         np.save(os.path.join(data_dir, fname), data)
 
 
 ### External functions ###
@@ -402,7 +335,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
             #     [1e-10 * 10**log_rho[0], 0.001 * R_200_mean, 0.0],
             #     [np.inf, 10.0 * R_200_mean, 1]
             # ),
-            maxfev=100000,
+            maxfev=1000000,
         )       
         
         ### Second, fit outer profile. ###
@@ -440,7 +373,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                     [0.01 * 10 ** log_rho[-1], 1.0, 1.0],
                     [10 * 10 ** log_rho[-1], 5.0, 5.0]
                     ),
-                maxfev=100000,
+                maxfev=1000000,
             )
 
             ### Now fit f_trans separately ###
@@ -470,7 +403,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                     p0=(R_200_mean,
                         2,
                         4,),
-                    maxfev=100000,
+                    maxfev=1000000,
                     # sigma=log_rho_error[middle_mask],
                     bounds=(
                         [0.1 * R_200_mean, 1.0, 1.0],
@@ -501,7 +434,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                         bin_centers[global_mask] * R_200_mean,
                         log_rho[global_mask],
                         p0=base_p0,
-                        maxfev=100000,
+                        maxfev=1000000,
                         bounds=[base_lower, base_upper],
                         # sigma=log_rho_error[global_mask],
                     )

@@ -90,7 +90,7 @@ def add_accret(sim_type, snapnum, snap_idx_table, snap_accret_table):
     
     return save_dir
 
-def add_formation_time(sim, snapnum, idx_table, mass_table):
+def add_formation_time(sim, snapnum, idx_dict, mass_dict):
     import os
     import h5py
     import numpy as np
@@ -106,7 +106,7 @@ def add_formation_time(sim, snapnum, idx_table, mass_table):
     snap_all_mass = il.groupcat.loadHalos(basePath, snapnum, fields='Group_M_Mean200')
     
     # Load all redshifts
-    snap_list = idx_table.index.tolist()
+    snap_list = idx_dict.keys()
     z_dict = {}
     for snap in snap_list:
         with h5py.File(il.snapshot.snapPath(basePath, int(snap[5:])), 'r') as f:
@@ -137,7 +137,7 @@ def add_formation_time(sim, snapnum, idx_table, mass_table):
         os._exit(0)
     else:
         pass
-        
+    
     # Add the corresponding formation time
     # -------------------------------------------------------------------------------------------------
     # These two snapshots are two early and the results would be meaningless
@@ -146,17 +146,18 @@ def add_formation_time(sim, snapnum, idx_table, mass_table):
     else:
         add_formation_time = []
         for idx in tqdm(subset_idx):
-            find_idx = np.where(idx_table.loc[f'snap_{snapnum}'] == idx)[0]
+            find_idx = np.where(idx_dict[f'snap_{snapnum}'] == idx)[0]
 
             if len(find_idx) == 0:
                 # print('no halo found')
                 add_formation_time.append([np.nan])
             else:
                 # Check if mass matches
-                if np.all(np.abs(mass_table.loc[f'snap_{snapnum}'].iloc[find_idx].to_numpy() - snap_all_mass[idx]) < 0.01):
+                if np.all(np.abs(mass_dict[f'snap_{snapnum}'][find_idx] - snap_all_mass[idx]) < 0.01):
                     # print('mass matches')
                     # Compute the formation time
-                    match_zs = compute_formation_time(mass_table.iloc[:,find_idx], snapnum, z_dict)
+                    select_mass = {key: value[find_idx] for key, value in mass_dict.items()}
+                    match_zs = compute_formation_time(select_mass, snapnum, z_dict)
                     mean_z = np.mean(match_zs)
                     add_formation_time.append([mean_z])
                 else:
@@ -180,8 +181,8 @@ def compute_formation_time(mass, snapnum, z_dict):
     half of the values in row `snap_{snapnum}`.
     
     Parameters:
-    mass : pd.DataFrame
-        A DataFrame where rows are indexed by 'snap_{snapnum}' format.
+    mass : dict
+        A dictionary where keys are 'snap_{snapnum}' and values are 1D NumPy arrays.
     snapnum : int
         The current snapshot.
     
@@ -191,9 +192,11 @@ def compute_formation_time(mass, snapnum, z_dict):
         that satisfy the condition.
     """
     import numpy as np
-
-    half_mass = mass.loc[f'snap_{snapnum}'] / 2  # Compute half mass for each column
-    abs_diffs = np.abs(mass - half_mass)
-    match_snaps = abs_diffs.idxmin().values # [list of snaps]
+    mass_array = np.array([mass[key] for key in mass.keys()]) 
+    half_mass = mass[f'snap_{snapnum}'] / 2 
+    abs_diffs = np.abs(mass_array - half_mass)
+    # Find the closest matching row (snapshot) for each object
+    match_indices = np.argmin(abs_diffs, axis=0) 
+    match_snaps = [list(mass.keys())[idx] for idx in match_indices]
     match_zs = [z_dict[snap] for snap in match_snaps]
     return match_zs

@@ -1,6 +1,3 @@
-""""This script plots depth (top panel) and width (bottom panel) as a function of mass for a few redshifts.
-    Both Hydro and DM-only simulations."""
-
 import os
 from matplotlib import cm
 from matplotlib import pyplot as plt 
@@ -9,7 +6,7 @@ plt.style.use('code/style.mplstyle')
 from func import *
 
 print('')
-print('>>> Plot the absolute depth and width vs mass for a few redshifts <<<')
+print('>>> Plot depth and width vs accretion rate <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_accret/'
@@ -70,8 +67,7 @@ for simu in simus:
             MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, snap, 'med_accret', feature)
             plot_feature(simu, MTNG_z, MTNG_mass, MTNG_feat, [axs, cmap, norm])
 
-        # axs.set_xlim(0, 10)
-        # axs.set_xscale('log')
+        axs.set_xlim(0, 6)
         if feature == 'abs_depth':
             Y_label = r"|$\mathcal{D}$|"
         elif feature == 'width_dimless':

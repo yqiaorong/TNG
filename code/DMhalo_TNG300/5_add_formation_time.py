@@ -4,6 +4,7 @@ import os
 import argparse
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 from accret_func import *
 
 # Input arguments
@@ -29,6 +30,9 @@ df_idx = df_idx.fillna(-1)
 df_idx = df_idx.astype(int) 
 df_idx = df_idx.replace(-1, np.nan)
 
+# Remove column names and convert df_idx to dictionary
+idx_dict = {k: v.to_numpy() for k, v in tqdm(df_idx.iterrows())}
+print('idx dict ready')
 
 # Load the mass data
 # ------------------------------------------------------------------------------------------------
@@ -39,9 +43,13 @@ df_mass = pd.read_csv(mass_table_dir, index_col=0)
 df_mass_sort = df_mass[df_idx.columns]
 # Check if all of two columns are equal
 print(np.all(df_mass_sort.columns == df_idx.columns))
-del df_mass
+del df_mass, df_idx 
 
+# Remove column names and convert df_mass_sort to dictionary
+mass_dict = {k: v.to_numpy() for k, v in tqdm(df_mass_sort.iterrows())}
+del df_mass_sort
+print('mass dict ready')
 
 # Add the formation time to the snap data
 # ------------------------------------------------------------------------------------------------
-add_formation_time(args.sim, args.snapnum, df_idx, df_mass_sort)
+add_formation_time(args.sim, args.snapnum, idx_dict, mass_dict)

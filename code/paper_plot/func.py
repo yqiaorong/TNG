@@ -1,30 +1,90 @@
 import numpy as np
 
 def load_stats(dir, snap, xlabel, ylabel):
+    data = np.load(f'{dir}/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
+
+    z = np.round(data['z'], 3)
+    x, xmin, xmax = data[xlabel][1], data[xlabel][0], data[xlabel][2]
+    y, ymin, ymax = data[ylabel][1], data[ylabel][0], data[ylabel][2]
+
+    x_dict = {'median': x, f'min': xmin, f'max': xmax}
+    y_dict = {'median': y, f'min': ymin, f'max': ymax}
+    return z, x_dict, y_dict
+    
+def load_stats_per_bin(dir, snaps, bin_name, bin_start_val, ylabel):
+    
+    # all_x, all_x_min, all_x_max = [], [], []
+    all_y, all_y_min, all_y_max = [], [], []
+    all_z = []
+    
+    for snap in snaps:
         data = np.load(f'{dir}/snap_{snap}_Rsp_stats.npy', allow_pickle=True).item()
-
-        z = np.round(data['z'], 3)
-        x, xmin, xmax = data[xlabel][1], data[xlabel][0], data[xlabel][2]
-        y, ymin, ymax = data[ylabel][1], data[ylabel][0], data[ylabel][2]
+       
+        bins = data[bin_name]
+        bin_start_idx =  np.where(bins == bin_start_val)[0]
         
+        if len(bin_start_idx) == 0:
+            pass
+        else:
+            z = np.round(data['z'], 3)
+            
+            # x, xmin, xmax = data[xlabel][1], data[xlabel][0], data[xlabel][2]
+            y, ymin, ymax = data[ylabel][1], data[ylabel][0], data[ylabel][2]
+            
+            # Select the corresponding bin vals
+            # x, xmin, xmax = x[bin_start_idx], xmin[bin_start_idx], xmax[bin_start_idx]
+            y, ymin, ymax = y[bin_start_idx], ymin[bin_start_idx], ymax[bin_start_idx]
+           
+            # Append data
+            # all_x.append(x)
+            # all_x_min.append(xmin)
+            # all_x_max.append(xmax)
+            all_y.append(y)
+            all_y_min.append(ymin)
+            all_y_max.append(ymax)
+            all_z.append(z)
+    
+    if len(all_z) < 2:
+        all_y = np.array(all_y).ravel()
+        all_y_min = np.array(all_y_min).ravel()
+        all_y_max = np.array(all_y_max).ravel()
+    else:
+        all_y = np.concatenate(all_y)
+        all_y_min = np.concatenate(all_y_min)
+        all_y_max = np.concatenate(all_y_max)
 
-        x_dict = {'median': x, f'min': xmin, f'max': xmax}
-        y_dict = {'median': y, f'min': ymin, f'max': ymax}
-        return z, x_dict, y_dict
+    # Convert the data to dict
+    # x_dict = {'median': np.array(all_x), f'min': np.array(all_x_min), f'max': np.array(all_x_max)}
+    y_dict = {'median': all_y, f'min': all_y_min, f'max': all_y_max}
+
+    return all_z, y_dict
 
 def plot_feature(simu, z, x_dict, y_dict, plot_info):
+    axs, cmap, norm = plot_info
+    if simu == 'DM':
+        ls = '--'
+    else:
+        ls = '-'
+                    
+    # axs.plot(x_dict['median'], y_dict['median'], color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
+    axs.errorbar(x_dict['median'], y_dict['median'],
+                    xerr=[x_dict['median']-x_dict['min'], x_dict['max']-x_dict['median']],
+                    yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
+                    color=cmap(norm(z)), fmt='.')
         
+def plot_feature_vs_z(simu, bin_val, all_z, y_dict, plot_info):
+   
+    if len(all_z) == 0:
+        pass
+    else:
         axs, cmap, norm = plot_info
         if simu == 'DM':
-                ls = '--'
+            ls = '--'
         else:
-                ls = '-'
-                       
-        # axs.plot(x_dict['median'], y_dict['median'], color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
-        axs.errorbar(x_dict['median'], y_dict['median'],
-                        xerr=[x_dict['median']-x_dict['min'], x_dict['max']-x_dict['median']],
+            ls = '-'
+        axs.errorbar(all_z, y_dict['median'],
                         yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
-                        color=cmap(norm(z)), fmt='.')
+                        color=cmap(norm(bin_val)), fmt='.')
 
 def load_data(dir, snaps):
     
