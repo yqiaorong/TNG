@@ -16,6 +16,7 @@ def init_mass_bins(mass_1d_array, bin_width):
     new_mass_bins = []
     for mass_bin in mass_bins[:-1]:
         num_halos_in_bin = np.where((log10_mass >= mass_bin) & (log10_mass < mass_bin+bin_width))[0].shape[0]
+        # print(mass_bin, num_halos_in_bin)
         if num_halos_in_bin > 10:
             new_mass_bins.append(mass_bin)
             
@@ -133,7 +134,7 @@ def bootstrap_all_features(args, params, data, formation_z=None, bin_width=0.5):
                 if np.all(results[:, :, valid_boots] != -1):
                     valid_boots += 1
                     print(f'Nboots updated: {valid_boots}')
-                    reject_times = {i: 0 for i in range(num_bins)}
+                    # reject_times = {i: 0 for i in range(num_bins)}
                 else:
                     print(f'Nboots not updated: {valid_boots} ')
                 print('')

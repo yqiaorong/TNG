@@ -35,8 +35,7 @@ densities      = data['densities']      # [Msun / (kpc)^3]
 radial_bins    = data['radial_bins']    # [kpc]
 del data
 
-print(f'total number of halos: {halo_M_Mean200.shape[0]}')
-
+# print(f'total number of halos: {halo_M_Mean200.shape[0]}')
 
 # Bootstrap setup
 final_results = bootstrap_all_features(args, 
