@@ -2,10 +2,24 @@ import os
 import numpy as np
 import illustris_python as il
 from tqdm import tqdm
+import argparse
 
-sim_type, snapnum='Hydro', 264
-print(sim_type, snapnum)
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--sim_type', default=None, type=str)
+parser.add_argument('--snapnum',  default=None, type=int)
+args = parser.parse_args()
+
 print('')
+print(f'>>> Mass table 2 <<<')
+print('\nInput arguments:')
+for key, val in vars(args).items():
+	print('{:16} {}'.format(key, val))
+print('')
+
+sim_type, snapnum = args.sim_type, args.snapnum
+
+
 
 # Load halo density profiles
 # ------------------------------------------------------------------------------
@@ -27,13 +41,16 @@ basePath = f'/virgotng/mpa/MTNG/{sim}/output/'
 snap_all_mass = il.groupcat.loadHalos(basePath, snapnum, fields='Group_M_Mean200')
 print(snap_all_mass.shape)
 
-# Load FPG mass, idx
+# Load FPG mass, idx, and linking subhalo mass
 # ------------------------------------------------------------------------------
+table_dir = f'result/DMhalo_mass_table_new/{sim_type}-Arepo/MTNG-L500-4320-A/'
 # This is physical mass!
-FPGrMass = np.load(f'result/DMhalo_mass_table_new/{sim_type}-Arepo/MTNG-L500-4320-A/snap_{snapnum}_FPGrMass.npy')
+FPGrMass = np.load(table_dir+f'snap_{snapnum}_FPGrMass.npy')
 print(FPGrMass.shape)
-FPGr = np.load(f'result/DMhalo_mass_table_new/{sim_type}-Arepo/MTNG-L500-4320-A/snap_{snapnum}_FPGr.npy')
+FPGr = np.load(table_dir+f'snap_{snapnum}_FPGr.npy')
 print(FPGr.shape)
+SubMass = np.load(table_dir+f'snap_{snapnum}_SubMass.npy')
+print(SubMass.shape)
 
 # Load accretion rates
 # ------------------------------------------------------------------------------
@@ -73,9 +90,15 @@ for fname, start, end in zip(halos_list, bin_starts, bin_ends):
             accret.append(np.nan)
         else:
             if np.all(FPGrMass[idx_in_FPGr] == FPGrMass[idx_in_FPGr][0]) and FPGrMass[idx_in_FPGr][0] == snap_all_mass[idx]:
-                # Extract the corresponding accretion rates and get the mean
-                mean_accret = np.mean(accret_rates[idx_in_FPGr])
-                # print(mean_accret)
+                if idx_in_FPGr.shape[0] == 1:
+                    pass
+                else:
+                    # Select the one with the highest subhalo mass
+                    idx_in_FPGr = idx_in_FPGr[np.argmax(SubMass[idx_in_FPGr])]
+                    
+                # Extract the corresponding accretion rate
+                mean_accret = accret_rates[idx_in_FPGr]
+                print(mean_accret)
                 accret.append(mean_accret)
             else:
                 exit()

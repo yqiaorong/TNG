@@ -22,7 +22,8 @@ print('')
 
 snap_list = [51, 69, 94, 129, 151, 179, 214, 237, 264]
 
-# Load the index table
+
+# Load the index table and linking subhalo mass table
 # ------------------------------------------------------------------------------------------------
 FPGr_fnames = [f"snap_{snap}_FPGr.npy" for snap in snap_list]  
 idx_table_paths = [f"result/DMhalo_mass_table_new/{args.sim}/{fname}" for fname in FPGr_fnames]  
@@ -30,7 +31,18 @@ idx_table_paths = [f"result/DMhalo_mass_table_new/{args.sim}/{fname}" for fname 
 # Load index tables into a dictionary
 df_idx = {}
 for snap, path in tqdm(list(zip(snap_list, idx_table_paths)), desc='load idx table'):
-    df_idx [f"snap_{snap}"] = np.load(path) 
+    df_idx[f"snap_{snap}"] = np.load(path) 
+
+
+# Load linking subhalo mass tables into
+# ------------------------------------------------------------------------------------------------
+SubMass_fnames = [f"snap_{snap}_SubMass.npy" for snap in snap_list]
+SubMass_paths = [f"result/DMhalo_mass_table_new/{args.sim}/{fname}" for fname in SubMass_fnames]
+
+# Load linking subhalo mass tables into a dictionary
+df_submass = {}
+for snap, path in tqdm(list(zip(snap_list, SubMass_paths)), desc='load submass table'):
+    df_submass[f"snap_{snap}"] = np.load(path)
 
 
 # Load the mass data
@@ -46,4 +58,4 @@ for snap, path in tqdm(list(zip(snap_list, mass_table_paths)), desc='load mass t
 
 # Add the formation time to the snap data
 # ------------------------------------------------------------------------------------------------
-add_formation_time(args.sim, args.snapnum, df_idx, df_mass)
+add_formation_time(args, df_idx, df_mass, df_submass)

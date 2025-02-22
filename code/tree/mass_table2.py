@@ -11,6 +11,7 @@ from tqdm import tqdm
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--sim', default=None, type=str)
+parser.add_argument('--restart', default=False, type=bool)
 args = parser.parse_args()
 
 print('')
@@ -128,7 +129,7 @@ save_dir = f'result/DMhalo_mass_table_new/{args.sim}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-Subhalo_fields = ['SubhaloNr', 'FirstProgSubhaloNr'] # A range from <0> to <total subhalos number> per current snapshot, RESET per snapshot!!!
+Subhalo_fields = ['SubhaloGroupNr', 'SubhaloMass'] # A range from <0> to <total subhalos number> per current snapshot, RESET per snapshot!!!
 Halo_fields = ['Group_M_Mean200', 'GroupFirstSub']
 
 
@@ -136,12 +137,14 @@ Halo_fields = ['Group_M_Mean200', 'GroupFirstSub']
 # Get the snapshot number of the last saved file
 save_list = os.listdir(save_dir)
 save_list = [item for item in save_list if item.endswith('_FPGr.npy')]
-if len(save_list) == 0:
+if len(save_list) == 0 or args.restart == True:
     min_snap = 264
     print(f'load halos in snap {min_snap}...')
     GroupFirstSub = il.groupcat.loadHalos(basePath, min_snap, fields='GroupFirstSub')
+    SubhaloMass = il.groupcat.loadSubhalos(basePath, min_snap, fields='SubhaloMass')
     np.save(f'{save_dir}/snap_{min_snap}_FPGr.npy', range(GroupFirstSub.shape[0]))
-    del GroupFirstSub
+    np.save(f'{save_dir}/snap_{min_snap}_SubMass.npy', SubhaloMass)
+    del GroupFirstSub, SubhaloMass
 else:
     snaps = [int(item.split('_')[1]) for item in save_list]
     min_snap = min([item for item in snaps])
@@ -151,6 +154,7 @@ else:
         if snap != min_snap and snap not in [51, 69, 94, 129, 151, 179, 214, 237, 264]:
             print(f'remove {snap}')
             os.remove(f'{save_dir}/snap_{snap}_FPGr.npy')
+            os.remove(f'{save_dir}/snap_{snap}_SubMass.npy')
     print('')
 
 
@@ -160,46 +164,68 @@ print(f'Last saved snapshot: {min_snap}')
 for snap in tqdm(range(min_snap, 15, -1)):
         
     ### Find the group index in the previous snapshot ###
+    # -------------------------------------------------------------------------------------------------------
     if snap == min_snap:
         FPGr_indices = np.load(f'{save_dir}/snap_{min_snap}_FPGr.npy') 
+        link_SubMass = np.load(f'{save_dir}/snap_{min_snap}_SubMass.npy')
     else:
+        # Load the subhalo catalog in current snapshot
         print(f'load subhalos in snap {snap}...')
-        SubhaloGroupNr = il.groupcat.loadSubhalos(basePath, snap, fields='SubhaloGroupNr') # Index into halos 
-        SubGr_map = {Sub_idx: Gr_idx for Sub_idx, Gr_idx in enumerate(SubhaloGroupNr)} 
+        Subhalos = il.groupcat.loadSubhalos(basePath, snap, fields=Subhalo_fields)
+        SubhaloGroupNr = Subhalos['SubhaloGroupNr'] # Index into halos 
+        SubhaloMass    = Subhalos['SubhaloMass']
+        del Subhalos
+        
+        # Create the mapping
+        SubGr_map = {Sub_idx: GrNr for Sub_idx, GrNr in enumerate(SubhaloGroupNr)} 
+        SubMass_map = {Sub_idx: mass for Sub_idx, mass in enumerate(SubhaloMass)}
+        
+        # Map
         FPGr_indices = np.array([SubGr_map.get(Sub_idx, -1) for Sub_idx in FPSub_indices]) # Index into selected halos 
+        link_SubMass = np.array([SubMass_map.get(Sub_idx, -1) for Sub_idx in FPSub_indices])
         np.save(f'{save_dir}/snap_{snap}_FPGr.npy', FPGr_indices) # This saved the group indices in the snapshot in filename
-        # Remove the useless files in the later snapshot
-    
+        np.save(f'{save_dir}/snap_{snap}_SubMass.npy', link_SubMass)
+        
+        # Remove the useless files
         if os.path.exists(f'{save_dir}/snap_{snap+1}_FPGr.npy') and snap+1 not in [51, 69, 94, 129, 151, 179, 214, 237, 264]:
             os.remove(f'{save_dir}/snap_{snap+1}_FPGr.npy')
-    print(FPGr_indices.shape)
+        if os.path.exists(f'{save_dir}/snap_{snap+1}_SubMass.npy') and snap+1 not in [51, 69, 94, 129, 151, 179, 214, 237, 264]:
+            os.remove(f'{save_dir}/snap_{snap+1}_SubMass.npy')
+            
+    print(FPGr_indices.shape, link_SubMass.shape)
     print('')
         
     ### Load the group catalog in current snapshot ###
+    # -------------------------------------------------------------------------------------------------------
     print(f'load halos in snap {snap}...')
     Halos = il.groupcat.loadHalos(basePath, snap, fields=Halo_fields)
     GroupFirstSub   = Halos['GroupFirstSub']  
     Group_M_Mean200 = Halos['Group_M_Mean200']
     del Halos
-    GrMass_map = {Gr_idx: mass for Gr_idx, mass in enumerate(Group_M_Mean200)}
+    
+    # Create the mapping
+    GrMass_map = {GrNr: mass for GrNr, mass in enumerate(Group_M_Mean200)}
     
     if snap != min_snap:
         print(f'match? ({min(SubhaloGroupNr)}, {max(SubhaloGroupNr)}) < {GroupFirstSub.shape}')
         del SubhaloGroupNr
     
-    # Map the mass
-    FPGrMass = np.array([GrMass_map.get(Gr_idx, -1) for Gr_idx in FPGr_indices])
-    print(FPGrMass.shape)
-    print(FPGrMass)
+    # Map
+    FPGrMass = np.array([GrMass_map.get(GrNr, -1) for GrNr in FPGr_indices])
     if snap in [51, 69, 94, 129, 151, 179, 214, 237, 264]:
        np.save(f'{save_dir}/snap_{snap}_FPGrMass.npy', FPGrMass)
        print(f'snap_{snap}_FPGrMass.npy saved!')
        
     
     ### Load the subhalo index in the previous snapshot by loading the subhalo catalog in current snaphot ###
+    # -------------------------------------------------------------------------------------------------------
     print(f'load FP subhalos saved in snap {snap}...')
     FirstProgSubhaloNr = load_FProg_Subhalos(basePath, snap, fields='FirstProgSubhaloNr') # Index into subhalos in previous snapshot
+    
+    # Create the mapping
     FPSub_map = {Sub_idx: FPSub_idx for Sub_idx, FPSub_idx in enumerate(FirstProgSubhaloNr)} 
     del FirstProgSubhaloNr
+    
+    # Map
     FPSub_indices = np.array([FPSub_map.get(Sub_idx, -1) for Sub_idx in GroupFirstSub[FPGr_indices]]) # Index into selected subhalos in previous snapshot
     print(FPSub_indices.shape)

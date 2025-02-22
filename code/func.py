@@ -1,9 +1,11 @@
-def add_formation_time(sim, snapnum, idx_dict, mass_dict):
+def add_formation_time(args, idx_dict, mass_dict, submass_dict):
     import os
     import h5py
     import numpy as np
     from tqdm import tqdm
     import illustris_python as il
+    
+    sim, snapnum = args.sim, args.snapnum
     
     # Load source data
     # -------------------------------------------------------------------------------------------------
@@ -49,11 +51,15 @@ def add_formation_time(sim, snapnum, idx_dict, mass_dict):
             # Check if mass matches
             if np.all(np.abs(mass_dict[f'snap_{snapnum}'][find_idx] - snap_all_mass[idx]) < 0.01):
                 # print('mass matches')
+                if len(find_idx) == 1:
+                    pass
+                else:
+                    # Select the one with the most massive subhalo mass
+                    find_idx = find_idx[np.argmax(submass_dict[f'snap_{snapnum}'][find_idx])]
                 # Compute the formation time
                 select_mass = {key: value[find_idx] for key, value in mass_dict.items()}
-                match_zs = compute_formation_time(select_mass, snapnum, z_dict)
-                mean_z = np.mean(match_zs)
-                add_formation_time.append([mean_z])
+                match_z = compute_formation_time(select_mass, snapnum, z_dict)
+                add_formation_time.append(match_z)
             else:
                 # print('mass does not match')
                 exit()
