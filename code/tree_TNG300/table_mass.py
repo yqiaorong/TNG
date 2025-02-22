@@ -1,5 +1,4 @@
 import os
-import h5py
 import argparse
 from tqdm import tqdm
 from func import *
@@ -94,4 +93,4 @@ tot_df = get_field_values_of_lifeline(basePath, tot_df, group_field='Group_M_Mea
 save_mass_dir = f'result/DMhalo_table_mass/TNG300/sim_{boxsize}_{res}_{args.DM}/'
 if not os.path.exists(save_mass_dir):
     os.makedirs(save_mass_dir)
-tot_df.to_csv(f'{save_mass_dir}/mass_table.csv', index=final_index_values)
+tot_df.to_csv(f'{save_mass_dir}/halo_mass_table.csv', index=final_index_values)

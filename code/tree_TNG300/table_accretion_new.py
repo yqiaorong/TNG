@@ -26,7 +26,7 @@ elif args.DM == 'Hydro':
 
 
 # Load mass csv
-df = pd.read_csv(f'result/DMhalo_table_mass/TNG300/sim_{boxsize}_{res}_{DM}/mass_table.csv', index_col=0)
+df = pd.read_csv(f'result/DMhalo_table_mass/TNG300/sim_{boxsize}_{res}_{DM}/halo_mass_table.csv', index_col=0)
 
 # Create a dictionary of redshifts
 snap_list = df.index
