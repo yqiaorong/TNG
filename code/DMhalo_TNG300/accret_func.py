@@ -1,4 +1,4 @@
-def add_accret(sim_type, snapnum, snap_idx_table, snap_accret_table):
+def add_accret(sim_type, snapnum, snap_idx_table, snap_mass_table, snap_accret_table, snap_subhalo_mass_table):
     import os
     import numpy as np
     from tqdm import tqdm
@@ -48,26 +48,32 @@ def add_accret(sim_type, snapnum, snap_idx_table, snap_accret_table):
         add_accret = []
         for idx in tqdm(subset_idx):
             find_idx = np.where(snap_idx_table == idx)[0]
-            if len(find_idx) == 0:
-                add_accret.append([np.nan])
-            elif len(find_idx) == 1:
-                add_accret.append([snap_accret_table.iloc[find_idx].values[0]])
+            # Double check if the mass matches
+            if np.all(np.abs(snap_mass_table.iloc[find_idx].values - snap_all_mass[idx]) < 0.01) == False:
+                print('mass does not match')
+                exit()
             else:
-                # Check if the column name matches
-                # print(snap_idx_table[find_idx])
-                # print(snap_accret_table[find_idx])
-                add_accret.append([np.mean(snap_accret_table.iloc[find_idx])])
+                if len(find_idx) == 0:
+                    # print('no halo found')
+                    add_accret.append([np.nan])
+                elif len(find_idx) == 1:
+                    add_accret.append([snap_accret_table.iloc[find_idx].values[0]])
+                else:
+                    # Choose the one with most massive subhalo
+                    right_idx_in_find_idx = np.where(snap_subhalo_mass_table.iloc[find_idx].values == np.max(snap_subhalo_mass_table.iloc[find_idx].values))[0]
+                    # print('idx:', find_idx, right_idx_in_find_idx)
+                    # print('subhalo mass:', snap_subhalo_mass_table.iloc[find_idx].values, snap_subhalo_mass_table.iloc[find_idx[right_idx_in_find_idx]].values)
+                    add_accret.append([snap_accret_table.iloc[find_idx[right_idx_in_find_idx]].values[0]])
         add_accret = np.concatenate(add_accret)
-        # print(add_accret)
         
         # Accretions
         accretions.append(add_accret)
     
     # Concatenate data
-    halo_M = np.concatenate(halo_M)
-    halo_R = np.concatenate(halo_R)
-    bins = np.concatenate(bins)
-    densities = np.concatenate(densities)
+    halo_M     = np.concatenate(halo_M)
+    halo_R     = np.concatenate(halo_R)
+    bins       = np.concatenate(bins)
+    densities  = np.concatenate(densities)
     accretions = np.concatenate(accretions)
     print(halo_M.shape, halo_R.shape, bins.shape, densities.shape, accretions.shape)
         
@@ -90,18 +96,21 @@ def add_accret(sim_type, snapnum, snap_idx_table, snap_accret_table):
     
     return save_dir
 
-def add_formation_time(sim, snapnum, idx_dict, mass_dict):
+def add_formation_time(args, idx_dict, mass_dict, subhalo_mass_dict):
     import os
     import h5py
     import numpy as np
     from tqdm import tqdm
     import illustris_python as il
     
+    snapnum = args.snapnum
+    sim_type = args.sim_type
+    
     # Load source data
     # -------------------------------------------------------------------------------------------------
-    if 'DM' in sim:
+    if 'DM' in sim_type:
         basePath =  '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L%dn%dTNG'%(205,1250)+'_DM/output/'
-    elif 'Hydro' in sim:
+    elif 'Hydro' in sim_type:
         basePath =  '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L%dn%dTNG'%(205,1250)+'/output/'
     snap_all_mass = il.groupcat.loadHalos(basePath, snapnum, fields='Group_M_Mean200')
     
@@ -117,7 +126,7 @@ def add_formation_time(sim, snapnum, idx_dict, mass_dict):
     
     # Load halo density profile data
     # -------------------------------------------------------------------------------------------------
-    halos_dir = f'result/DMhalo_density_profiles/{sim}/snap_{snapnum}/final_densities/'
+    halos_dir = f'result/DMhalo_density_profiles/TNG300/sim_205_1250_{sim_type}/snap_{snapnum}/final_densities/'
     halos_fname = os.listdir(halos_dir)[0]
     data = np.load(os.path.join(halos_dir, halos_fname), allow_pickle=True).item()
     
@@ -147,22 +156,27 @@ def add_formation_time(sim, snapnum, idx_dict, mass_dict):
         add_formation_time = []
         for idx in tqdm(subset_idx):
             find_idx = np.where(idx_dict[f'snap_{snapnum}'] == idx)[0]
-
+            # Check if mass matches
+            if np.all(np.abs(mass_dict[f'snap_{snapnum}'][find_idx] - snap_all_mass[idx]) < 0.01) == False:
+                print('mass does not match')
+                exit()
+                
             if len(find_idx) == 0:
                 # print('no halo found')
                 add_formation_time.append([np.nan])
-            else:
-                # Check if mass matches
-                if np.all(np.abs(mass_dict[f'snap_{snapnum}'][find_idx] - snap_all_mass[idx]) < 0.01):
-                    # print('mass matches')
-                    # Compute the formation time
+            else:                 
+                if len(find_idx) == 1:
                     select_mass = {key: value[find_idx] for key, value in mass_dict.items()}
-                    match_zs = compute_formation_time(select_mass, snapnum, z_dict)
-                    mean_z = np.mean(match_zs)
-                    add_formation_time.append([mean_z])
                 else:
-                    # print('mass does not match')
-                    exit()
+                    # Choose the one with most massive subhalo
+                    right_idx_in_find_idx = np.where(subhalo_mass_dict[f'snap_{snapnum}'][find_idx] == np.max(subhalo_mass_dict[f'snap_{snapnum}'][find_idx]))[0]
+                    # print('idx:', find_idx, right_idx_in_find_idx)
+                    # print('subhalo mass:', subhalo_mass_dict[f'snap_{snapnum}'][find_idx], subhalo_mass_dict[f'snap_{snapnum}'][find_idx[right_idx_in_find_idx]])
+                    select_mass = {key: value[find_idx[right_idx_in_find_idx]] for key, value in mass_dict.items()}
+                    
+                match_z = compute_formation_time(select_mass, snapnum, z_dict)
+                add_formation_time.append(match_z)
+                    
         add_formation_time = np.concatenate(add_formation_time)
         
     print(add_formation_time.shape, data['halo_M_Mean200'].shape)

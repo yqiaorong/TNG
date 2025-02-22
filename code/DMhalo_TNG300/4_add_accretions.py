@@ -19,31 +19,51 @@ for key, val in vars(args).items():
 print('')
 
 
+table_dir = f'result/DMhalo_table_mass/TNG300/sim_205_1250_{args.sim_type}/'
 
 # ------------------------------------------------------------------------------------------------
 # Load the halo masses snap index table
-idx_table_dir = f'result/DMhalo_table_mass/TNG300/sim_205_1250_{args.sim_type}/snap_idx_table.csv'
-df_idx = pd.read_csv(idx_table_dir, index_col=0)
+df_idx = pd.read_csv(table_dir+'halo_snap_idx_table.csv', index_col=0)
 
 # Convert non nan entries in df_idx to int
 df_idx = df_idx.fillna(-1)
 df_idx = df_idx.astype(int) 
 df_idx = df_idx.replace(-1, np.nan)
+print('Halo local index succesfully loaded')
+
+# ------------------------------------------------------------------------------------------------
+# Load the linking subhalo mass table
+df_subhalo_mass = pd.read_csv(table_dir+'subhalo_mass_table.csv', index_col=0)
+if np.all(df_subhalo_mass.columns == df_idx.columns) == False:
+    exit()
+else:
+    print('Subhalo mass table succesfully loaded')
 
 # ------------------------------------------------------------------------------------------------
 # Load the accretion rate data
-accret_table_dir = f'result/DMhalo_table_mass/TNG300/sim_205_1250_{args.sim_type}/accretion_table_new.csv'
-df_accret = pd.read_csv(accret_table_dir, index_col=0)
+df_accret = pd.read_csv(table_dir+'halo_snap_idx_table.csv', index_col=0)
+if np.all(df_accret.columns == df_idx.columns) == False:
+    exit()
+else:
+    print('Accretion rate table succesfully loaded')
 
-# Sort the accretion rate so it matches the column of the index table
-df_accret_sort = df_accret[df_idx.columns]
-# Check if all of two columns are equal
-print(np.all(df_accret_sort.columns == df_idx.columns))
-del df_accret
+# ------------------------------------------------------------------------------------------------
+# Load the mass data
+df_mass = pd.read_csv(table_dir+'halo_mass_table.csv', index_col=0)
+if np.all(df_mass.columns == df_idx.columns) == False:
+	exit()
+else:
+    print('Mass table succesfully loaded')
 
+# ------------------------------------------------------------------------------------------------
 # Get the row table data
 snap_idx_table = df_idx.loc[f'snap_{args.snapnum}']
-snap_accret_table = df_accret_sort.loc[f'snap_{args.snapnum}']
+snap_accret_table = df_accret.loc[f'snap_{args.snapnum}']
+snap_mass_table = df_mass.loc[f'snap_{args.snapnum}']
+snap_subhalo_mass_table = df_subhalo_mass.loc[f'snap_{args.snapnum}']
+del df_idx, df_accret, df_subhalo_mass, df_mass
 
+# ------------------------------------------------------------------------------------------------
 # Add the accretion rate to the snap data
-_ = add_accret(args.sim_type, args.snapnum, snap_idx_table, snap_accret_table,)
+_ = add_accret(args.sim_type, args.snapnum, 
+               snap_idx_table, snap_mass_table, snap_accret_table, snap_subhalo_mass_table)
