@@ -10,7 +10,7 @@ from func import *
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--sim',    default='DM-Arepo/MTNG-L500-4320-A', type=str)
-parser.add_argument('--snapnum',default=129, type=int)
+parser.add_argument('--snapnum',default=None, type=int)
 args = parser.parse_args()
 
 print('')

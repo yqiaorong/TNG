@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim', default=None, type=str)
+parser.add_argument('--sim',     default=None,  type=str)
 parser.add_argument('--restart', default=False, type=bool)
 args = parser.parse_args()
 
@@ -144,7 +144,8 @@ if len(save_list) == 0 or args.restart == True:
     SubhaloMass = il.groupcat.loadSubhalos(basePath, min_snap, fields='SubhaloMass')
     np.save(f'{save_dir}/snap_{min_snap}_FPGr.npy', range(GroupFirstSub.shape[0]))
     np.save(f'{save_dir}/snap_{min_snap}_SubMass.npy', SubhaloMass)
-    del GroupFirstSub, SubhaloMass
+    del GroupFirstSub
+    del SubhaloMass
 else:
     snaps = [int(item.split('_')[1]) for item in save_list]
     min_snap = min([item for item in snaps])
@@ -192,7 +193,8 @@ for snap in tqdm(range(min_snap, 15, -1)):
         if os.path.exists(f'{save_dir}/snap_{snap+1}_SubMass.npy') and snap+1 not in [51, 69, 94, 129, 151, 179, 214, 237, 264]:
             os.remove(f'{save_dir}/snap_{snap+1}_SubMass.npy')
             
-    print(FPGr_indices.shape, link_SubMass.shape)
+    print(FPGr_indices.shape)
+    print(link_SubMass.shape)
     print('')
         
     ### Load the group catalog in current snapshot ###
