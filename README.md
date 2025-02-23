@@ -4,11 +4,11 @@ The codes in this branch are designed for simulation [MillenniumTNG](https://www
 
 # code
 
-Install [illustris_python](https://github.com/illustristng/illustris_python) to '../code/illustris_python'
+Install [illustris_python](https://github.com/illustristng/illustris_python) to `../code/illustris_python`
 
 ### DMhalo_MTNG
 
-In '../code/DMhalo_MTNG/'
+In `../code/DMhalo_MTNG/`
 
 * 1_serial.py --sim --snapnum --start_chunk_idx --bin_start --bin_end
 
@@ -40,8 +40,8 @@ The table below gives the info of halo mass bins:
 | 237     | 3         | 5       |
 | 264     | 3         | 5.5     |
 
-The MTNG density profiles data are saved in '[user name]/DMhalo_density_profiles/'
+The MTNG density profiles data are saved in `[user name]/DMhalo_density_profiles/`
 
-They should be transferred to MPI branch and saved in '/TNG/DMhalo_density_profiles_phys/'
+They should be transferred to MPI branch and saved in `/TNG/DMhalo_density_profiles_phys/`
 
 Personal note: most of current data on mit branch is QUITE old so should NOT execute the above TRANSFER commands unless density profiles are ALL recomputed by rerunning above updated scripts! 
