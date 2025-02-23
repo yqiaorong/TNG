@@ -1,4 +1,4 @@
-# TNG
+# TNG - MillenniumTNG
 
 The codes in this branch are designed for simulation [MillenniumTNG](https://www.mtng-project.org/).
 
