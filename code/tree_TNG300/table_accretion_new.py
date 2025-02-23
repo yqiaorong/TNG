@@ -8,25 +8,25 @@ from func import calc_tdyn
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM', default=None, type=str)
+parser.add_argument('--sim_type', default=None, type=str)
 args = parser.parse_args()
 
 # input
-DM = args.DM
+sim_type = args.sim_type
 boxsize = 205
 res = 1250
 
 # BasePath
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-if args.DM == 'DM':
+if sim_type == 'DM':
     basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'_DM/output/'
-elif args.DM == 'Hydro':
+elif sim_type == 'Hydro':
     basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'/output/'
 
 
 
 # Load mass csv
-df = pd.read_csv(f'result/DMhalo_table_mass/TNG300/sim_{boxsize}_{res}_{DM}/halo_mass_table.csv', index_col=0)
+df = pd.read_csv(f'result/DMhalo_table_mass/TNG300/sim_{boxsize}_{res}_{sim_type}/halo_mass_table.csv', index_col=0)
 
 # Create a dictionary of redshifts
 snap_list = df.index

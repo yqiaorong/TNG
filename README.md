@@ -1,14 +1,18 @@
-# TNG - TNG
+# TNG
 
-The codes in this branch are designed for simulation [TNG](https://www.tng-project.org/).
+The codes in this branch are designed for simulation [IllustrisTNG](https://www.tng-project.org/) and [MillenniumTNG](https://www.mtng-project.org/).
 
 ## code
 
 Install [illustris_python](https://github.com/illustristng/illustris_python) to ../code/illustris_python
 
-### DMhalo
+* Adjust_profile_data_unit.py
 
-../code/DMhalo
+  This script converts the data from TNG300 from comoving unit to phys unit, and the data from MTNG from Mpc to Kpc. This script should only be run once.
+
+  - [ ] Double check the original MTNG DM halo profile data unit and decide where to store it. Check the code on mit branch.
+
+### ../code/DMhalo_TNG300/
 
 * 1_subset.py --boxsize --res --snapnum --mass_range --method --save_root_dir
 
@@ -20,34 +24,36 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
   * compile_chunk_profile.py --snpnum --bin_start --bin_end
 
-### DMhalo_para
+* 4_add_accretion.py
 
-../code/DMhalo_para
+* 5_add_formation_time.py
 
-* 1_subset.py --boxsize --res --snapnum --bin_start --bin_end --method --save_root_dir
+### ../code/tree_TNG300/
 
-  * one_halo_hist.py 
+The scripts in this folder should be run by the following order. All saved csv files have the same data structure and each entry in the csv files corresponds to the same halo. 
 
-* 3_bootstrap_all.py
+* table_mass.py --sim_type --bin_start --bin_end
 
-  * bootstrap.py --Nsample --Nboots --snapnum --bin_end
+  This script computes the DM halos masses history and saves as csv file.
 
-### stack_profiles (useless now)
+  - [ ] How to find the info of mass bin start and bin end?
 
-* 2_stacks.py ---boxsize --res 
+* table_snap_idx.py --sim_type
+  
+  This script computes the DM halos local index at snapshot X and the linking subhalo masses, and saves as csv files.
 
-  * stacked_density_profiles.py --boxsize --res --snapnum --bin_start --bin_end --root_dir
+* table_accretion_new.py --sim_type
 
-  * profiles_time_evolution.py --boxsize --res --bin_start --bin_end 
+  This script computes the DM halos accretion rates history per dynamical time and saves as csv file.
 
-  * Rsp_data_sort.py --boxsize --res --root_dir
+### ../code/bootstrap/
 
-### plot
+* bootstrap_mass.py --sim --snapnum
 
-* mass_hist.py
+* bootstrap_accret.py --sim --snapnum --accret_start --accret_end
 
-* Rspfeats_mass.py --feat_idx --bin_start --bin_end
+  - [x] How to find the info of accretion rate bin start and bin end? see joob/TNG300/boots/
 
-* Rspfeats_redshift.py --feat_idx --bin_start --bin_end
+* boootstrap_z.py --sim --snapnum
 
-* median_profiles.py
+### ../code/paper_plot/

@@ -1,5 +1,3 @@
-result/DM halos mass histogram
-
 result/DMhalo_density_profiles_raw
 result/DMhalo_density_profiles_raw2
 result/DMhalo_density_profiles_phys
@@ -7,9 +5,6 @@ result/DMhalo_density_profiles
 
 result/DMhalo_table_chunk_idx
 result/DMhalo_table_mass
-
-result/bootstrap_old_profiles
-result/bootstrap_old_stats
 
 result/bootstrap_stats
 

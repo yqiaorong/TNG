@@ -10,6 +10,14 @@ import numpy as np
 from tqdm import tqdm
 import pandas as pd
 import illustris_python as il
+import argparse
+
+# Input arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('--sim_type', default=None, type=str)
+args = parser.parse_args()
+sim_type = args.sim_type
+
 
 def get_feature_at_snapX(simpath, df, field):  
     """This function searches the target feature of the subhalos with global indidces.
@@ -32,18 +40,17 @@ def get_feature_at_snapX(simpath, df, field):
         print(f'{field} assigned')
     return df
 
+
 boxsize, res = 205, 1250
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-sim_type = 'Hydro'
-
 if sim_type == 'DM':
     # DM
     basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'_DM/'
-    idx_dir = f'result/DMhalo_table_chunk_idx/TNG300/sim_{boxsize}_{res}_DM/'
 else:
     # hydro
     basePath = data_path + 'L%dn%dTNG'%(boxsize,res)+'/'
-    idx_dir = f'result/DMhalo_table_chunk_idx/TNG300/sim_{boxsize}_{res}_Hydro/'
+idx_dir = f'result/DMhalo_table_chunk_idx/TNG300/sim_{boxsize}_{res}_{sim_type}/'
+
 
 # Concatenate all index df
 df_list = os.listdir(idx_dir)
