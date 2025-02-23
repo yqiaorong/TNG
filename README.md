@@ -44,4 +44,4 @@ The MTNG density profiles data are saved in `[user name]/DMhalo_density_profiles
 
 They should be transferred to MPI branch and saved in `/TNG/DMhalo_density_profiles_phys/`
 
-> **⚠️ Personal note: most of current data on mit branch is QUITE old so should NOT execute the above TRANSFER commands unless density profiles are ALL recomputed by rerunning above updated scripts! 
+> ⚠️ Personal note: most of current data on mit branch is QUITE old so should NOT execute the above TRANSFER commands unless density profiles are ALL recomputed by rerunning above updated scripts! 
