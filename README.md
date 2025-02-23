@@ -6,6 +6,8 @@ The codes in this branch are designed for simulation [IllustrisTNG](https://www.
 
 Install [illustris_python](https://github.com/illustristng/illustris_python) to ../code/illustris_python
 
+### ../code/
+
 * Adjust_profile_data_unit.py
 
   This script converts the data from TNG300 from comoving unit to phys unit, and the data from MTNG from Mpc to Kpc. This script should only be run once.
