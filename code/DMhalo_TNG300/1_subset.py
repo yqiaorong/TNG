@@ -10,7 +10,7 @@ from mpi4py import MPI
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',  default=205,  type=int)
 parser.add_argument('--res',      default=1250, type=int)
-parser.add_argument('--DM',       default=None, type=str)
+parser.add_argument('--sim_type', default=None, type=str)
 
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--bin_start',default=None, type=float) # [10^{10+x} Msun/h]
@@ -30,9 +30,9 @@ print('')
 
 # Specify the snapshot
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
-if args.DM == 'DM':
+if args.sim_type == 'DM':
     basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'_DM/output/'
-elif args.DM == 'Hydro':
+elif args.sim_type == 'Hydro':
     basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'/output/'
 snapnum = args.snapnum
 boxsize = args.boxsize
@@ -86,17 +86,16 @@ comm.Barrier()
 
 # Iterate over DM halos
 for idx in subset_idx[start_idx_per_core:]:
-    if not os.path.exists(f'result/{save_root_dir}/sim_{boxsize}_{res}_{args.DM}/snap_{snapnum}/densities/halo_{idx}.npy'):
+    if not os.path.exists(f'result/{save_root_dir}/sim_{boxsize}_{res}_{args.sim_type}/snap_{snapnum}/densities/halo_{idx}.npy'):
         # Round values 
         x, y, z = np.round(GroupPos[idx, 0].item(), 0), np.round(GroupPos[idx, 1].item(), 0), np.round(GroupPos[idx, 2].item(), 0)
         R = np.round(Group_R_Mean200[idx].item(), 0)
         # Run the script
         os.system(f'python3 code/DMhalo/one_halo_hist.py'+
-            f' --boxsize {boxsize} --res {res} --snapnum {snapnum} --groupnum {idx} --DM {args.DM}'+
+            f' --boxsize {boxsize} --res {res} --snapnum {snapnum} --groupnum {idx} --sim_type {args.sim_type}'+
             f' --x {x} --y {y} --z {z}'+
             f' --M {Group_M_Mean200[idx]} --R {R}'+
-            f' --save_root_dir {save_root_dir}'# +
-            # f' --method {args.method}'
+            f' --save_root_dir {save_root_dir}'
             )
     else:
         print(f'Processor {rank}: At snap {snapnum}, DM halo local index {idx}/{Ngroups_subset-1} already exists.')

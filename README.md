@@ -16,19 +16,21 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 ### ../code/DMhalo_TNG300/
 
-* 1_subset.py --boxsize --res --snapnum --mass_range --method --save_root_dir
+* 1_subset.py --sim_type --snapnum --bin_start --bin_end
 
   * one_halo_hist.py 
 
-* check_halo_number.py --boxsize --res --mass_range
+* check_halo_number.py --sim_type --bin_start --bin_end
 
 * 2_compile_all.py
 
-  * compile_chunk_profile.py --snpnum --bin_start --bin_end
+  * compile_chunk_profile.py
 
-* 4_add_accretion.py
+- [ ] The above scripts have problems of finding the info of bin_start and bin_end as well.
 
-* 5_add_formation_time.py
+* 4_add_accretion.py --sim_type --snapnum
+
+* 5_add_formation_time.py --sim_type --snapnum
 
 ### ../code/tree_TNG300/
 

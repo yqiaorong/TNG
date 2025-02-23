@@ -11,7 +11,7 @@ parser.add_argument('--boxsize', default=205, type=int)
 parser.add_argument('--res',     default=1250,type=int)
 parser.add_argument('--snapnum', default=99,  type=int)
 parser.add_argument('--groupnum', default=0,  type=int)
-parser.add_argument('--DM', default=None,  type=str)
+parser.add_argument('--sim_type', default=None,  type=str)
 # HaloPos
 parser.add_argument('--x', default=0,  type=float) # [ckpc/h]
 parser.add_argument('--y', default=0,  type=float) # [ckpc/h]
@@ -41,9 +41,9 @@ boxsize = args.boxsize
 #                                    625, 1250, or 2500 for the 205 cMpc/h box
 res = args.res
 # Path to the output files for the relevant box size and resolution:
-if args.DM == 'DM':
+if args.sim_type == 'DM':
     basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'_DM/output/'
-elif args.DM == 'Hydro':
+elif args.sim_type == 'Hydro':
     basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'/output/'
 # Specify the snapshot
 snapnum = args.snapnum
@@ -119,7 +119,7 @@ del densities_bins
 
 
 # Save directory
-save_dir = 'result/'+args.save_root_dir+f'/sim_{boxsize}_{res}_{args.DM}/snap_{snapnum}/'
+save_dir = 'result/'+args.save_root_dir+f'/sim_{boxsize}_{res}_{args.sim_type}/snap_{snapnum}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
     
@@ -137,16 +137,3 @@ if not os.path.exists(save_plt_dir):
 save_dict['radial_bins'] = radial_bins  # [ckpc/h]
 save_dict['densities'] = sum_densities_bins # [(Msun/h) / (ckpc/h)^3]
 np.save(os.path.join(save_data_dir, f'halo_{groupnum}'), save_dict)
-
-
-
-# # Plot the density profiles    
-# plt.figure(figsize=(5,5))
-# gs = matplotlib.gridspec.GridSpec(1,1,width_ratios=[1],height_ratios=[1],hspace=0,wspace=0)
-# ax = plt.subplot(gs[0])
-# ax.plot([halo_R_Mean200, halo_R_Mean200], [0, 10**10], linestyle='--')
-# ax.loglog(radial_bins, sum_densities_bins)
-# ax.set_xlabel('radius [ckpc/h]')
-# ax.set_ylabel(r'density [(M$_{\odot}$/h)/(ckpc/h)$^3$]')
-# plt.savefig(os.path.join(save_plt_dir, f'halo_{groupnum}.pdf'))
-# plt.close()
