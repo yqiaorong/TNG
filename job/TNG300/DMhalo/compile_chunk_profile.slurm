@@ -11,5 +11,5 @@
 #SBATCH --mail-user=s_qyu@mit.edu
 
 echo "# Start python processing at: "$(date)
-python3 code/DMhalo/compile_chunk_profile.py --snapnum 99 --DM _DM --bin_start 1 --bin_end 4.5
+python3 code/DMhalo_TNG300/compile_chunk_profile.py --snapnum 99 --DM DM --bin_start 1 --bin_end 4.5
 echo "# End python processing at: "$(date)

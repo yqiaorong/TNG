@@ -5,8 +5,8 @@
 #SBATCH --mem-per-cpu=4000
 #SBATCH --array=0-10
 #SBATCH --open-mode=append 
-#SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/boots_accret/TNG300-Hydro-%A-%a.out
-#SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/boots_accret/TNG300-Hydro-%A-%a.err
+#SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/boots_accret/TNG300-DM-%A-%a.out
+#SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/boots_accret/TNG300-DM-%A-%a.err
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=s_qyu@mit.edu
 
@@ -14,19 +14,19 @@ echo "# Starting at: "$(date)
 echo "# Running on machine: "$(hostname)
 echo "# Running in directory: "$(pwd)
 
-snaplist=( $(cat job/boots_TNG300/snap_list.txt) )
+snaplist=( $(cat job/TNG300/snap_list.txt) )
 snap=${snaplist[$SLURM_ARRAY_TASK_ID]}
 
-accret_starts=( $(cat job/boots_TNG300/accret_starts_Hydro.txt) )
+accret_starts=( $(cat job/boots_TNG300/accret_starts_DM.txt) )
 accret_start=${accret_starts[$SLURM_ARRAY_TASK_ID]}
 
-accret_ends=( $(cat job/boots_TNG300/accret_ends_Hydro.txt) )
+accret_ends=( $(cat job/boots_TNG300/accret_ends_DM.txt) )
 accret_end=${accret_ends[$SLURM_ARRAY_TASK_ID]}
 
 echo "# Array ID: " $SLURM_ARRAY_TASK_ID
     
 echo "# Start python processing $SLURM_ARRAY_TASK_ID at: "$(date)
-python3 /n/home01/sqyu/AstroLab/TNG/code/bootstrap/bootstrap_accret.py --snapnum $snap --sim TNG300/sim_205_1250_Hydro/ --accret_start $accret_start --accret_end $accret_end 
+python3 /n/home01/sqyu/AstroLab/TNG/code/bootstrap/bootstrap_accret.py --snapnum $snap --sim TNG300/sim_205_1250_DM/ --accret_start $accret_start --accret_end $accret_end 
 echo "# End python processing $SLURM_ARRAY_TASK_ID at: "$(date)
 
 echo "# Ending at: "$(date)

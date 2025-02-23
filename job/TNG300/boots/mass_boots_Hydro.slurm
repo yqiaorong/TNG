@@ -14,7 +14,7 @@ echo "# Starting at: "$(date)
 echo "# Running on machine: "$(hostname)
 echo "# Running in directory: "$(pwd)
 
-snaplist=( $(cat job/boots_TNG300/snap_list.txt) )
+snaplist=( $(cat job/TNG300/snap_list.txt) )
 snap=${snaplist[$SLURM_ARRAY_TASK_ID]}
 
 echo "# Array ID: " $SLURM_ARRAY_TASK_ID

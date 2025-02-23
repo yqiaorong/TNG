@@ -8,4 +8,4 @@
 #SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/compile_%j.out 
 #SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/compile_%j.err 
 
-python3 code/DMhalo/2_compile_all.py 
+python3 code/DMhalo_TNG300/2_compile_all.py 
