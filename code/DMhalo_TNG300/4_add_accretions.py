@@ -41,7 +41,7 @@ else:
 
 # ------------------------------------------------------------------------------------------------
 # Load the accretion rate data
-df_accret = pd.read_csv(table_dir+'halo_snap_idx_table.csv', index_col=0)
+df_accret = pd.read_csv(table_dir+'accretion_table_new.csv', index_col=0)
 if np.all(df_accret.columns == df_idx.columns) == False:
     exit()
 else:
