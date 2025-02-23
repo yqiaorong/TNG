@@ -16,7 +16,7 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 The table below gives the info of halo mass bins:
 
-DM-Arepo
+1. DM-Arepo
 
 | snapnum | bin_start | bin_end |
 |---------|-----------|---------|
@@ -27,7 +27,7 @@ DM-Arepo
 | 237     | 3         | 5       |
 | 264     | 3         | 5.5     |
 
-Hydro-Arepo
+2. Hydro-Arepo
 
 | snapnum | bin_start | bin_end |
 |---------|-----------|---------|
