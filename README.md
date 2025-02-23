@@ -52,7 +52,7 @@ The scripts in this folder should be run by the following order. All saved csv f
 
 * bootstrap_accret.py --sim --snapnum --accret_start --accret_end
 
-  - [x] How to find the info of accretion rate bin start and bin end? see joob/TNG300/boots/
+  - [x] How to find the info of accretion rate bin start and bin end? see the tables below!
 
 * boootstrap_z.py --sim --snapnum
 
@@ -89,5 +89,9 @@ The tables below summarise the range of accretion rates used in boostrapping:
   | 67      | 0            | 13         |
   | 78      | 0            | 13         |
   | 99      | 0            | 7          |
+
+3. MTNG/DM-Arepo
+
+4. MTNG/Hydro-Arepo
 
 ### ../code/paper_plot/
