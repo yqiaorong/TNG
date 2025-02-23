@@ -8,7 +8,7 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 ### DMhalo_MTNG
 
-In `../code/DMhalo_MTNG/`
+`../code/DMhalo_MTNG/`
 
 * 1_serial.py --sim --snapnum --start_chunk_idx --bin_start --bin_end
 
@@ -44,4 +44,4 @@ The MTNG density profiles data are saved in `[user name]/DMhalo_density_profiles
 
 They should be transferred to MPI branch and saved in `/TNG/DMhalo_density_profiles_phys/`
 
-Personal note: most of current data on mit branch is QUITE old so should NOT execute the above TRANSFER commands unless density profiles are ALL recomputed by rerunning above updated scripts! 
+> **⚠️ Personal note: most of current data on mit branch is QUITE old so should NOT execute the above TRANSFER commands unless density profiles are ALL recomputed by rerunning above updated scripts! 
