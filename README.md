@@ -6,14 +6,6 @@ The codes in this branch are designed for simulation [IllustrisTNG](https://www.
 
 Install [illustris_python](https://github.com/illustristng/illustris_python) to ../code/illustris_python
 
-### ../code/
-
-* Adjust_profile_data_unit.py
-
-  This script converts the data from TNG300 from comoving unit to phys unit, and the data from MTNG from Mpc to Kpc. This script should only be run once.
-
-  - [ ] Double check the original MTNG DM halo profile data unit and decide where to store it. Check the code on mit branch.
-
 ### ../code/DMhalo_TNG300/
 
 * 1_subset.py --sim_type --snapnum --bin_start --bin_end
@@ -27,6 +19,10 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
   * compile_chunk_profile.py
 
 - [ ] The above scripts have problems of finding the info of bin_start and bin_end as well.
+
+* 3_comoving_to_phys.py
+
+  This script converts the data from TNG300 from comoving unit to phys unit, and it should only be run once.
 
 * 4_add_accretion.py --sim_type --snapnum
 
@@ -59,5 +55,39 @@ The scripts in this folder should be run by the following order. All saved csv f
   - [x] How to find the info of accretion rate bin start and bin end? see joob/TNG300/boots/
 
 * boootstrap_z.py --sim --snapnum
+
+The tables below summarise the range of accretion rates used in boostrapping:
+
+1. TNG300/sim_205_1250_DM
+
+  | snapnum | accret_start | accret_end |
+  |---------|--------------|------------|
+  | 8       | 0            | 0          |
+  | 13      | 1            | 13         |
+  | 17      | 1            | 13         |
+  | 21      | 1            | 12         |
+  | 25      | 0            | 14         |
+  | 33      | 0            | 13         |
+  | 40      | 0            | 14         |
+  | 50      | 0            | 14         |
+  | 67      | 0            | 13         |
+  | 78      | 0            | 13         |
+  | 99      | 0            | 7          |
+
+2. TNG300/sim_205_1250_Hydro
+
+  | snapnum | accret_start | accret_end |
+  |---------|--------------|------------|
+  | 8       | 0            | 0          |
+  | 13      | 1            | 13         |
+  | 17      | 1            | 13         |
+  | 21      | 1            | 12         |
+  | 25      | 1            | 13         |
+  | 33      | 0            | 14         |
+  | 40      | 0            | 14         |
+  | 50      | 0            | 14         |
+  | 67      | 0            | 13         |
+  | 78      | 0            | 13         |
+  | 99      | 0            | 7          |
 
 ### ../code/paper_plot/

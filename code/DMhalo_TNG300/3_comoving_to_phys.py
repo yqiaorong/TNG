@@ -66,33 +66,3 @@ from astropy.cosmology import Planck15
 #         np.save(save_dir + fname, save_dict)
 #         print(fname + ' saved')
 #         print('')
-        
-        
-        
-###########################################################################################
-# Convwet MTNG data from Mpc to kpc
-###########################################################################################
-
-# sim = 'MTNG/Hydro-Arepo/MTNG-L500-4320-A/'
-# sim = 'MTNG/DM-Arepo/MTNG-L500-4320-A/'
-# snaps = [129, 151, 179, 214, 237, 264]
-
-# for snap in snaps:
-    
-#     load_dir = f'result/DMhalo_density_profiles_phys/{sim}/snap_{snap}/final_densities/'
-    
-#     # Load the data
-#     for fname in os.listdir(load_dir):
-#         print(fname)
-#         data = np.load(load_dir + fname, allow_pickle=True).item()
-#         print(data.keys())
-        
-        # data['halo_R_Mean200'] = data['halo_R_Mean200']*1000 # [kpc]
-        # data['radial_bins'] = data['radial_bins']*1000       # [kpc]
-        # data['densities'] = data['densities'] / (10**9)      # [(Msun) / (kpc)^3]
-        
-        # # Save the new physical quantities
-        # np.save(load_dir + fname, data)
-
-        # print(fname + ' saved')
-        # print('')
