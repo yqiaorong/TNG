@@ -11,10 +11,10 @@ import cupy as cp
 # Input arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--sim',          default=None,                     type=str)
-parser.add_argument('--snapnum',      default=None,                      type=int)
+parser.add_argument('--snapnum',      default=None,                     type=int)
 parser.add_argument('--chunk_idx',    default=None,                     type=int)
-parser.add_argument('--bin_start',    default=None,                        type=float) # [10^{10+x} Msun/h]
-parser.add_argument('--bin_end',      default=None,                      type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--bin_start',    default=None,                     type=float) # [10^{10+x} Msun/h]
+parser.add_argument('--bin_end',      default=None,                     type=float) # [10^{10+x} Msun/h]
 parser.add_argument('--save_root_dir',default='DMhalo_density_profiles',type=str)
 args = parser.parse_args()
 
@@ -125,16 +125,17 @@ for i, idx in enumerate(tqdm(subset_idx, desc=f'chunk {args.chunk_idx}')):
     
     # Compute the density profile
     rhos, radial_bins = compt_density_profile(sub_coords, [x,y,z], R, BoxSize) # All in [cMpc/h] !!!
+    # Convert the unit from Mpc to kpc to match with TNG300
     rhos = rhos * DMmass / (10**9)   # [(MSun/h) / (ckpc/h)^3]
     radial_bins = radial_bins * 1000 # [ckpc/h]
     del sub_coords
     
     # Save the density profile
     global_idx[i]     = idx
-    halo_R_Mean200[i] = Group_R_Mean200[idx]*1000 # [ckpc/h]
+    halo_R_Mean200[i] = Group_R_Mean200[idx]*1000 # [ckpc/h] !!!
     halo_M_Mean200[i] = Group_M_Mean200[idx]      # [10^10 MSun/h]
-    densities[i]      = rhos                      # [(MSun/h) / (ckpc/h)^3]
-    radii[i]          = radial_bins               # [ckpc/h]
+    densities[i]      = rhos                      # [(MSun/h) / (ckpc/h)^3] !!!
+    radii[i]          = radial_bins               # [ckpc/h] !!!
     del rhos, radial_bins
 tf = time.time()
 print(f'The total time: {tf-ti:.4f}')

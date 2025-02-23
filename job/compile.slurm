@@ -11,6 +11,6 @@ echo "# Starting at: "$(date)
 echo "# Running on machine: "$(hostname)
 echo "# Running in directory: "$(pwd)
 
-python3.11 code/DMhalo/2_compile_chunk_profile2.py
+python3.11 code/DMhalo_MTNG/2_compile_chunk_profile2.py
 
 echo "# Ending at: "$(date)

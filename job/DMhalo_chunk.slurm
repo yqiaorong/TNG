@@ -15,7 +15,7 @@ echo "# GPU spec: "$(nvidia-smi --query-gpu=gpu_name,gpu_bus_id,gpu_uuid --forma
 echo "# Running in directory: "$(pwd)
 
 echo "# Start python processing at: "$(date)
-python3.11 code/DMhalo/1_serial.py --sim DM-Arepo/MTNG-L500-4320-A --snapnum 214 --bin_start 3 --start_chunk_idx 159
+python3.11 code/DMhalo_MTNG/1_serial.py --sim DM-Arepo/MTNG-L500-4320-A --snapnum 214 --bin_start 3 --start_chunk_idx 159 --start_chunk_idx 0
 echo "# End python processing at: "$(date)
 
 echo "# Ending at: "$(date)
