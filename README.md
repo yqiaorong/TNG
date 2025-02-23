@@ -4,9 +4,9 @@ The codes in this branch are designed for simulation [MillenniumTNG](https://www
 
 ## code
 
-Install [illustris_python](https://github.com/illustristng/illustris_python) to ../code/illustris_python
+Install [illustris_python](https://github.com/illustristng/illustris_python) to `../code/illustris_python`
 
-### ../code/
+`../code/`
 
 * add_accret.py --sim_type --snapnum
 
@@ -16,7 +16,9 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
   This script adds the formation time to the corresponding DM halo density profile dataset.
 
-### ../code/tree/
+### tree_MTNG
+
+`../code/tree_MTNG/`
 
 * mass_table2.py --sim --restart
 
