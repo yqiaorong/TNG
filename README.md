@@ -58,7 +58,7 @@ The scripts in this folder should be run by the following order. All saved csv f
 
 * bootstrap_accret.py --sim --snapnum --accret_start --accret_end
 
-  > *💡How to find the info of accretion rate bin start and bin end? see the tables below!
+  >💡How to find the info of accretion rate bin start and bin end? see the tables below!
 
 * boootstrap_z.py --sim --snapnum
 
