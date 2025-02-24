@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --ntasks-per-node=11
+#SBATCH --ntasks-per-node=6
 #SBATCH -t 4320            
 #SBATCH -p serial_requeue  
 #SBATCH --mem-per-cpu=4000
-#SBATCH --array=0-10
+#SBATCH --array=0-5
 #SBATCH --open-mode=append 
 #SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/boots_accret/MTNG-DM-%A-%a.out
 #SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/boots_accret/MTNG-DM-%A-%a.err

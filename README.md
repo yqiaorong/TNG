@@ -4,9 +4,11 @@ The codes in this branch are designed for simulation [IllustrisTNG](https://www.
 
 ## code
 
-Install [illustris_python](https://github.com/illustristng/illustris_python) to ../code/illustris_python
+Install [illustris_python](https://github.com/illustristng/illustris_python) to `../code/illustris_python`
 
-### ../code/DMhalo_TNG300/
+### DMhalo_TNG300
+
+`../code/DMhalo_TNG300/`
 
 * 1_subset.py --sim_type --snapnum --bin_start --bin_end
 
@@ -28,7 +30,9 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 * 5_add_formation_time.py --sim_type --snapnum
 
-### ../code/tree_TNG300/
+### tree_TNG300
+
+`../code/tree_TNG300/`
 
 The scripts in this folder should be run by the following order. All saved csv files have the same data structure and each entry in the csv files corresponds to the same halo. 
 
@@ -46,7 +50,9 @@ The scripts in this folder should be run by the following order. All saved csv f
 
   This script computes the DM halos accretion rates history per dynamical time and saves as csv file.
 
-### ../code/bootstrap/
+### bootstrap
+
+`../code/bootstrap/`
 
 * bootstrap_mass.py --sim --snapnum
 
@@ -94,4 +100,6 @@ The tables below summarise the range of accretion rates used in boostrapping:
 
 4. MTNG/Hydro-Arepo
 
-### ../code/paper_plot/
+### paper_plot
+
+`../code/paper_plot/`
