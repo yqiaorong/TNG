@@ -16,7 +16,7 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 * check_halo_number.py --sim_type --bin_start --bin_end
 
-> ❌ The above scripts have problems of finding the info of bin_start and bin_end as well.
+  > ❌ The above scripts have problems of finding the info of bin_start and bin_end as well.
 
 * 2_compile_all.py
 
