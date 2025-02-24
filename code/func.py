@@ -52,14 +52,15 @@ def add_formation_time(args, idx_dict, mass_dict, submass_dict):
             if np.all(np.abs(mass_dict[f'snap_{snapnum}'][find_idx] - snap_all_mass[idx]) < 0.01):
                 # print('mass matches')
                 if len(find_idx) == 1:
-                    pass
+                    find_idx = find_idx[0]
                 else:
                     # Select the one with the most massive subhalo mass
                     find_idx = find_idx[np.argmax(submass_dict[f'snap_{snapnum}'][find_idx])]
+  
                 # Compute the formation time
                 select_mass = {key: value[find_idx] for key, value in mass_dict.items()}
                 match_z = compute_formation_time(select_mass, snapnum, z_dict)
-                add_formation_time.append(match_z)
+                add_formation_time.append([match_z])
             else:
                 # print('mass does not match')
                 exit()
@@ -96,7 +97,7 @@ def compute_formation_time(mass, snapnum, z_dict):
     half_mass = mass[f'snap_{snapnum}'] / 2 
     abs_diffs = np.abs(mass_array - half_mass)
     # Find the closest matching row (snapshot) for each object
-    match_indices = np.argmin(abs_diffs, axis=0) 
-    match_snaps = [list(mass.keys())[idx] for idx in match_indices]
-    match_zs = [z_dict[snap] for snap in match_snaps]
+    match_idx = np.argmin(abs_diffs, axis=0) 
+    match_snap = list(mass.keys())[match_idx] 
+    match_zs = z_dict[match_snap] 
     return match_zs

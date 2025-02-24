@@ -67,7 +67,7 @@ halo_M, halo_R, bins, densities, accretions = [], [], [], [], []
 for fname, start, end in zip(halos_list, bin_starts, bin_ends):
     print(fname)
     
-    data = np.load(os.path.join(halos_dir, fname), allow_pickle=True).item()
+    data = np.load(halos_dir+fname, allow_pickle=True).item()
     halo_M.append(data['halo_M_Mean200']) # This is physical mass!
     halo_R.append(data['halo_R_Mean200'])
     bins.append(data['radial_bins'])
@@ -79,7 +79,6 @@ for fname, start, end in zip(halos_list, bin_starts, bin_ends):
     print(subset_idx.shape)
     
     # Add the accretion rates
-    accret = []
     for idx in tqdm(subset_idx):
         # Check the masses
         idx_in_FPGr = np.where(FPGr == idx)[0]
@@ -87,24 +86,18 @@ for fname, start, end in zip(halos_list, bin_starts, bin_ends):
         # print(np.all(FPGrMass[idx_in_FPGr] == FPGrMass[idx_in_FPGr][0]), FPGrMass[idx_in_FPGr][0])
         
         if FPGrMass[idx_in_FPGr].shape[0] == 0:
-            accret.append(np.nan)
+            accretions.append([np.nan])
         else:
             if np.all(FPGrMass[idx_in_FPGr] == FPGrMass[idx_in_FPGr][0]) and FPGrMass[idx_in_FPGr][0] == snap_all_mass[idx]:
                 if idx_in_FPGr.shape[0] == 1:
-                    pass
+                    right_accret = accret_rates[idx_in_FPGr[0]]
                 else:
                     # Select the one with the highest subhalo mass
                     idx_in_FPGr = idx_in_FPGr[np.argmax(SubMass[idx_in_FPGr])]
-                    
-                # Extract the corresponding accretion rate
-                mean_accret = accret_rates[idx_in_FPGr]
-                print(mean_accret)
-                accret.append(mean_accret)
+                    right_accret = accret_rates[idx_in_FPGr]
+                accretions.append([right_accret])
             else:
                 exit()
-    
-    # Check the added accertion rates shape
-    accretions.append(accret)
 
 # Concatenate data
 # ------------------------------------------------------------------------------
