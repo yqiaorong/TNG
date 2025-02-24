@@ -16,11 +16,11 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 * check_halo_number.py --sim_type --bin_start --bin_end
 
+> ❌ The above scripts have problems of finding the info of bin_start and bin_end as well.
+
 * 2_compile_all.py
 
   * compile_chunk_profile.py
-
-- [ ] The above scripts have problems of finding the info of bin_start and bin_end as well.
 
 * 3_comoving_to_phys.py
 
@@ -39,8 +39,6 @@ The scripts in this folder should be run by the following order. All saved csv f
 * table_mass.py --sim_type --bin_start --bin_end
 
   This script computes the DM halos masses history and saves as csv file.
-
-  - [ ] How to find the info of mass bin start and bin end?
 
 * table_snap_idx.py --sim_type
   
