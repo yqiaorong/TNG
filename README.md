@@ -98,7 +98,25 @@ The tables below summarise the range of accretion rates used in boostrapping:
 
 3. MTNG/DM-Arepo
 
+  | snapnum | accret_start | accret_end |
+  |---------|--------------|------------|
+  | 129     | 0            | 0          |
+  | 151     | 0            | 13         |
+  | 179     | 0            | 13         |
+  | 214     | 0            | 12         |
+  | 237     | 0            | 13         |
+  | 264     | 0            | 14         |
+
 4. MTNG/Hydro-Arepo
+
+  | snapnum | accret_start | accret_end |
+  |---------|--------------|------------|
+  | 129     | 0            | 0          |
+  | 151     | 0            | 13         |
+  | 179     | 0            | 13         |
+  | 214     | 0            | 12         |
+  | 237     | 0            | 13         |
+  | 264     | 0            | 14         |
 
 ### paper_plot
 
