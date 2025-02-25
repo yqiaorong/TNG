@@ -57,15 +57,14 @@ for simu in simus:
                 
         # Plot TNG300
         for snap in TNG300_snaps:
-            TNG300_z, TNG300_mass, TNG300_feat = load_stats(TNG300_dir, snap, 'med_mass', feature)
-            # Multiply all vals in TNG300_mass by 10^10, TNG300_mass is a dict
-            TNG300_mass = {k:v * 10**10 for k, v in TNG300_mass.items()}
+            TNG300_z, TNG300_mass, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy',  
+                                                            'med_mass', feature)
             plot_feature(simu, TNG300_z, TNG300_mass, TNG300_feat, [axs, cmap, norm])
                 
         # Plot MTNG
         for snap in MTNG_snaps:
-            MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, snap, 'med_mass', feature)
-            MTNG_mass = {k:v * 10**10 for k, v in MTNG_mass.items()}
+            MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
+                                                      'med_mass', feature)
             plot_feature(simu, np.round(MTNG_z, 1), MTNG_mass, MTNG_feat, [axs, cmap, norm])
 
         axs.set_xscale('log')

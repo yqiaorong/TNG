@@ -36,13 +36,6 @@ for simu in simus:
         # Set up the colorbar
         # ============================================================================================
 
-        def get_bins(min_bin, max_bin, bin_width):
-            num_bins = int((max_bin - min_bin)/bin_width)
-            all_bins = np.arange(min_bin, max_bin+bin_width, bin_width)
-            bins_starts = all_bins[:-1]
-            bins_ends = all_bins[1:]
-            return num_bins, all_bins, bins_starts, bins_ends
-
         min_bin, max_bin, bin_width = 0, 6, 1
         num_bins, all_bins, _, _ = get_bins(min_bin, max_bin, bin_width)
 
@@ -65,11 +58,15 @@ for simu in simus:
         for bin_val in all_bins:
             
             # Plot TNG300
-            TNG300_z, TNG300_feat = load_stats_per_bin(TNG300_dir, TNG300_snaps, 'accret_bins', bin_val, feature)
+            TNG300_z, TNG300_feat = load_stats_per_bin(TNG300_dir, 'snap_{}_Rsp_stats.npy', TNG300_snaps, 
+                                                       'z', feature,
+                                                       'accret_bins', bin_val)
             plot_feature_vs_z(simu, bin_val, TNG300_z, TNG300_feat, [axs, cmap, norm])
                 
             # Plot MTNG
-            MTNG_z, MTNG_feat = load_stats_per_bin(MTNG_dir, MTNG_snaps, 'accret_bins', bin_val, feature)
+            MTNG_z, MTNG_feat = load_stats_per_bin(MTNG_dir, 'snap_{}_Rsp_stats.npy', MTNG_snaps,
+                                                   'z', feature,
+                                                   'accret_bins', bin_val)
             plot_feature_vs_z(simu, bin_val, MTNG_z, MTNG_feat, [axs, cmap, norm])
             
         # Final edit

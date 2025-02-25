@@ -58,13 +58,15 @@ for simu in simus:
         # Plot TNG300
         for snap in TNG300_snaps:  
 
-            TNG300_z, TNG300_mass, TNG300_feat = load_stats(TNG300_dir, snap, 'med_accret', feature)
+            TNG300_z, TNG300_mass, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy', 
+                                                            'med_accret', feature)
             plot_feature(simu, TNG300_z, TNG300_mass, TNG300_feat, [axs, cmap, norm])
 
         # Plot MTNG
         for snap in MTNG_snaps:
 
-            MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, snap, 'med_accret', feature)
+            MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
+                                                      'med_accret', feature)
             plot_feature(simu, MTNG_z, MTNG_mass, MTNG_feat, [axs, cmap, norm])
 
         axs.set_xlim(0, 6)

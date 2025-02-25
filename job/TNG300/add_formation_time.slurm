@@ -20,7 +20,7 @@ snap=${snaplist[$SLURM_ARRAY_TASK_ID]}
 echo "# Array ID: " $SLURM_ARRAY_TASK_ID
     
 echo "# Start python processing $SLURM_ARRAY_TASK_ID at: "$(date)
-python3 /n/home01/sqyu/AstroLab/TNG/code/DMhalo_TNG300/5_add_formation_time.py --snapnum $snap --sim_type Hydro
+python3 /n/home01/sqyu/AstroLab/TNG/code/DMhalo_TNG300/5_add_formation_time.py --snapnum $snap --sim_type DM
 echo "# End python processing $SLURM_ARRAY_TASK_ID at: "$(date)
 
 echo "# Ending at: "$(date)
