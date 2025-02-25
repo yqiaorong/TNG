@@ -34,8 +34,17 @@ formation_z = data['formation_time']
 
 round_z  = np.round(formation_z, 1)
 unique_z = np.unique(round_z)
-# remove nan from unique_z
-unique_z = unique_z[~np.isnan(unique_z)]
+print(halo_M.shape, halo_R.shape, halo_radii.shape, halo_densities.shape, formation_z.shape)
+
+# Get the index in formation_z where is nan
+# ---------------------------------------------------------------------
+mask = np.where(np.isnan(formation_z) == False)[0]
+halo_M = halo_M[mask]
+halo_R = halo_R[mask]
+halo_radii = halo_radii[mask,:]
+halo_densities = halo_densities[mask,:]
+round_z = round_z[mask]
+print(halo_M.shape, halo_R.shape, halo_radii.shape, halo_densities.shape, round_z.shape)
 del formation_z
 
 
@@ -68,4 +77,5 @@ for form_z in unique_z:
                 os.makedirs(save_stats_dir)
 
             np.save(save_stats_dir+f'snap_{args.snapnum}_Rsp_stats_at_{form_z}', results_at_form_z)
+            print(f'data at formation z {form_z} saved')
     print('')

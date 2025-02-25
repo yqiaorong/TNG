@@ -58,11 +58,11 @@ for simu in simus:
                                                         'med_mass', feature, 'formation_z')
         plot_feature(simu, TNG300_z, TNG300_mass, TNG300_feat, [axs, cmap, norm])
 
-    # # Plot MTNG
-    # for z in MTNG_z:
-    #     MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, f'snap_264_Rsp_stats_at_{z}.npy', 
-    #                                               'med_mass', feature, 'formation_z')
-    #     plot_feature(simu, MTNG_z, MTNG_mass, MTNG_feat, [axs, cmap, norm])
+    # Plot MTNG
+    for z in MTNG_z:
+        MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, f'snap_264_Rsp_stats_at_{z}.npy', 
+                                                  'med_mass', feature, 'formation_z')
+        plot_feature(simu, MTNG_z, MTNG_mass, MTNG_feat, [axs, cmap, norm])
 
     axs.set_ylabel(r"$\mathcal{W}$")
     axs.set_xlabel(r"$M_\odot$")

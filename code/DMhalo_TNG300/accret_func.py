@@ -112,6 +112,7 @@ def add_formation_time(args, idx_dict, mass_dict, subhalo_mass_dict):
         basePath =  '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L%dn%dTNG'%(205,1250)+'_DM/output/'
     elif 'Hydro' in sim_type:
         basePath =  '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/L%dn%dTNG'%(205,1250)+'/output/'
+    print(basePath)
     snap_all_mass = il.groupcat.loadHalos(basePath, snapnum, fields='Group_M_Mean200')
     
     # Load all redshifts
@@ -153,6 +154,7 @@ def add_formation_time(args, idx_dict, mass_dict, subhalo_mass_dict):
     if snapnum == 8 or snapnum == 13:
         add_formation_time = np.nan * np.ones(data['halo_M_Mean200'].shape)
     else:
+        no_halo_found = 0
         add_formation_time = []
         for idx in tqdm(subset_idx):
             find_idx = np.where(idx_dict[f'snap_{snapnum}'] == idx)[0]
@@ -162,6 +164,7 @@ def add_formation_time(args, idx_dict, mass_dict, subhalo_mass_dict):
                 exit()
                 
             if len(find_idx) == 0:
+                no_halo_found += 1
                 # print('no halo found')
                 add_formation_time.append([np.nan])
             else:                 
@@ -178,7 +181,7 @@ def add_formation_time(args, idx_dict, mass_dict, subhalo_mass_dict):
                 add_formation_time.append(match_z)
                     
         add_formation_time = np.concatenate(add_formation_time)
-        
+    print('no halo found:', no_halo_found)
     print(add_formation_time.shape, data['halo_M_Mean200'].shape)
     
     # Add formation time to halo data
