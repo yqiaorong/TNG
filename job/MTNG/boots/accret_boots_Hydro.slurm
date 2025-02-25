@@ -14,13 +14,13 @@ echo "# Starting at: "$(date)
 echo "# Running on machine: "$(hostname)
 echo "# Running in directory: "$(pwd)
 
-snaplist=( $(cat job/boots_MTNG/snap_list.txt) )
+snaplist=( $(cat job/MTNG/snap_list.txt) )
 snap=${snaplist[$SLURM_ARRAY_TASK_ID]}
 
-accret_starts=( $(cat job/boots_MTNG/accret_starts_Hydro.txt) )
+accret_starts=( $(cat job/MTNG/boots/accret_starts_Hydro.txt) )
 accret_start=${accret_starts[$SLURM_ARRAY_TASK_ID]}
 
-accret_ends=( $(cat job/boots_MTNG/accret_ends_Hydro.txt) )
+accret_ends=( $(cat job/MTNG/boots/accret_ends_Hydro.txt) )
 accret_end=${accret_ends[$SLURM_ARRAY_TASK_ID]}
 
 echo "# Array ID: " $SLURM_ARRAY_TASK_ID
