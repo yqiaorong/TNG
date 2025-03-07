@@ -16,7 +16,39 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 * check_halo_number.py --sim_type --bin_start --bin_end
 
-  > ❌ The above scripts have problems of finding the info of bin_start and bin_end as well.
+  >💡 How to find the info of mass bin start and bin end? see the tables below!
+
+  1. TNG300/sim_205_1250_DM, unit [10^(10+x) Msun/h]
+
+  | snapnum | bin_start    | bin_end    |
+  |---------|--------------|------------|
+  | 8       | 1            | 2.0        |
+  | 13      | 1            | 3.0        |
+  | 17      | 1            | 3.0        |
+  | 21      | 1            | 3.5        |
+  | 25      | 1            | 4.5        |
+  | 33      | 1            | 4.5        |
+  | 40      | 1            | 4.5        |
+  | 50      | 1            | 4.5        |
+  | 67      | 1            | 4.5        |
+  | 78      | 1            | 4.5        |
+  | 99      | 1            | 4.5        |
+
+  2. TNG300/sim_205_1250_Hydro unit [10^(10+x) Msun/h]
+
+  | snapnum | bin_start    | bin_end    |
+  |---------|--------------|------------|
+  | 8       | 1            | 2.0        |
+  | 13      | 1            | 3.0        |
+  | 17      | 1            | 3.0        |
+  | 21      | 1            | 3.5        |
+  | 25      | 1            | 3.5        |
+  | 33      | 1            | 4.0        |
+  | 40      | 1            | 4.0        |
+  | 50      | 1            | 4.0        |
+  | 67      | 1            | 4.5        |
+  | 78      | 1            | 4.5        |
+  | 99      | 1            | 4.5        |
 
 * 2_compile_all.py
 
