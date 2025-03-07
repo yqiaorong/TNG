@@ -30,6 +30,8 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
 * 5_add_formation_time.py --sim_type --snapnum
 
+The tables below summarise the range of halo masses used in computing density profiles and boostrapping:
+
 1. TNG300/sim_205_1250_DM, unit [10^(10+x) Msun/h]
 
   | snapnum | bin_start    | bin_end    |
