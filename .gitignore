@@ -7,7 +7,7 @@ result/DMhalo_table_chunk_idx
 result/DMhalo_table_mass
 
 result/bootstrap_stats
-result/bootstrap_plots
+result/bootstrap_plots/
 
 result/temp_archive
 
