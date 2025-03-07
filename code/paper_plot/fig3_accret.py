@@ -10,10 +10,34 @@ print('>>> Plot depth and width vs accretion rate <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_accret/'
-simus = ['Hydro', 'DM']
-features = ['width_dimless' , 'abs_depth', 'depth']
+simus = ['Hydro','DM']
+features = ['width_dimless', 
+            #'abs_depth',
+           # 'depth'
+            ]
+upper_limit = 6
+    
+
+# ============================================================================================
+# Define the fitting function with two variables
+# ============================================================================================
+def accret_depth(inputs, a, b, c, e, f):
+    Gamma, zval = inputs
+    
+    return a*Gamma + b*Gamma**2 + c*Gamma**3 + e/(zval+1) + f/Gamma
+
+def accret_width(inputs, a, b, c, d, e, f,):
+    Gamma, zval = inputs
+    # return a*zval**2*Gamma + b*zval**2 + c*zval + d*Gamma + e*Gamma*zval + f
+    return  a*Gamma + b*Gamma**2 + c*Gamma**3 + d/(zval+1) + f*zval + e
+
 for simu in simus:
     for feature in features:
+        
+        if feature == 'depth':
+            fit_func = accret_depth
+        elif feature == 'width_dimless':
+            fit_func = accret_width
 
         # ============================================================================================
         # Set up the plot
@@ -54,34 +78,100 @@ for simu in simus:
         # ============================================================================================
         # Plot
         # ============================================================================================
-
+        
+        all_z, all_x_med, all_x_min, all_x_max = [], [], [], []
+        all_y_med, all_y_min, all_y_max = [], [], []
+        
         # Plot TNG300
         for snap in TNG300_snaps:  
 
-            TNG300_z, TNG300_mass, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy', 
+            TNG300_z, TNG300_accret, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy', 
                                                             'med_accret', feature)
-            plot_feature(simu, TNG300_z, TNG300_mass, TNG300_feat, [axs, cmap, norm])
+            # Filter out data greater than 6
+            mask = TNG300_accret['median'] <= upper_limit
+            TNG300_accret['median'] = TNG300_accret['median'][mask]
+            TNG300_accret['min'] = TNG300_accret['min'][mask]
+            TNG300_accret['max'] = TNG300_accret['max'][mask]
+            TNG300_feat['median'] = TNG300_feat['median'][mask]
+            TNG300_feat['min'] = TNG300_feat['min'][mask]
+            TNG300_feat['max'] = TNG300_feat['max'][mask]
+            
+            plot_feature(simu, TNG300_z, TNG300_accret, TNG300_feat, [axs, cmap, norm])
+            
+            # Append the data
+            all_x_med.append(TNG300_accret['median'])
+            all_x_min.append(TNG300_accret['min'])
+            all_x_max.append(TNG300_accret['max'])
+            all_y_med.append(TNG300_feat['median'])
+            all_y_min.append(TNG300_feat['min'])
+            all_y_max.append(TNG300_feat['max'])
+            # Duplicate z to the same length as the data
+            all_z.append([TNG300_z]*len(TNG300_accret['median']))
 
-        # Plot MTNG
-        for snap in MTNG_snaps:
+        # # Plot MTNG
+        # for snap in MTNG_snaps:
 
-            MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
-                                                      'med_accret', feature)
-            plot_feature(simu, MTNG_z, MTNG_mass, MTNG_feat, [axs, cmap, norm])
+        #     MTNG_z, MTNG_accret, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
+        #                                               'med_accret', feature)
+        #     # Filter out data greater than 6
+        #     mask = MTNG_accret['median'] <= upper_limit
+        #     MTNG_accret['median'] = MTNG_accret['median'][mask]
+        #     MTNG_accret['min'] = MTNG_accret['min'][mask]
+        #     MTNG_accret['max'] = MTNG_accret['max'][mask]
+        #     MTNG_feat['median'] = MTNG_feat['median'][mask]
+        #     MTNG_feat['min'] = MTNG_feat['min'][mask]
+        #     MTNG_feat['max'] = MTNG_feat['max'][mask]
+            
+        #     plot_feature(simu, MTNG_z, MTNG_accret, MTNG_feat, [axs, cmap, norm])
+            
+        #     # Append the data
+        #     all_x_med.append(MTNG_accret['median'])
+        #     all_x_min.append(MTNG_accret['min'])
+        #     all_x_max.append(MTNG_accret['max'])
+        #     all_y_med.append(MTNG_feat['median'])
+        #     all_y_min.append(MTNG_feat['min'])
+        #     all_y_max.append(MTNG_feat['max'])
+        #     # Duplicate z to the same length as the data
+        #     all_z.append([MTNG_z]*len(MTNG_accret['median']))
+        
+        # ============================================================================================
+        # Fitting
+        # ============================================================================================
+        
+        # Concatenate the data to one dimension
+        all_x_med = np.concatenate(all_x_med)
+        all_x_min = np.concatenate(all_x_min)
+        all_x_max = np.concatenate(all_x_max)
+            
+        all_y_med = np.concatenate(all_y_med)
+        all_y_min = np.concatenate(all_y_min)
+        all_y_max = np.concatenate(all_y_max)
 
-        axs.set_xlim(0, 6)
+        all_z = np.concatenate(all_z)
+        
+        # Fit the data
+        popt, red_chi2, y_fit, axs = fitting(all_z, 
+                                              all_x_med, all_x_min, all_x_max, 
+                                              all_y_med, all_y_min, all_y_max,
+                                              fit_func, [axs, cmap, norm])
+        print(f'{simu} {feature} popt: {popt}')
+        print(f'{simu} {feature} red_chi2: {red_chi2}')
+        
+        # ============================================================================================
+        # Save the plot
+        # ============================================================================================
+        
+        # axs.set_xlim(0, 6)
         if feature == 'abs_depth':
             Y_label = r"|$\mathcal{D}$|"
         elif feature == 'width_dimless':
             Y_label = r"$\mathcal{W}$"
         else:
             Y_label = r"$\mathcal{D}$"
+            axs.set_ylim(1, 4)
         axs.set_ylabel(Y_label)
         axs.set_xlabel(r'$\Gamma$')
-
-        # ============================================================================================
-        # Save the plot
-        # ============================================================================================
+        axs.legend()
 
         save_dir = f'result/paper_plots/'
         if not os.path.exists(save_dir):

@@ -10,7 +10,9 @@ print('>>> Plot depth and width vs accretion rate <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_formation_z/'
-simus = ['Hydro', 'DM']
+simus = ['DM',
+        'Hydro', 
+        ]
 feature = 'width_dimless' 
 
 for simu in simus:
@@ -45,7 +47,7 @@ for simu in simus:
         return f'{x:.1f}'  
     cb.ax.xaxis.set_major_formatter(FuncFormatter(custom_format)) 
     cb.ax.tick_params(axis='x', rotation=70) 
-    cb.set_label('z')
+    cb.set_label(r'$z_0$')
     # -----------------------------------------------------------------------------------------
     
     # ============================================================================================

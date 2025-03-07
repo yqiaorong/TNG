@@ -11,10 +11,31 @@ print('')
 
 root_dir = 'result/bootstrap_stats/with_mass/'
 simus = ['Hydro', 'DM']
-features = ['abs_depth', 'depth', 'width_dimless']
+features = [# abs_depth', 
+            'width_dimless',
+           'depth', 
+            ]
+
+# ============================================================================================
+# Define the fitting function with two variables
+# ============================================================================================
+def mass_depth(inputs, a, d, e, f):
+    x, zval = inputs
+    
+    return e + f*zval + d*np.log10(x)/(zval+1) + a*np.log10(x) 
+
+def mass_width(inputs, a, b, c, d, A, B, C, D):
+    x, zval = inputs
+    return a*(zval+1)**A + b*(zval+1)**B*np.log10(x) + c*(zval+1)**C*np.log10(x)**2 + d*zval + D*np.exp(-zval**2)*np.log10(x)**3
 
 for simu in simus:
     for feature in features:
+        
+        if feature == 'depth':
+            fit_func = mass_depth
+        elif feature == 'width_dimless':
+            fit_func = mass_width
+            
         # ============================================================================================
         # Set up the plot
         # ============================================================================================
@@ -54,19 +75,67 @@ for simu in simus:
         # ============================================================================================
         # Plot
         # ============================================================================================
-                
+        
+        all_z, all_x_med, all_x_min, all_x_max = [], [], [], []
+        all_y_med, all_y_min, all_y_max = [], [], []
+              
         # Plot TNG300
         for snap in TNG300_snaps:
             TNG300_z, TNG300_mass, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy',  
                                                             'med_mass', feature)
             plot_feature(simu, TNG300_z, TNG300_mass, TNG300_feat, [axs, cmap, norm])
-                
+            
+            # Append the data
+            all_x_med.append(TNG300_mass['median'])
+            all_x_min.append(TNG300_mass['min'])
+            all_x_max.append(TNG300_mass['max'])
+            all_y_med.append(TNG300_feat['median'])
+            all_y_min.append(TNG300_feat['min'])
+            all_y_max.append(TNG300_feat['max'])
+            # Duplicate z to the same length as the data
+            all_z.append([TNG300_z]*len(TNG300_mass['median']))
+            
         # Plot MTNG
-        for snap in MTNG_snaps:
+        for snap in [MTNG_snaps[5]]:
             MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
                                                       'med_mass', feature)
             plot_feature(simu, np.round(MTNG_z, 1), MTNG_mass, MTNG_feat, [axs, cmap, norm])
-
+            
+            # Append the data
+            all_x_med.append(MTNG_mass['median'])
+            all_x_min.append(MTNG_mass['min'])
+            all_x_max.append(MTNG_mass['max'])
+            all_y_med.append(MTNG_feat['median'])
+            all_y_min.append(MTNG_feat['min'])
+            all_y_max.append(MTNG_feat['max'])
+            # Duplicate z to the same length as the data
+            all_z.append([MTNG_z]*len(MTNG_mass['median']))
+        
+        # ============================================================================================
+        # Fitting
+        # ============================================================================================
+        
+        # Concatenate the data to one dimension
+        all_x_med = np.concatenate(all_x_med)
+        all_x_min = np.concatenate(all_x_min)
+        all_x_max = np.concatenate(all_x_max)
+            
+        all_y_med = np.concatenate(all_y_med)
+        all_y_min = np.concatenate(all_y_min)
+        all_y_max = np.concatenate(all_y_max)
+        
+        all_z = np.concatenate(all_z)
+        
+        # Fit the data
+        popt, red_chi2, y_fit, axs = fitting(all_z, 
+                                              all_x_med, all_x_min, all_x_max, 
+                                              all_y_med, all_y_min, all_y_max,
+                                              fit_func, [axs, cmap, norm])
+        print(popt)
+        # ============================================================================================
+        # Save the plot
+        # ============================================================================================
+        
         axs.set_xscale('log')
         axs.set_xlabel(r"$M_\odot$")
         if feature == 'abs_depth':
@@ -76,11 +145,7 @@ for simu in simus:
         else:
             Y_label = r"$\mathcal{D}$"
         axs.set_ylabel(Y_label)
-
-        # ============================================================================================
-        # Save the plot
-        # ============================================================================================
-
+        axs.legend(loc='best')
         save_dir = f'result/paper_plots/'
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)

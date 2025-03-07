@@ -1,5 +1,6 @@
 import numpy as np
-
+from matplotlib import pyplot as plt
+    
 def load_stats(dir, fname, xlabel, ylabel, bin_val='z'):
     data = np.load(f'{dir}/{fname}', allow_pickle=True).item()
 
@@ -14,6 +15,45 @@ def load_stats(dir, fname, xlabel, ylabel, bin_val='z'):
     x_dict = {'median': x, f'min': xmin, f'max': xmax}
     y_dict = {'median': y, f'min': ymin, f'max': ymax}
     return z, x_dict, y_dict
+
+# Define the fitting with two variables
+def fitting(z, x, xmin, xmax, y, ymin, ymax, func, plot_info):
+    from scipy.odr import Model, RealData, ODR
+    from scipy.optimize import curve_fit
+    
+    z = np.asarray(z)
+    # Get the mean eroors
+    x_err = (xmax - xmin) / 2
+    y_err = (ymax - ymin) / 2
+
+    # yerr plus epsilon if yerr is zero
+    y_err[y_err == 0] = 1e-1
+    
+    # Curve fitting with input sigma
+    p0 = [1] * (func.__code__.co_argcount - 1)  
+    popt, pcov = curve_fit(func, (x, z), y, p0=p0,   
+                           sigma=y_err, 
+                           maxfev=100000)
+    perr = np.sqrt(np.diag(pcov))
+
+    # Compute reduced chi-square 
+    y_fit = func([x, z], *popt)
+    red_chi2 = np.sum((y-y_fit)**2 / y_err**2) / (len(y) - len(popt))
+    
+    # Plot the fitting
+    axs, cmap, norm = plot_info
+
+    for uniq_z in np.unique(z):
+        iz = np.where(uniq_z == z)[0]
+        if uniq_z in [0]:
+            # sort according to x
+            idx = np.argsort(x[iz])
+            axs.plot(x[iz][idx], y_fit[iz][idx], c=cmap(norm(uniq_z)), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
+        else:
+            idx = np.argsort(x[iz])
+            axs.plot(x[iz][idx], y_fit[iz][idx], c=cmap(norm(uniq_z)), ls='--')
+   
+    return popt, red_chi2, y_fit, axs
     
 def load_stats_per_bin(dir, fname_format, fname_val, 
                        xlabel, ylabel, bin_name, bin_start_val):

@@ -17,7 +17,7 @@ def init_mass_bins(mass_1d_array, bin_width):
     for mass_bin in mass_bins[:-1]:
         num_halos_in_bin = np.where((log10_mass >= mass_bin) & (log10_mass < mass_bin+bin_width))[0].shape[0]
         # print(mass_bin, num_halos_in_bin)
-        if num_halos_in_bin > 10:
+        if num_halos_in_bin > 100:
             new_mass_bins.append(mass_bin)
             
     if len(new_mass_bins) != 0:
@@ -63,7 +63,7 @@ def bootstrap_all_features(args, params, data, formation_z=None, bin_width=0.5):
                                             [10**m for m in mass_bins[1:]])
             print('Number of halos in bins: ', num_halos_per_bin)
             
-            if all(x > 2 for x in num_halos_per_bin):
+            if all(x > 5 for x in num_halos_per_bin):
                 
                 for i in range(num_bins):
                     if reject_times[i] < 10:
@@ -82,13 +82,14 @@ def bootstrap_all_features(args, params, data, formation_z=None, bin_width=0.5):
                             # Fit the slope
                             fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho)) # [dimensionless]
                             
-                            # # Plot the data and the fit
-                            # fname = f'form_z{int(np.round(formation_z, 3)*100)}_boots{valid_boots}_bin{i}'
-                            # plot_profile(radius, 
-                            #             rho, rho_err, 
-                            #             slope, slope_err, 
-                            #             fitted_radius, fitted_rho, fitted_slope, 
-                            #             fname, save_dir='result/bootstrap_plots/')
+                            # Plot the data and the fit
+                            fname = f'form_z{int(np.round(formation_z, 3)*100)}_boots{valid_boots}_bin{i}'
+                            if valid_boots == 0:
+                                plot_profile(radius, 
+                                            rho, rho_err, 
+                                            slope, slope_err, 
+                                            fitted_radius, fitted_rho, fitted_slope, 
+                                            fname, save_dir='result/bootstrap_plots/')
                 
                             # Compute the median mass in the mass cut
                             med_mass = compute_median(select_masses, 10**mass_bins[i], 10**mass_bins[i+1])
