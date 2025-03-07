@@ -18,7 +18,19 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
 
   >💡 How to find the info of mass bin start and bin end? see the tables below!
 
-  1. TNG300/sim_205_1250_DM, unit [10^(10+x) Msun/h]
+* 2_compile_all.py
+
+  * compile_chunk_profile.py
+
+* 3_comoving_to_phys.py
+
+  This script converts the data from TNG300 from comoving unit to phys unit, and it should only be run once.
+
+* 4_add_accretion.py --sim_type --snapnum
+
+* 5_add_formation_time.py --sim_type --snapnum
+
+1. TNG300/sim_205_1250_DM, unit [10^(10+x) Msun/h]
 
   | snapnum | bin_start    | bin_end    |
   |---------|--------------|------------|
@@ -34,7 +46,7 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
   | 78      | 1            | 4.5        |
   | 99      | 1            | 4.5        |
 
-  2. TNG300/sim_205_1250_Hydro unit [10^(10+x) Msun/h]
+2. TNG300/sim_205_1250_Hydro unit [10^(10+x) Msun/h]
 
   | snapnum | bin_start    | bin_end    |
   |---------|--------------|------------|
@@ -49,18 +61,6 @@ Install [illustris_python](https://github.com/illustristng/illustris_python) to 
   | 67      | 1            | 4.5        |
   | 78      | 1            | 4.5        |
   | 99      | 1            | 4.5        |
-
-* 2_compile_all.py
-
-  * compile_chunk_profile.py
-
-* 3_comoving_to_phys.py
-
-  This script converts the data from TNG300 from comoving unit to phys unit, and it should only be run once.
-
-* 4_add_accretion.py --sim_type --snapnum
-
-* 5_add_formation_time.py --sim_type --snapnum
 
 ### tree_TNG300
 
