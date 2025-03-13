@@ -3,7 +3,7 @@ import os
 import numpy as np
 import argparse
 import h5py
-from func import compt_density_profile_hist, compt_density_profile
+from func import compt_density_profile
 
 # Input arguments
 parser = argparse.ArgumentParser()

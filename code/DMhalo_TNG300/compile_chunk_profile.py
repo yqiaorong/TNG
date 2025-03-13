@@ -1,6 +1,5 @@
 from tqdm import tqdm
 import numpy as np
-from func import *
 import illustris_python as il
 import argparse
 import os
