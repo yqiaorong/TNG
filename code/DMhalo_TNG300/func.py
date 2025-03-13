@@ -74,14 +74,12 @@ def fit_NSW_profile(bin_centers, densities, R_200_mean):
                         ):
         return NSW_profile(r=r, rho_0=rho_0, R_s=R_s)
     
-    r = bin_centers * R_200_mean
-    rho = densities / (R_200_mean ** 3)
     
-    base_p0 = (max(rho), R_200_mean)
-    print(base_p0)
+    base_p0 = (max(densities), R_200_mean)
+
     popt, pcov = curve_fit(NSW_profile,
-                            r,
-                            rho,
+                            bin_centers,
+                            densities,
                             p0=base_p0,
                             maxfev=100000)
     perr = np.diag(pcov) ** 0.5
@@ -90,11 +88,12 @@ def fit_NSW_profile(bin_centers, densities, R_200_mean):
         return np.sum((p - densities)**2) / (len(p) - len(popt))
 
     # Did we actually get a good fit? If not, we should dump this bootstrapping.
-    predicted_values = wrapped_NSW_profile(bin_centers * R_200_mean, *popt)
+    predicted_values = wrapped_NSW_profile(bin_centers, *popt)
     new_chi_square = chi_square(predicted_values)
     # If we get a worse fit after tuning, cancel this one
-    old_chi_square = chi_square(wrapped_NSW_profile(bin_centers * R_200_mean, *base_p0))
-
+    old_chi_square = chi_square(wrapped_NSW_profile(bin_centers, *base_p0))
+    # print(new_chi_square, old_chi_square)
+    
     # if old_chi_square < new_chi_square:
     #     raise RuntimeError("Extremely poor fit for this bootstrap")
     # elif new_chi_square > 2.0:
