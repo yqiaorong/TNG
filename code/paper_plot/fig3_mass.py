@@ -20,9 +20,8 @@ features = [# abs_depth',
 # Define the fitting function with two variables
 # ============================================================================================
 def mass_depth(inputs, a, d, e, f):
-    x, zval = inputs
-    
-    return e + f*zval + d*np.log10(x)/(zval+1) + a*np.log10(x) 
+    mass, zval = inputs    
+    return e + f*zval + d*np.log10(mass)/(zval+1) + a*np.log10(mass) 
 
 def mass_width(inputs, a, b, c, d, A, B, C, D):
     x, zval = inputs
@@ -117,6 +116,7 @@ for simu in simus:
         
         # Concatenate the data to one dimension
         all_x_med = np.concatenate(all_x_med)
+
         all_x_min = np.concatenate(all_x_min)
         all_x_max = np.concatenate(all_x_max)
             
@@ -128,9 +128,10 @@ for simu in simus:
         
         # Fit the data
         popt, red_chi2, y_fit, axs = fitting(all_z, 
-                                              all_x_med, all_x_min, all_x_max, 
+                                              all_x_med, 
                                               all_y_med, all_y_min, all_y_max,
-                                              fit_func, [axs, cmap, norm])
+                                              fit_func, [axs, cmap, norm],
+                                              all_x_min, all_x_max, )
         print(popt)
         # ============================================================================================
         # Save the plot

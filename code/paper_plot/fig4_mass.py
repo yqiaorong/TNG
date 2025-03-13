@@ -10,11 +10,27 @@ print('')
 print(f'>>> Plot depth and width vs z (mass) <<<')
 print('')
 
+def mass_depth(inputs, a, d, e, f):
+    zval, mass = inputs
+    return e + f*zval + d*np.log10(mass)/(zval+1) + a*np.log10(mass) 
+
+def mass_width(inputs, a, b, c, d, A, B, C, D):
+    zval, mass = inputs
+    return a*(zval+1)**A + b*(zval+1)**B*np.log10(mass) + c*(zval+1)**C*np.log10(mass)**2 + d*zval + D*np.exp(-zval**2)*np.log10(mass)**3
+
+
 root_dir = 'result/bootstrap_stats/with_mass/'
 simus = ['Hydro', 'DM']
-features = ['width_dimless' , 'abs_depth', 'depth']
+features = ['width_dimless' , # 'abs_depth', 
+           # 'depth'
+            ]
 for simu in simus:
     for feature in features:
+        
+        if feature == 'depth':
+            fit_func = mass_depth
+        elif feature == 'width_dimless':
+            fit_func = mass_width
 
         # ============================================================================================
         # Set up the plot
@@ -50,7 +66,10 @@ for simu in simus:
         # ============================================================================================
         # Plot
         # ============================================================================================
-
+        
+        all_bin, all_x_med = [], []
+        all_y_med, all_y_min, all_y_max = [], [], []
+        
         for bin_val in all_bins:
             
             # Plot TNG300
@@ -58,13 +77,26 @@ for simu in simus:
                                                        'z', feature,
                                                        'mass_bins', bin_val-10)
             plot_feature_vs_z(simu, 10**bin_val, TNG300_z, TNG300_feat, [axs, cmap, norm])
-                
+            
+            # Append the data
+            all_x_med.append(TNG300_z)
+            all_y_med.append(TNG300_feat['median'])
+            all_y_min.append(TNG300_feat['min'])
+            all_y_max.append(TNG300_feat['max'])
+            all_bin.append([10**bin_val]*len(TNG300_z))
+            
             # Plot MTNG
             MTNG_z, MTNG_feat = load_stats_per_bin(MTNG_dir, 'snap_{}_Rsp_stats.npy', MTNG_snaps,
                                                    'z', feature,
                                                    'mass_bins', bin_val-10)
             plot_feature_vs_z(simu, 10**bin_val, MTNG_z, MTNG_feat, [axs, cmap, norm])
             
+            all_x_med.append(MTNG_z)    
+            all_y_med.append(MTNG_feat['median'])
+            all_y_min.append(MTNG_feat['min'])
+            all_y_max.append(MTNG_feat['max'])
+            all_bin.append([10**bin_val]*len(MTNG_z))
+  
         # Final edit
         axs.set_xlim(0, 6)
         axs.set_xlabel('z')
@@ -75,6 +107,28 @@ for simu in simus:
         else:
             Y_label = r"$\mathcal{D}$"
         axs.set_ylabel(Y_label)
+        
+        # ============================================================================================
+        # Fitting
+        # ============================================================================================
+        
+        # Concatenate the data to one dimension
+        all_x_med = np.concatenate(all_x_med)
+    
+        all_y_med = np.concatenate(all_y_med)
+        all_y_min = np.concatenate(all_y_min)
+        all_y_max = np.concatenate(all_y_max)
+
+        all_bin = np.concatenate(all_bin)
+
+        # Fit the data
+        popt, red_chi2, y_fit, axs = fitting(all_bin, 
+                                             all_x_med,
+                                              all_y_med, all_y_min, all_y_max,
+                                              fit_func, [axs, cmap, norm])
+        print(f'{simu} {feature} popt: {popt}')
+        print(f'{simu} {feature} red_chi2: {red_chi2}')
+        axs.legend()
 
         # ============================================================================================
         # Save the plot

@@ -351,6 +351,11 @@ from scipy.optimize import curve_fit
 evaluate_profile_at_edges = np.logspace(-2, np.log10(5), 1024)
 evaluate_profile_at = 0.5 * (evaluate_profile_at_edges[1:] + evaluate_profile_at_edges[:-1])
 
+def NSW_profile(r,
+                rho_0, 
+                R_s):
+    return rho_0 / ((1 + (r/R_s)**2)*(r/R_s))
+    
 def density_profile_inner(
         r,
         rho_s,
@@ -421,6 +426,45 @@ def density_gradient_profile(
     d_rho_dr = d_rho_inner_dr * f_trans + rho_inner * d_ftrans_dr + d_rho_outer_dr
 
     return (r / rho) * d_rho_dr
+
+def fit_NSW_profile(bin_centers, densities, R_200_mean):
+    
+    def wrapped_NSW_profile(r:float, 
+                        rho_0:float, 
+                        R_s:float
+                        ):
+        return NSW_profile(r=r, rho_0=rho_0, R_s=R_s)
+    
+    r = bin_centers * R_200_mean
+    rho = densities / (R_200_mean ** 3)
+    
+    base_p0 = (max(rho), R_200_mean)
+    print(base_p0)
+    popt, pcov = curve_fit(NSW_profile,
+                            r,
+                            rho,
+                            p0=base_p0,
+                            maxfev=100000)
+    perr = np.diag(pcov) ** 0.5
+    
+    def chi_square(p):
+        return np.sum((p - densities)**2) / (len(p) - len(popt))
+
+    # Did we actually get a good fit? If not, we should dump this bootstrapping.
+    predicted_values = wrapped_NSW_profile(bin_centers * R_200_mean, *popt)
+    new_chi_square = chi_square(predicted_values)
+    # If we get a worse fit after tuning, cancel this one
+    old_chi_square = chi_square(wrapped_NSW_profile(bin_centers * R_200_mean, *base_p0))
+
+    # if old_chi_square < new_chi_square:
+    #     raise RuntimeError("Extremely poor fit for this bootstrap")
+    # elif new_chi_square > 2.0:
+    #     print("Bad Fit!")
+    #     raise RuntimeError("Extremely poor fit for this bootstrap")
+
+    return (
+        popt,perr,
+        )
     
 def fit_gradient_parametric(bin_centers, densities, density_errors, gradient, gradient_errors, R_200_mean):
     """

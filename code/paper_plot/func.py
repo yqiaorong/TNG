@@ -17,41 +17,47 @@ def load_stats(dir, fname, xlabel, ylabel, bin_val='z'):
     return z, x_dict, y_dict
 
 # Define the fitting with two variables
-def fitting(z, x, xmin, xmax, y, ymin, ymax, func, plot_info):
+def fitting(bins, x, y, ymin, ymax, func, plot_info, xmin=None, xmax=None):
     from scipy.odr import Model, RealData, ODR
     from scipy.optimize import curve_fit
     
-    z = np.asarray(z)
+    bins = np.asarray(bins)
+
     # Get the mean eroors
-    x_err = (xmax - xmin) / 2
+    if xmin is not None:
+        x_err = (xmax - xmin) / 2
     y_err = (ymax - ymin) / 2
 
     # yerr plus epsilon if yerr is zero
     y_err[y_err == 0] = 1e-1
     
     # Curve fitting with input sigma
-    p0 = [1] * (func.__code__.co_argcount - 1)  
-    popt, pcov = curve_fit(func, (x, z), y, p0=p0,   
+    p0 = [1] * (func.__code__.co_argcount - 1) 
+    # For fiiting width as a function of z
+    # p0= [-7.20882095, 1.63511888, -7.05248173E-2, -1.17051206E1,
+    #      -3.66871643E-1,  1.07646616,  1.09160168, -9.71760263e-05]
+
+    popt, pcov = curve_fit(func, (x, bins), y, p0=p0,   
                            sigma=y_err, 
-                           maxfev=100000)
+                           maxfev=1000000)
     perr = np.sqrt(np.diag(pcov))
 
     # Compute reduced chi-square 
-    y_fit = func([x, z], *popt)
+    y_fit = func([x, bins], *popt)
     red_chi2 = np.sum((y-y_fit)**2 / y_err**2) / (len(y) - len(popt))
     
     # Plot the fitting
     axs, cmap, norm = plot_info
 
-    for uniq_z in np.unique(z):
-        iz = np.where(uniq_z == z)[0]
-        if uniq_z in [0]:
+    for uniq_bin in np.unique(bins):
+        ib = np.where(uniq_bin == bins)[0]
+        if 0 in ib:
             # sort according to x
-            idx = np.argsort(x[iz])
-            axs.plot(x[iz][idx], y_fit[iz][idx], c=cmap(norm(uniq_z)), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
+            idx = np.argsort(x[ib])
+            axs.plot(x[ib][idx], y_fit[ib][idx], c=cmap(norm(uniq_bin)), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
         else:
-            idx = np.argsort(x[iz])
-            axs.plot(x[iz][idx], y_fit[iz][idx], c=cmap(norm(uniq_z)), ls='--')
+            idx = np.argsort(x[ib])
+            axs.plot(x[ib][idx], y_fit[ib][idx], c=cmap(norm(uniq_bin)), ls='--')
    
     return popt, red_chi2, y_fit, axs
     

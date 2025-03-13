@@ -151,9 +151,10 @@ for simu in simus:
         
         # Fit the data
         popt, red_chi2, y_fit, axs = fitting(all_z, 
-                                              all_x_med, all_x_min, all_x_max, 
+                                              all_x_med, 
                                               all_y_med, all_y_min, all_y_max,
-                                              fit_func, [axs, cmap, norm])
+                                              fit_func, [axs, cmap, norm],
+                                              all_x_min, all_x_max, )
         print(f'{simu} {feature} popt: {popt}')
         print(f'{simu} {feature} red_chi2: {red_chi2}')
         

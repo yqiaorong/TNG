@@ -13,7 +13,7 @@ print('>>> Plot the absolute depth and width vs mass at z = 0 <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_mass/'
-simus = ['DM']
+simus = ['DM', 'Hydro']
 
 # ============================================================================================
 # Set up the plot
@@ -60,17 +60,17 @@ for simu in simus:
         
         # Plot TNG300
         TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
-        TNG300_z, TNG300_mass, TNG300_depths = load_stats(TNG300_dir, 99, 'med_mass', 'abs_depth')
-        _, _, TNG300_widths = load_stats(TNG300_dir, 99, 'med_mass', 'width_dimless')
+        TNG300_z, TNG300_mass, TNG300_depths = load_stats(TNG300_dir, 'snap_99_Rsp_stats.npy', 'med_mass', 'depth')
+        _, _, TNG300_widths = load_stats(TNG300_dir, 'snap_99_Rsp_stats.npy', 'med_mass', 'width_dimless')
         plot_feature(simu, TNG300_z, TNG300_mass, TNG300_depths, [axs[0], cmap, norm])
         plot_feature(simu, TNG300_z, TNG300_mass, TNG300_widths, [axs[1], cmap, norm])
                 
-        # # Plot MTNG
-        # for snap in MTNG_snaps:
-        #         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
-        #         MTNG_z, MTNG_mass_bins, MTNG_final_results = load_stats(MTNG_dir, snap)
-        #         plot_depth(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
-        #         plot_width(MTNG_z, MTNG_mass_bins, MTNG_final_results, simu)
+        # Plot MTNG
+        MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
+        MTNG_z, MTNG_mass, MTNG_depths = load_stats(MTNG_dir, 'snap_264_Rsp_stats.npy', 'med_mass', 'depth')
+        _, _, MTNG_widths = load_stats(MTNG_dir, 'snap_264_Rsp_stats.npy', 'med_mass', 'width_dimless')
+        plot_feature(simu, MTNG_z, MTNG_mass, MTNG_depths, [axs[0], cmap, norm])
+        plot_feature(simu, MTNG_z, MTNG_mass, MTNG_widths, [axs[1], cmap, norm])
 
 axs[0].set_xscale('log')
 axs[0].set_ylabel(r"|$\mathcal{D}$|")
