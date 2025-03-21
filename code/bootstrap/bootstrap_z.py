@@ -39,11 +39,11 @@ print(halo_M.shape, halo_R.shape, halo_radii.shape, halo_densities.shape, format
 # Get the index in formation_z where is nan
 # ---------------------------------------------------------------------
 mask = np.where(np.isnan(formation_z) == False)[0]
-halo_M = halo_M[mask]
-halo_R = halo_R[mask]
-halo_radii = halo_radii[mask,:]
+halo_M         = halo_M[mask]
+halo_R         = halo_R[mask]
+halo_radii     = halo_radii[mask,:]
 halo_densities = halo_densities[mask,:]
-round_z = round_z[mask]
+round_z        = round_z[mask]
 print(halo_M.shape, halo_R.shape, halo_radii.shape, halo_densities.shape, round_z.shape)
 del formation_z
 
@@ -56,6 +56,7 @@ for form_z in unique_z:
     # Select the subset of data
     z_idx = np.where(round_z == form_z)[0]
     select_M200 = halo_M[z_idx]
+    select_M200 = np.log10(select_M200)
     select_R200 = halo_R[z_idx]
     select_radii = halo_radii[z_idx]
     select_densities = halo_densities[z_idx]
@@ -67,7 +68,8 @@ for form_z in unique_z:
         # Bootstrap by mass cut
         results_at_form_z = bootstrap_all_features(args, 
                                                 [data['z'], data['h'], data['rho_c']], 
-                                                [select_radii, select_densities, select_M200, select_R200], 
+                                                [select_radii, select_densities, select_M200, select_R200],
+                                                'mass',
                                                 formation_z=form_z)
 
         # Save the results

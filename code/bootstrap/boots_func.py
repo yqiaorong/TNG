@@ -2,45 +2,47 @@ from func import *
 import numpy as np
 import math
 
-def init_mass_bins(mass_1d_array, bin_width):
+def init_bins(array_1d, bin_width, bin_start=None, bin_end=None):
     
-    # Set up the mass bins
-    log10_mass = np.log10(mass_1d_array) 
-    min_log10_mass, max_log10_mass = np.min(log10_mass), np.max(log10_mass)
-    # print(f'Min log10 mass: {min_log10_mass}, Max log10 mass: {max_log10_mass}')
-    bin_start, bin_end = math.floor(min_log10_mass*2)/2, math.ceil(max_log10_mass*2)/2
-    mass_bins = np.arange(bin_start, bin_end+bin_width, bin_width)
-    print('mass bins: ', mass_bins)
+    # Set up the bins
+    min_bin, max_bin = np.min(array_1d), np.max(array_1d)
+    if bin_start is None:
+        bin_start, bin_end = math.floor(min_bin*2)/2, math.ceil(max_bin*2)/2
+    bins = np.arange(bin_start, bin_end+bin_width, bin_width)
+    print('bins: ', bins)
     
     # Check the number of halos in the largest bin. if it's less than 2, reject this bin
-    new_mass_bins = []
-    for mass_bin in mass_bins[:-1]:
-        num_halos_in_bin = np.where((log10_mass >= mass_bin) & (log10_mass < mass_bin+bin_width))[0].shape[0]
-        # print(mass_bin, num_halos_in_bin)
-        if num_halos_in_bin > 100:
-            new_mass_bins.append(mass_bin)
+    new_bins = []
+    for b in bins[:-1]:
+        num_halos_in_bin = np.where((array_1d >= b) & (array_1d < b+bin_width))[0].shape[0]
+        if num_halos_in_bin > 50:
+            new_bins.append(b)
             
-    if len(new_mass_bins) != 0:
-        new_mass_bins.append(new_mass_bins[-1]+bin_width)
-    del mass_bins
+    if len(new_bins) != 0:
+        new_bins.append(new_bins[-1]+bin_width)
+    else:
+        exit()
+    del bins
         
-    print('mass bins: ', new_mass_bins)
+    print('bins: ', new_bins)
 
-    return new_mass_bins
+    return new_bins
     
 # Bootstrap setup
-def bootstrap_all_features(args, params, data, formation_z=None, bin_width=0.5):
+def bootstrap_all_features(args, params, data, 
+                           bin_type, bin_start=None, bin_end=None, bin_width=0.5, 
+                           formation_z=None):
     
     z, h, rho_c = params[0], params[1], params[2]
-    radial_bins, densities, halo_M_Mean200, halo_R_Mean200 = data[0], data[1], data[2], data[3]
-    total_num_halos = halo_M_Mean200.shape[0]
+    radial_bins, densities, bin_vals, halo_R_Mean200 = data[0], data[1], data[2], data[3]
+    total_num_halos = bin_vals.shape[0]
     
-    mass_bins = init_mass_bins(halo_M_Mean200, bin_width)
-    
+    bins = init_bins(bin_vals, bin_width, bin_start, bin_end)
     print('')
-    if len(mass_bins) != 0:
+    
+    if len(bins) != 0:
         # Initialize the results
-        num_bins = len(mass_bins) - 1
+        num_bins = len(bins) - 1
         results = np.empty((num_bins, 6, args.Nboots))   # [med_mass, Rsp, depth, min_grad, width_dimless, width_physical]
         
         # Bootstrap!
@@ -53,15 +55,13 @@ def bootstrap_all_features(args, params, data, formation_z=None, bin_width=0.5):
             # Select densities and masses
             select_radii     = radial_bins[indices]    # [kpc]
             select_densities = densities[indices]      # [Msun / (kpc)^3]
-            select_masses    = halo_M_Mean200[indices] # [10^10 Msun]
+            select_vals      = bin_vals[indices]       
             select_r200      = halo_R_Mean200[indices] # [kpc]
             del indices
             
             # Calculating the number of halos in each cut
-            num_halos_per_bin = count_halos(select_masses, 
-                                            [10**m for m in mass_bins[:-1]], 
-                                            [10**m for m in mass_bins[1:]])
-            print('Number of halos in bins: ', num_halos_per_bin)
+            num_halos_per_bin = count_halos(select_vals, bins[:-1], bins[1:])
+            print(f'Number of halos in {bin_type} bins: ', num_halos_per_bin)
             
             if all(x > 5 for x in num_halos_per_bin):
                 
@@ -69,8 +69,8 @@ def bootstrap_all_features(args, params, data, formation_z=None, bin_width=0.5):
                     if reject_times[i] < 10:
                         # Select halos in the cut and compute density profiles
                         
-                        profile_result = fit_density_profile(args, select_radii, select_densities, select_masses, select_r200, 
-                                                    10**mass_bins[i], 10**mass_bins[i+1], rho_c)
+                        profile_result = fit_density_profile(args, select_radii, select_densities, select_vals, select_r200, 
+                                                             bins[i], bins[i+1], rho_c)
                         radius, rho, rho_err, fitted_radius, fitted_rho, slope, slope_err, R200_median = profile_result
                         
                         ### If the optimal params are not found! ###
@@ -82,17 +82,17 @@ def bootstrap_all_features(args, params, data, formation_z=None, bin_width=0.5):
                             # Fit the slope
                             fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho)) # [dimensionless]
                             
-                            # Plot the data and the fit
-                            fname = f'form_z{int(np.round(formation_z, 3)*100)}_boots{valid_boots}_bin{i}'
-                            if valid_boots == 0:
-                                plot_profile(radius, 
-                                            rho, rho_err, 
-                                            slope, slope_err, 
-                                            fitted_radius, fitted_rho, fitted_slope, 
-                                            fname, save_dir='result/bootstrap_plots/')
+                            # # Plot the data and the fit
+                            # fname = f'form_z{int(np.round(formation_z, 3)*100)}_boots{valid_boots}_bin{i}'
+                            # if valid_boots == 0:
+                            #     plot_profile(radius, 
+                            #                 rho, rho_err, 
+                            #                 slope, slope_err, 
+                            #                 fitted_radius, fitted_rho, fitted_slope, 
+                            #                 fname, save_dir='result/bootstrap_plots/')
                 
                             # Compute the median mass in the mass cut
-                            med_mass = compute_median(select_masses, 10**mass_bins[i], 10**mass_bins[i+1])
+                            med = compute_median(select_vals, bins[i], bins[i+1])
                             
                             # Compute Rsp
                             physical_fitted_radius = fitted_radius * R200_median
@@ -125,9 +125,9 @@ def bootstrap_all_features(args, params, data, formation_z=None, bin_width=0.5):
                                 width_dimless = fitted_radius[right_idx] - fitted_radius[left_idx]
                                 
                                 # Append results
-                                results[i, :, valid_boots] = med_mass, Rsp, depth, min_grad, width_dimless, width
+                                results[i, :, valid_boots] = med, Rsp, depth, min_grad, width_dimless, width
                     else:
-                        print(f'    This mass cut is rejected: {i}')
+                        print(f'    This {bin_type} cut is rejected: {i}')
                         results[i, :, valid_boots] = np.nan
                         continue
             
@@ -141,16 +141,17 @@ def bootstrap_all_features(args, params, data, formation_z=None, bin_width=0.5):
                 print('')
                 
         # Get the statistical results 
-        final_results = {'z': z, 'h': h, 'mass_bins': mass_bins[:-1]}
+        final_results = {'z': z, 'h': h, f'{bin_type}_bins': bins[:-1]}
         if formation_z is not None:
             final_results['formation_z'] = formation_z
-        final_results['med_mass']       = np.percentile(results[:, 0, :], [16, 50, 84], axis=1)
+        final_results[f'med_{bin_type}'] = np.percentile(results[:, 0, :], [16, 50, 84], axis=1)
         final_results['Rsp']            = np.percentile(results[:, 1, :], [16, 50, 84], axis=1)
         final_results['depth']          = np.percentile(results[:, 2, :], [16, 50, 84], axis=1)
         final_results['abs_depth']      = np.percentile(results[:, 3, :], [16, 50, 84], axis=1)    
         final_results['width_dimless']  = np.percentile(results[:, 4, :], [16, 50, 84], axis=1)
         final_results['width_physical'] = np.percentile(results[:, 5, :], [16, 50, 84], axis=1)  
         final_results['full_results']   = results 
+        print(final_results.keys())
     
     else:
         final_results = {}
@@ -219,10 +220,10 @@ def plot_profile(radius,
     #     if not os.path.exists(data_dir):
     #        os.makedirs(data_dir)
     #     np.save(os.path.join(data_dir, fname), data)
-    
-def fit_density_profile(args, radii, densities, masses, r200, bin_start, bin_end, rho_c):
+
+def fit_density_profile(args, radii, densities, targets, r200, bin_start, bin_end, rho_c):
     # Select halos in the cut and compute density profiles
-    raw_profiles = stacked_density_profile(radii, densities, masses, r200, 
+    raw_profiles = stacked_density_profile(radii, densities, targets, r200, 
                                            bin_start, bin_end, rho_c)
     radius, rho, rho_err = raw_profiles[0][1:], raw_profiles[1][1:], raw_profiles[2][1:] # [dimensionless]
     _, R200_median = raw_profiles[3], raw_profiles[4]                             # [kpc]

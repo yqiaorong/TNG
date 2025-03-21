@@ -2,13 +2,14 @@
 
 import os
 import numpy as np
-from func import *
+from DMhalo_TNG300.func import *
+from tqdm import tqdm
 import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',      default='TNG300/sim_205_1250_Hydro/', type=str)
-parser.add_argument('--snapnum',  default=13, type=int)
+parser.add_argument('--sim',     default=None, type=str)
+parser.add_argument('--snapnum', default=None, type=int)
 args = parser.parse_args()
 
 print('')
@@ -30,7 +31,7 @@ for fname in halos_fnames:
     radial_bins    = data['radial_bins']    # [kpc]
     # Compute the NSW profile
     all_rho0, all_Rs = [], []
-    for r, rho, R200 in zip(radial_bins, densities, halo_R_Mean200):
+    for r, rho, R200 in tqdm(zip(radial_bins, densities, halo_R_Mean200)):
         # Crop region r < R200
         rho = rho[r < R200]
         r = r[r < R200]
@@ -39,7 +40,7 @@ for fname in halos_fnames:
         r = r[non_zero_indices]
         rho = rho[non_zero_indices]
         # Fit the NSW profile
-        popt, _ = fit_NSW_profile(r, rho, R200)
+        popt, _ = fit_NFW_profile(r, rho, R200)
         rho_0, R_s = popt
         all_rho0.append(rho_0)
         all_Rs.append(R_s)
@@ -48,9 +49,9 @@ for fname in halos_fnames:
     # Compute the concentrations
     conc = all_Rs / halo_R_Mean200
     # Append data
-    data['NSW_rho0'] = all_rho0
-    data['NSW_Rs'] = all_Rs
-    data['NSW_conc'] = conc
+    data['NFW_rho0'] = all_rho0
+    data['NFW_Rs'] = all_Rs
+    data['NFW_conc'] = conc
     # Save the data
     print(data.keys())
-    # np.save(os.path.join(halos_dir, fname), data)
+    np.save(os.path.join(halos_dir, fname), data)

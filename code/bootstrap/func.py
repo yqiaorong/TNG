@@ -1,10 +1,10 @@
-def count_halos(array_1d, bin_start_list, bin_end_list):
+def count_halos(target_1d_array, bin_start_list, bin_end_list):
     import numpy as np
     
     counts_list = []
     for bin_start, bin_end in zip(bin_start_list, bin_end_list):
-        count = int(np.sum((array_1d >= bin_start) 
-                         & (array_1d < bin_end)))
+        count = int(np.sum((target_1d_array >= bin_start) 
+                         & (target_1d_array < bin_end)))
         counts_list.append(count)
     return counts_list
 
@@ -16,12 +16,12 @@ def stacked_density_profile(radii_2d_array, densities_2d_array, target_1d_array,
     
     radii_2d_array:     array (N_halos, N_radial_bins)       [kpc]
     densities_2d_array: array (N_halos, N_radial_bins)       [Msun / (kpc)^3]
-    M200_1d_array:      array (N_halos,)                     [10^10 MSun]
+    target_1d_array:    array (N_halos,)                 
     R200_1d_array:      array (N_halos,)                     [kpc]
-    mass_bin_start:     float                                [10^(10+a) MSun]
-    h:                  float                                  
-    scale_factor:       float
+    bin_start:          float   
+    bin_end:            float                                 
     rho_c:              float                                [Msun / (kpc)^3]
+    use_bootstrap       bool
     
     RETURN:
     (   
@@ -34,7 +34,6 @@ def stacked_density_profile(radii_2d_array, densities_2d_array, target_1d_array,
     """
     
     import numpy as np
-    # from unyt import G, second, megaparsec, km
     
     # Initialize the output
     densities_list = [] # [dimensionless]
@@ -51,12 +50,6 @@ def stacked_density_profile(radii_2d_array, densities_2d_array, target_1d_array,
             # radius profile
             radii_dimless = radii / radius200 # [dimensionless]
             radius200_list.append(radius200)
-            
-            # # Compute the critical density
-            # Hubble = h * 100 * km / megaparsec / second
-            # rho_c = 3 * Hubble**2 / (8*np.pi*G) 
-            # rho_c.convert_to_units('Msun/kiloparsec**3') 
-            # rho_c = rho_c * scale_factor**3 / h**2   # [(MSun/h)/(ckpc/h)**3]
             
             # density profile
             densities_list.append(densities / rho_c)   # [dimensionless]

@@ -12,7 +12,7 @@ parser.add_argument('--Nboots',   default=1024, type=int)
 args = parser.parse_args()
 
 print('')
-print(f'>>> Bootstrap splashback features per mass cuts <<<')
+print(f'>>> Bootstrap splashback features per conc cuts <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -31,23 +31,20 @@ for fname in halos_fnames:
     h            = data['h']
     rho_c        = data['rho_c']            # [(Msun) / (kpc)^3]
     halo_R_Mean200 = data['halo_R_Mean200'] # [kpc]
-    halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 Msun]
-    halo_M_Mean200 = np.log10(halo_M_Mean200)
+    NFW_conc       = data['NFW_conc']
     densities      = data['densities']      # [Msun / (kpc)^3]
     radial_bins    = data['radial_bins']    # [kpc]
     del data
 
-# print(f'total number of halos: {halo_M_Mean200.shape[0]}')
-
 # Bootstrap setup
 final_results = bootstrap_all_features(args, 
                                 [z, h, rho_c], 
-                                [radial_bins, densities, halo_M_Mean200, halo_R_Mean200],
-                                'mass')     
+                                [radial_bins, densities, NFW_conc, halo_R_Mean200],
+                                'conc', bin_start=0, bin_end=5, bin_width=0.2)     
     
     
 # Save the results
-save_stats_dir = f'result/bootstrap_stats/with_mass/{args.sim}/Nboots_{args.Nboots}/'
+save_stats_dir = f'result/bootstrap_stats/with_conc/{args.sim}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_stats_dir):
     os.makedirs(save_stats_dir)
 

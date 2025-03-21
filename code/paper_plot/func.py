@@ -68,7 +68,7 @@ def load_stats_per_bin(dir, fname_format, fname_val,
     
     for val in fname_val:
         data = np.load(dir+fname_format.format(val), allow_pickle=True).item()
-       
+
         bins = data[bin_name]
         bin_start_idx =  np.where(bins == bin_start_val)[0]
         
