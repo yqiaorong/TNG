@@ -10,7 +10,7 @@ print('>>> Plot depth and width vs mass <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_conc/'
-simus = ['Hydro', 'DM']
+simus = ['Hydro','DM']
 features = [# abs_depth', 
             'width_dimless',
            'depth', 
@@ -48,8 +48,11 @@ for simu in simus:
         TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
         TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
         TNG300_z_i, TNG300_z_f = load_all_z(TNG300_dir, [min(TNG300_snaps), max(TNG300_snaps)])
-
-        MTNG_snaps = [264, 237, 214, 179, 151, 129]
+        
+        if simu == 'DM':
+            MTNG_snaps = [264, 237, 214, 179]
+        else:
+            MTNG_snaps = [264, 237, 214, 179, 151]
         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
         
         all_z = load_all_z(TNG300_dir, TNG300_snaps)
@@ -98,6 +101,11 @@ for simu in simus:
         for snap in MTNG_snaps:
             MTNG_z, MTNG_conc, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
                                                       'med_conc', feature)
+            # Remove extremely small points
+            remove_idx = np.where(MTNG_conc['median'] < 0.01)
+            MTNG_conc = {k: np.delete(v, remove_idx) for k, v in MTNG_conc.items()}
+            MTNG_feat = {k: np.delete(v, remove_idx) for k, v in MTNG_feat.items()}
+            
             plot_feature(simu, np.round(MTNG_z, 1), MTNG_conc, MTNG_feat, [axs, cmap, norm])
             
             # Append the data

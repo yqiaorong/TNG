@@ -45,7 +45,10 @@ for simu in simus:
         TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
         TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
 
-        MTNG_snaps = [264, 237, 214, 179, 151, 129]
+        if simu == 'DM':
+            MTNG_snaps = [264, 237, 214, 179]
+        else:
+            MTNG_snaps = [264, 237, 214, 179, 151]
         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
 
         # ============================================================================================
