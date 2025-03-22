@@ -6,7 +6,7 @@ plt.style.use('code/style.mplstyle')
 from func import *
 
 print('')
-print('>>> Plot depth and width vs accretion rate <<<')
+print('>>> Plot depth and width vs formation time <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_formation_z/'

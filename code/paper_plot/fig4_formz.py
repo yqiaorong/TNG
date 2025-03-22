@@ -7,7 +7,7 @@ from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
 
 print('')
-print(f'>>> Plot depth and width vs z (mass) <<<')
+print(f'>>> Plot depth and width vs z (formation time) <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_formation_z/'

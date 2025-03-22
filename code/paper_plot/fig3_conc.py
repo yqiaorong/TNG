@@ -6,7 +6,7 @@ plt.style.use('code/style.mplstyle')
 from func import *
 
 print('')
-print('>>> Plot depth and width vs mass <<<')
+print('>>> Plot depth and width vs concentration <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_conc/'
