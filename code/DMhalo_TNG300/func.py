@@ -61,40 +61,36 @@ def distance(x0, x1, dimensions):
 import numpy as np
 from scipy.optimize import curve_fit
 
-def NFW_profile(r,
+def log_NFW_profile(r,
                 rho_0, 
                 R_s):
-    return rho_0 / ((1 + r/R_s)**2 * (r/R_s))
-
-def fit_NFW_profile(bin_centers, densities, R_200_mean, idx=None):
+    return np.log10(rho_0 / ((1 + r/R_s)**2 * (r/R_s)))
     
-    def wrapped_NFW_profile(r:float, 
-                        rho_0:float, 
-                        R_s:float
-                        ):
-        return NFW_profile(r=r, rho_0=rho_0, R_s=R_s)
+def fit_log_NFW_profile(bin_centers, densities, R_200_mean, idx=None):
     
+    def wrapped_log_NFW_profile(r:float, 
+                                rho_0:float, 
+                                R_s:float
+                                ):
+        return log_NFW_profile(r=r, rho_0=rho_0, R_s=R_s)
+    
+    def chi_square(p):
+        return np.sum((p - densities)**2) / (len(p) - len(popt))
     
     base_p0 = (max(densities), R_200_mean)
 
-    popt, pcov = curve_fit(NFW_profile,
+    popt, pcov = curve_fit(log_NFW_profile,
                             bin_centers,
                             densities,
                             p0=base_p0,
                             maxfev=1000000)
     perr = np.diag(pcov) ** 0.5
     
-    def chi_square(p):
-        return np.sum((p - densities)**2) / (len(p) - len(popt))
-
-    # Did we actually get a good fit? If not, we should dump this bootstrapping.
-    predicted_values = wrapped_NFW_profile(bin_centers, *popt)
-    # for rho1, rho2 in zip(densities, predicted_values):
-    #     print(rho1,rho2)
-    # print('')
-    new_chi_square = chi_square(predicted_values)
-    # If we get a worse fit after tuning, cancel this one
-    old_chi_square = chi_square(wrapped_NFW_profile(bin_centers, *base_p0))
+    # # Did we actually get a good fit? If not, we should dump this bootstrapping.
+    # predicted_values = wrapped_log_NFW_profile(bin_centers, *popt)
+    # new_chi_square = chi_square(predicted_values)
+    # # If we get a worse fit after tuning, cancel this one
+    # old_chi_square = chi_square(wrapped_log_NFW_profile(bin_centers, *base_p0))
     # print(new_chi_square, old_chi_square)
     
     # if old_chi_square < new_chi_square:
@@ -106,13 +102,11 @@ def fit_NFW_profile(bin_centers, densities, R_200_mean, idx=None):
     
     # # Plot densities
     # from matplotlib import pyplot as plt
-    
     # fig, axs = plt.subplots(1,1)
     # axs.scatter(bin_centers, densities)
     # axs.plot(bin_centers, predicted_values)
     # axs.set_yscale('log')
     # axs.set_xscale('log')
-    # plt.savefig(plot_dir+f'output/{idx}')
-    return (
-        popt,perr,
-        )  
+    # plt.savefig(f'output/Hydro/log_{idx}')
+    
+    return (popt,perr)  

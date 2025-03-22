@@ -63,7 +63,7 @@ for simu in simus:
         norm = BoundaryNorm(bound, cmap.N)
         cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
                         ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
-        cb.set_label(r'Concentration [$R_s/R_{200m}$]')
+        cb.set_label(r'$R_s/R_{200m}$')
 
         # ============================================================================================
         # Plot

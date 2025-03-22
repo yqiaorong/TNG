@@ -146,7 +146,7 @@ for simu in simus:
         # ============================================================================================
         
         axs.set_xscale('log')
-        axs.set_xlabel(r"Concentration $R_s/R_{200m}$")
+        axs.set_xlabel(r"$R_s/R_{200m}$")
         if feature == 'abs_depth':
             Y_label = r"|$\mathcal{D}$|"
         elif feature == 'width_dimless':

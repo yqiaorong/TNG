@@ -9,10 +9,11 @@ parser.add_argument('--sim',      default=None, type=str)
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--Nsample',  default=10000,type=int)
 parser.add_argument('--Nboots',   default=1024, type=int)
+parser.add_argument('--bin_type', default=None, type=str) # [ conc / peakHeight ]
 args = parser.parse_args()
 
 print('')
-print(f'>>> Bootstrap splashback features per conc cuts <<<')
+print(f'>>> Bootstrap splashback features per {args.bin_type} cuts <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -31,7 +32,10 @@ for fname in halos_fnames:
     h            = data['h']
     rho_c        = data['rho_c']            # [(Msun) / (kpc)^3]
     halo_R_Mean200 = data['halo_R_Mean200'] # [kpc]
-    NFW_conc       = data['NFW_conc']
+    if args.bin_type == 'conc':
+        bin_data = data['NFW_conc']     
+    elif args.bin_type == 'peakHeight':
+        bin_data = data['peakHeight']
     densities      = data['densities']      # [Msun / (kpc)^3]
     radial_bins    = data['radial_bins']    # [kpc]
     del data
@@ -39,12 +43,12 @@ for fname in halos_fnames:
 # Bootstrap setup
 final_results = bootstrap_all_features(args, 
                                 [z, h, rho_c], 
-                                [radial_bins, densities, NFW_conc, halo_R_Mean200],
-                                'conc', bin_start=0, bin_end=5, bin_width=0.2)     
+                                [radial_bins, densities, bin_data, halo_R_Mean200],
+                                args.bin_type, bin_width=0.2)     
     
     
 # Save the results
-save_stats_dir = f'result/bootstrap_stats/with_conc/{args.sim}/Nboots_{args.Nboots}/'
+save_stats_dir = f'result/bootstrap_stats/with_{args.bin_type}/{args.sim}/Nboots_{args.Nboots}/'
 if not os.path.exists(save_stats_dir):
     os.makedirs(save_stats_dir)
 
