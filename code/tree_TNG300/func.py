@@ -95,7 +95,6 @@ def get_chunk_and_local_index(simpath, snap, offset_type, global_index, ptype=-1
 def lifeline(parent_dir, subhalo_global_idx, df, last_snap_idx=99):
     import os
     import h5py
-    import pandas as pd
     from itertools import count
     
     ### Find subhalo with global index's position in MergerTree ###
@@ -116,7 +115,8 @@ def lifeline(parent_dir, subhalo_global_idx, df, last_snap_idx=99):
         # print(f'In Tree{treeX}, the subhalo has index: {subhalo_intreeX_idx}.')
         
     if tree_chunk_idx == -1:
-        pass
+        df.loc[f'snap_{last_snap_idx}', f'global_idx_{subhalo_global_idx}'] = subhalo_global_idx
+        
     else: 
         # enter the global index of current subhalo into the dataframe
         df.loc[f'snap_{last_snap_idx}', f'global_idx_{subhalo_global_idx}'] = subhalo_global_idx

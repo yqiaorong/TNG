@@ -33,11 +33,11 @@ for fname in halos_fnames:
     rho_c        = data['rho_c']            # [(Msun) / (kpc)^3]
     halo_R_Mean200 = data['halo_R_Mean200'] # [kpc]
     if args.bin_type == 'conc':
-        bin_data = data['NFW_conc']     
-    elif args.bin_type == 'peakHeight':
-        bin_data = data['peakHeight']
-    densities      = data['densities']      # [Msun / (kpc)^3]
-    radial_bins    = data['radial_bins']    # [kpc]
+        bin_data = data['NFW_conc']  
+    else:
+        bin_data = data[args.bin_type]  
+    densities    = data['densities']      # [Msun / (kpc)^3]
+    radial_bins  = data['radial_bins']    # [kpc]
     del data
 
 # Bootstrap setup

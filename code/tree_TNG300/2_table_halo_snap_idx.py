@@ -3,7 +3,7 @@
 2. The linking subhalo masses.
 This scripts aim to give 
 1. the halo index at each snapshot which matches the mass table;
-2, the subhalo masses."""
+2, the 1st subhalo masses."""
 
 import os
 import numpy as np
@@ -59,6 +59,7 @@ for file in tqdm(df_list, desc='concatenate chunk df'):
     df = pd.read_csv(f'{idx_dir}/{file}', index_col=0)  # Assuming the first column is the index
     tot_df_list.append(df)
 tot_df = pd.concat(tot_df_list, axis=1)
+print(tot_df.shape)
 # Make a copy of tot_df to save the subhalo mass
 tot_df_subhalo = tot_df.copy()
 
