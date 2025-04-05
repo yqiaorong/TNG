@@ -12,7 +12,7 @@ cosmology.setCosmology('planck15')
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',     default='TNG300/sim_205_1250_DM/', type=str)
+parser.add_argument('--sim',     default='TNG300/sim_205_1250_Hydro/', type=str) # [TNG300/MTNG]
 parser.add_argument('--snapnum', default=None, type=int)
 args = parser.parse_args()
 
@@ -29,14 +29,14 @@ halos_fnames = os.listdir(halos_dir)
 print(halos_fnames)
 for fname in halos_fnames:
     # Load data
-    data = np.load(os.path.join(halos_dir, fname), allow_pickle=True).item()
-    print(data.keys())
+    data = np.load(halos_dir+fname, allow_pickle=True).item()
     z = data['z']
     halo_M_Mean200 = data['halo_M_Mean200'] # [10^10 MSun}
     
     # Caculate the peak height
-    peakHeight = peaks.peakHeight(halo_M_Mean200, z)
+    peakHeight = peaks.peakHeight(halo_M_Mean200*10**10, z)
     data['peakHeight'] = peakHeight
+    print(data['halo_M_Mean200'].shape, data['peakHeight'].shape)
     
     # Save the data
     print(data.keys())

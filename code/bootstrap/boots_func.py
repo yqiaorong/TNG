@@ -30,14 +30,15 @@ def init_bins(array_1d, bin_width, bin_start=None, bin_end=None):
     
 # Bootstrap setup
 def bootstrap_all_features(args, params, data, 
-                           bin_type, bin_start=None, bin_end=None, bin_width=0.5, 
+                           bin_type, bins=None, bin_start=None, bin_end=None, bin_width=None, 
                            formation_z=None):
     
     z, h, rho_c = params[0], params[1], params[2]
     radial_bins, densities, bin_vals, halo_R_Mean200 = data[0], data[1], data[2], data[3]
     total_num_halos = bin_vals.shape[0]
     
-    bins = init_bins(bin_vals, bin_width, bin_start, bin_end)
+    if bins is None:
+        bins = init_bins(bin_vals, bin_width, bin_start, bin_end)
     print('')
     
     if len(bins) != 0:

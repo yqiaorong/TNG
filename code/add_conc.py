@@ -24,7 +24,7 @@ halos_fnames = os.listdir(halos_dir)
 print(halos_fnames)
 for fname in halos_fnames:
     # Load data
-    data = np.load(os.path.join(halos_dir, fname), allow_pickle=True).item()
+    data = np.load(halos_dir+fname, allow_pickle=True).item()
     halo_R_Mean200 = data['halo_R_Mean200'] # [kpc]
     densities      = data['densities']      # [Msun / (kpc)^3]
     radial_bins    = data['radial_bins']    # [kpc]
@@ -53,9 +53,9 @@ for fname in halos_fnames:
     # Compute the concentrations
     conc = all_Rs / halo_R_Mean200
     # Append data
-    data['NFW_rho0'] = all_rho0
-    data['NFW_Rs']   = all_Rs
-    data['NFW_conc'] = conc
+    data['NFWrho0'] = all_rho0
+    data['NFWRs']   = all_Rs
+    data['NFWconc'] = conc
     # Save the data
     print(data.keys())
-    np.save(os.path.join(halos_dir, fname), data)
+    np.save(halos_dir+fname, data)

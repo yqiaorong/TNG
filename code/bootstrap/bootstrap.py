@@ -5,7 +5,7 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',      default=None, type=str)
+parser.add_argument('--sim',      default='MTNG/Hydro-Arepo/MTNG-L500-4320-A/', type=str)
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--Nsample',  default=10000,type=int)
 parser.add_argument('--Nboots',   default=1024, type=int)
@@ -25,26 +25,43 @@ halos_dir = f'result/DMhalo_density_profiles/{args.sim}/snap_{args.snapnum}/fina
 halos_fnames = os.listdir(halos_dir)
 print(halos_fnames)
 for fname in halos_fnames:
-    data = np.load(os.path.join(halos_dir, fname), allow_pickle=True).item()
+    data = np.load(halos_dir+fname, allow_pickle=True).item()
 
     z            = data['z']
     scale_factor = data['scale_factor']
     h            = data['h']
     rho_c        = data['rho_c']            # [(Msun) / (kpc)^3]
     halo_R_Mean200 = data['halo_R_Mean200'] # [kpc]
+
     if args.bin_type == 'conc':
         bin_data = data['NFW_conc']  
     else:
         bin_data = data[args.bin_type]  
     densities    = data['densities']      # [Msun / (kpc)^3]
-    radial_bins  = data['radial_bins']    # [kpc]
+    radial_bins  = data['radial_bins']    # [kpc] (num halos, num radial bins,)
+    data.pop('mergerz', None)
     del data
+    
+    # Select a subset of halos if bin_data contains NaNs
+    valid_indices = ~np.isnan(bin_data)     
+    radial_bins    = radial_bins[valid_indices, :]  
+    densities      = densities[valid_indices]
+    bin_data       = bin_data[valid_indices]
+    halo_R_Mean200 = halo_R_Mean200[valid_indices]
+    
+
+if args.bin_type == 'mergerz':
+    bins = np.unique(bin_data)
+else:
+    bins = None
 
 # Bootstrap setup
 final_results = bootstrap_all_features(args, 
                                 [z, h, rho_c], 
                                 [radial_bins, densities, bin_data, halo_R_Mean200],
-                                args.bin_type, bin_width=0.2)     
+                                args.bin_type, 
+                                bins=bins,
+                                bin_width=0.2)     
     
     
 # Save the results
