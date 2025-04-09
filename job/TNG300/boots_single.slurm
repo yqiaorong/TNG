@@ -4,8 +4,8 @@
 #SBATCH -p serial_requeue  
 #SBATCH --mem-per-cpu=4000
 #SBATCH --open-mode=append 
-#SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/boots_mergerz/TNG300-Hydro-%A-%a.out
-#SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/boots_mergerz/TNG300-Hydro-%A-%a.err
+#SBATCH -o /n/home01/sqyu/AstroLab/TNG/output/boots_formz/TNG300-Hydro-%A-%a.out
+#SBATCH -e /n/home01/sqyu/AstroLab/TNG/output/boots_formz/TNG300-Hydro-%A-%a.err
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=s_qyu@mit.edu
 
@@ -13,6 +13,5 @@ echo "# Starting at: "$(date)
 echo "# Running on machine: "$(hostname)
 echo "# Running in directory: "$(pwd)
 
-python3 /n/home01/sqyu/AstroLab/TNG/code/bootstrap/bootstrap.py --snapnum 99 --sim TNG300/sim_205_1250_Hydro/ --bin_type mergerz
-
+python3 /n/home01/sqyu/AstroLab/TNG/code/bootstrap/bootstrap.py --sim 'TNG300/sim_205_1250_Hydro/' --snapnum 99 --bin_type formz
 echo "# Ending at: "$(date)

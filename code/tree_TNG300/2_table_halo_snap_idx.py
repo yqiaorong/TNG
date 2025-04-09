@@ -24,17 +24,17 @@ def get_feature_at_snapX(simpath, df, field):
     e.g. SubhaloMass, 
          SubhaloGrNr (the parent halo's local index in snap X)
     """
-    for irow, row in tqdm(df.iterrows(), desc='snaps'):
+    for row_name, row_vals in tqdm(df.iterrows(), desc='snaps'):
 
-        snapnum = int(irow[5:])
-        print(irow)
+        snapnum = int(row_name[5:])
+        print(row_name)
         
         # Load subhalo global index 
         Subhalo = il.groupcat.loadSubhalos(simpath+'output', snapnum, fields=field)
         print(f'{field} loaded')
         # -------------------------------------------------------------------------------------
         # Substitute the subhalo global index with the parent halo index in the snapshot X
-        df.loc[irow] = [Subhalo[int(idx)] if pd.notna(idx) else np.nan for idx in row]
+        df.loc[row_name] = [Subhalo[int(val)] if pd.notna(val) else np.nan for val in row_vals]
  
         # -------------------------------------------------------------------------------------
         print(f'{field} assigned')
@@ -52,7 +52,7 @@ else:
 idx_dir = f'result/DMhalo_table_chunk_idx/TNG300/sim_{boxsize}_{res}_{sim_type}/'
 
 
-# Concatenate all index df
+# Concatenate all subhalo global index df
 df_list = os.listdir(idx_dir)
 tot_df_list = []
 for file in tqdm(df_list, desc='concatenate chunk df'):
@@ -62,6 +62,7 @@ tot_df = pd.concat(tot_df_list, axis=1)
 print(tot_df.shape)
 # Make a copy of tot_df to save the subhalo mass
 tot_df_subhalo = tot_df.copy()
+
 
 # Now change the entries of these subhalo global index to their "halo index in SnapX'
 tot_df = get_feature_at_snapX(basePath, tot_df, 'SubhaloGrNr')

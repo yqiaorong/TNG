@@ -107,6 +107,6 @@ def fit_log_NFW_profile(bin_centers, densities, R_200_mean, idx=None):
     # axs.plot(bin_centers, predicted_values)
     # axs.set_yscale('log')
     # axs.set_xscale('log')
-    # plt.savefig(f'output/Hydro/log_{idx}')
+    # plt.savefig(f'output/MTNG_Hydro/log_{idx}')
     
     return (popt,perr)  

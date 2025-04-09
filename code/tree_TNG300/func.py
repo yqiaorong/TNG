@@ -93,6 +93,7 @@ def get_chunk_and_local_index(simpath, snap, offset_type, global_index, ptype=-1
 
 
 def lifeline(parent_dir, subhalo_global_idx, df, last_snap_idx=99):
+    """lifeline computes the subhalo global index history and stores in pd.Dataframe."""
     import os
     import h5py
     from itertools import count
@@ -165,10 +166,10 @@ def get_field_values_of_lifeline(simpath, df, group_field=None, coords_idx=None)
     import pandas as pd
     import illustris_python as il
     
-    for irow, row in tqdm(df.iterrows(), desc='snaps'):
+    for row_name, row_val in tqdm(df.iterrows(), desc='snaps'):
 
-        snapnum = int(irow[5:])
-        print(irow)
+        snapnum = int(row_name[5:])
+        print(row_name)
     
         # Load halo field
         Halos = il.groupcat.loadHalos(simpath+'output', snapnum, fields=group_field)
@@ -181,9 +182,10 @@ def get_field_values_of_lifeline(simpath, df, group_field=None, coords_idx=None)
         SubhaloGrNr = il.groupcat.loadSubhalos(simpath+'output', snapnum, fields='SubhaloGrNr')
 
         # Substitute the subhalo global index with the parent halo mass
-        df.loc[irow] = [Halos[SubhaloGrNr[int(idx)]] if pd.notna(idx) else np.nan for idx in row]
+        df.loc[row_name] = [Halos[SubhaloGrNr[int(val)]] if pd.notna(val) else np.nan for val in row_val]
     
     return df
+
 
 def calc_tdyn(basePath, snap_dict, current_snap):
     import h5py

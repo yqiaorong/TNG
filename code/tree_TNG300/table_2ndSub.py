@@ -112,6 +112,7 @@ print(FirstSub_df)
 print('')
 del haloIdx_df
 
+
 # The index to the second subhalo is simply the first subhalo index + 1
 SecondSub_df = FirstSub_df + 1
 # Replace the entries where FirstSub_df is NaN with NaN
@@ -119,6 +120,7 @@ SecondSub_df = SecondSub_df.where(pd.notna(FirstSub_df), np.nan)
 print("Loaded GroupSecondSub:")
 print(SecondSub_df)
 print('')
+
 
 # Convert the FirstSub and SecondSub DataFrame to mass
 FirstSubMass_df = get_subhalo_feat_at_snapX(basePath, FirstSub_df, 'SubhaloMass')
@@ -129,6 +131,7 @@ print("Loaded SubhaloMass for SecondSub:")
 print(SecondSubMass_df)
 print('')
 
+
 # Calculate the ratio of subhalo masses
 mass_ratio_df = FirstSubMass_df / SecondSubMass_df
 del FirstSubMass_df, SecondSubMass_df
@@ -138,6 +141,7 @@ print(mass_ratio_df)
 mass_ratio_df = mass_ratio_df.where((mass_ratio_df >= 7) & (mass_ratio_df <= 13), np.nan)
 print("Filtered mass ratio:")
 print(mass_ratio_df)
+
 
 # Save the data as a 1D array which stores the row index / snapshot, which the
 # column entries are most close to 10.
