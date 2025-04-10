@@ -10,7 +10,7 @@ import illustris_python as il
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',default=205,   type=int)
 parser.add_argument('--res',    default=1250,  type=int)
-parser.add_argument('--sim_type', default=None,type=str)
+parser.add_argument('--sim_type', default='Hydro',type=str)
 parser.add_argument('--bin_start',default=1,   type=float) # [10^{10+x} Msun/h]
 parser.add_argument('--bin_end',  default=4.5, type=float) # [10^{10+x} Msun/h]
 args = parser.parse_args()

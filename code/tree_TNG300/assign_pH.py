@@ -34,7 +34,7 @@ elif 'Hydro' in args.sim:
 
 # Load the halo mass table
 load_halo_dir = f'result/DMhalo_table_mass/{args.sim}/'
-haloMass_df = pd.read_csv(f'{load_halo_dir}/halo_mass_table.csv', index_col=0)
+haloMass_df = pd.read_csv(f'{load_halo_dir}/halo_mass_table.csv', index_col=0) # Comoving mass
 print("Loaded haloMass:")
 print(haloMass_df)
 print('')        
@@ -91,6 +91,7 @@ for fname in halos_fnames:
     data = np.load(halos_dir+fname, allow_pickle=True).item()
     data['formz'] = crossing_z
     print(data['formz'].shape, data['halo_M_Mean200'].shape)
+    data.pop('formation_time', None)
     print(data.keys())
     np.save(halos_dir+fname, data)
     print('data saved! ')
