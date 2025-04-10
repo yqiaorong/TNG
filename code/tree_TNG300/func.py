@@ -157,7 +157,7 @@ def lifeline(parent_dir, subhalo_global_idx, df, last_snap_idx=99):
                 D_idx = Descendant[D_idx]
     pass
     # return df
-
+  
 
 def get_field_values_of_lifeline(simpath, df, group_field=None, coords_idx=None):
     """Only specify the coordinates idx of group_fields includes GroupPos"""
@@ -166,23 +166,23 @@ def get_field_values_of_lifeline(simpath, df, group_field=None, coords_idx=None)
     import pandas as pd
     import illustris_python as il
     
-    for row_name, row_val in tqdm(df.iterrows(), desc='snaps'):
+    for row_name, row_vals in tqdm(df.iterrows(), desc='snaps'):
 
         snapnum = int(row_name[5:])
         print(row_name)
     
         # Load halo field
-        Halos = il.groupcat.loadHalos(simpath+'output', snapnum, fields=group_field)
+        Halos = il.groupcat.loadHalos(simpath+'/output', snapnum, fields=group_field)
         if group_field == 'GroupPos':
             Halos = Halos[:, coords_idx]
         else:
             pass
         
         # Load subhalo global index 
-        SubhaloGrNr = il.groupcat.loadSubhalos(simpath+'output', snapnum, fields='SubhaloGrNr')
+        SubhaloGrNr = il.groupcat.loadSubhalos(simpath+'/output', snapnum, fields='SubhaloGrNr')
 
         # Substitute the subhalo global index with the parent halo mass
-        df.loc[row_name] = [Halos[SubhaloGrNr[int(val)]] if pd.notna(val) else np.nan for val in row_val]
+        df.loc[row_name] = [Halos[SubhaloGrNr[int(val)]] if pd.notna(val) else np.nan for val in row_vals]
     
     return df
 
@@ -193,15 +193,7 @@ def calc_tdyn(basePath, snap_dict, current_snap):
     import astropy.units as u
     import illustris_python as il
     from astropy.cosmology import Planck15, z_at_value, FlatLambdaCDM
-    
-    # # Load redshifts in the snap_list
-    # z_list = []
-    # for snap in snap_list:
-    #     with h5py.File(il.snapshot.snapPath(basePath, int(snap[5:])), 'r') as f:
-    #         header = dict(f['Header'].attrs.items())
-    #         scale_factor = header['Time']
-    #         z = 1 / scale_factor - 1
-    #     z_list.append(z)
+
     
     # Load the current snapshot redshift
     with h5py.File(il.snapshot.snapPath(basePath, current_snap), 'r') as f:
@@ -218,10 +210,11 @@ def calc_tdyn(basePath, snap_dict, current_snap):
     
     t = cosmo.age(current_z) # The cosmological time at current snapshot / z
     H = cosmo.H(current_z)   # The Hubble parameter at current snapshot / z
+    Om = cosmo.Om(current_z) # The Omega m at current snapshot / z
     
     # Cosmological dynamic time
     t_H   = 1 / H
-    t_dyn = t_H / (5 * np.sqrt(Om0))
+    t_dyn = t_H / (5 * np.sqrt(Om))
     t_dyn = t_dyn.to('yr').value * 1E-9 # t_dyn in unit Gyr
     print(f"One dynamical time: {t_dyn} Gyr at current z = {current_z}")
     

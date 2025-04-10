@@ -8,7 +8,7 @@ from func import calc_tdyn
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim_type', default=None, type=str)
+parser.add_argument('--sim_type', default='Hydro', type=str)
 args = parser.parse_args()
 
 # input
