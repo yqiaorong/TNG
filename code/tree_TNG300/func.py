@@ -1,111 +1,110 @@
 # This function is quoted from Thesan offsets documentation so never change any of it.
 
-def get_global_index(simpath, snap, offset_type, local_index, chunk):
+# def get_global_index(simpath, snap, offset_type, local_index, chunk):
 
-    """
-    Returns the global index (i.e. across all chunks, considered sequentially) of a particle/group/subgroup.
+#     """
+#     Returns the global index (i.e. across all chunks, considered sequentially) of a particle/group/subgroup.
 
-    Parameters
-    ----------
-    simpath      : string
-                   path to the base simulation directory
-    snap         : int
-                   number of the snapshot to consider
-    offset_type  : string
-                   string identifying the type of object considered. Accepted values: 'particle', 'group', 'subhalo'
-    local_index  : int
-                   index of the object in the chunk file
-    chunk        : int
-                   number of the chunk file the object resides in
+#     Parameters
+#     ----------
+#     simpath      : string
+#                    path to the base simulation directory
+#     snap         : int
+#                    number of the snapshot to consider
+#     offset_type  : string
+#                    string identifying the type of object considered. Accepted values: 'particle', 'group', 'subhalo'
+#     local_index  : int
+#                    index of the object in the chunk file
+#     chunk        : int
+#                    number of the chunk file the object resides in
 
-    Returns
-    -------
-    global_index  : int
-                    index of the object across all chunk files
-    """
+#     Returns
+#     -------
+#     global_index  : int
+#                     index of the object across all chunk files
+#     """
     
-    import h5py
+#     import h5py
 
-    assert(offset_type in ['particle', 'group', 'subhalo'])
-    if offset_type == 'particle':
-        offset_file_key = 'FileOffsets/SnapByType'
-    elif offset_type == 'group':
-        offset_file_key = 'FileOffsets/Group'
-    elif offset_type == 'subhalo':
-        offset_file_key = 'FileOffsets/Subhalo'
+#     assert(offset_type in ['particle', 'group', 'subhalo'])
+#     if offset_type == 'particle':
+#         offset_file_key = 'FileOffsets/SnapByType'
+#     elif offset_type == 'group':
+#         offset_file_key = 'FileOffsets/Group'
+#     elif offset_type == 'subhalo':
+#         offset_file_key = 'FileOffsets/Subhalo'
 
-    with h5py.File(f'{simpath}/postprocessing/offsets/offsets_{snap:03d}.hdf5', 'r') as offset_file:
-        global_index = offset_file[offset_file_key][chunk] + local_index
+#     with h5py.File(f'{simpath}/postprocessing/offsets/offsets_{snap:03d}.hdf5', 'r') as offset_file:
+#         global_index = offset_file[offset_file_key][chunk] + local_index
 
-    return global_index
+#     return global_index
 
 
-def get_chunk_and_local_index(simpath, snap, offset_type, global_index, ptype=-1):
+# def get_chunk_and_local_index(simpath, snap, offset_type, global_index, ptype=-1):
 
-    """
-    Returns the chunk file number and local index (i.e. within the chunk file) of a particle/group/subgroup.
+#     """
+#     Returns the chunk file number and local index (i.e. within the chunk file) of a particle/group/subgroup.
 
-    Parameters
-    ----------
-    simpath       : string
-                    path to the base simulation directory
-    snap          : int
-                    number of the snapshot to consider
-    offset_type   : string
-                    string identifying the type of object considered. Accepted values: 'particle', 'group', 'subhalo'
-    global_index  : int
-                    index of the object across all chunk files
-    ptype         : int, required for offset_type == 'particle', ignored otherwise
-                  : particle type
+#     Parameters
+#     ----------
+#     simpath       : string
+#                     path to the base simulation directory
+#     snap          : int
+#                     number of the snapshot to consider
+#     offset_type   : string
+#                     string identifying the type of object considered. Accepted values: 'particle', 'group', 'subhalo'
+#     global_index  : int
+#                     index of the object across all chunk files
+#     ptype         : int, required for offset_type == 'particle', ignored otherwise
+#                   : particle type
 
-    Returns
-    -------
-    chunk        : int
-                   number of the first chunk file the object resides in
-    local_index  : int
-                   index of the object in the chunk file
-    """
+#     Returns
+#     -------
+#     chunk        : int
+#                    number of the first chunk file the object resides in
+#     local_index  : int
+#                    index of the object in the chunk file
+#     """
     
-    import h5py
-    import numpy as np
+#     import h5py
+#     import numpy as np
     
-    assert(offset_type in ['particle', 'group', 'subhalo'])
-    if offset_type == 'particle':
-        assert(ptype>=0 and ptype<6)
+#     assert(offset_type in ['particle', 'group', 'subhalo'])
+#     if offset_type == 'particle':
+#         assert(ptype>=0 and ptype<6)
     
     
-    if offset_type == 'particle':
-        offset_file_key = 'FileOffsets/SnapByType'
-    elif offset_type == 'group':
-        offset_file_key = 'FileOffsets/Group'
-    elif offset_type == 'subhalo':
-        offset_file_key = 'FileOffsets/Subhalo'
+#     if offset_type == 'particle':
+#         offset_file_key = 'FileOffsets/SnapByType'
+#     elif offset_type == 'group':
+#         offset_file_key = 'FileOffsets/Group'
+#     elif offset_type == 'subhalo':
+#         offset_file_key = 'FileOffsets/Subhalo'
 
-    with h5py.File(f'{simpath}/postprocessing/offsets/offsets_{snap:03d}.hdf5', 'r') as offset_file:
-        if offset_type == 'particle':
-            chunk = np.where(offset_file[offset_file_key][:, ptype] <= global_index)[0][-1]
-            local_index = global_index - offset_file[offset_file_key][chunk, ptype]
-        else:
-            chunk = np.where(offset_file[offset_file_key][()]       <= global_index)[0][-1]
-            local_index = global_index - offset_file[offset_file_key][chunk]
-        print(offset_file[offset_file_key])
-    return chunk, local_index
+#     with h5py.File(f'{simpath}/postprocessing/offsets/offsets_{snap:03d}.hdf5', 'r') as offset_file:
+#         if offset_type == 'particle':
+#             chunk = np.where(offset_file[offset_file_key][:, ptype] <= global_index)[0][-1]
+#             local_index = global_index - offset_file[offset_file_key][chunk, ptype]
+#         else:
+#             chunk = np.where(offset_file[offset_file_key][()]       <= global_index)[0][-1]
+#             local_index = global_index - offset_file[offset_file_key][chunk]
+#         print(offset_file[offset_file_key])
+#     return chunk, local_index
 
 
 def lifeline(parent_dir, subhalo_global_idx, df, last_snap_idx=99):
     """lifeline computes the subhalo global index history and stores in pd.Dataframe."""
     import os
     import h5py
-    from itertools import count
     
     ### Find subhalo with global index's position in MergerTree ###
     # Offsets
     offset_path = os.path.join(parent_dir, f'postprocessing/offsets/offsets_{last_snap_idx:03d}.hdf5')
     with h5py.File(offset_path, 'r') as f:
         
-        File = f['Subhalo/LHaloTree/File']
-        Num = f['Subhalo/LHaloTree/Num']
-        Index = f['Subhalo/LHaloTree/Index']
+        File = f['Subhalo/LHaloTree/File'][:]
+        Num = f['Subhalo/LHaloTree/Num'][:]
+        Index = f['Subhalo/LHaloTree/Index'][:]
         
         tree_chunk_idx = File[subhalo_global_idx]
         treeX = Num[subhalo_global_idx]
@@ -114,12 +113,12 @@ def lifeline(parent_dir, subhalo_global_idx, df, last_snap_idx=99):
         # print(f'Subhalo gobal index {subhalo_global_idx} is stored in tree chunk file index: {tree_chunk_idx}.')
         # print(f'In tree chunk file index {tree_chunk_idx}, the subhalo is stored in Tree{treeX}.')
         # print(f'In Tree{treeX}, the subhalo has index: {subhalo_intreeX_idx}.')
-        
+    
+    # enter the global index of current subhalo into the dataframe
     if tree_chunk_idx == -1:
         df.loc[f'snap_{last_snap_idx}', f'global_idx_{subhalo_global_idx}'] = subhalo_global_idx
         
     else: 
-        # enter the global index of current subhalo into the dataframe
         df.loc[f'snap_{last_snap_idx}', f'global_idx_{subhalo_global_idx}'] = subhalo_global_idx
         
         ### Finding the lifeline of global index ###
@@ -133,33 +132,51 @@ def lifeline(parent_dir, subhalo_global_idx, df, last_snap_idx=99):
             Descendant = f[f'Tree{treeX}/Descendant']
             FirstProgenitor = f[f'Tree{treeX}/FirstProgenitor']
             
-            # Initials: these are the index of first progenitor and descendant within TreeX
-            FP_idx = FirstProgenitor[subhalo_intreeX_idx]
-            D_idx = Descendant[subhalo_intreeX_idx]
-            
-            # Set up the iterator 
-            iterator = count(0, 1)
-            
             # First progenitor
-            for item in iterator:
-                if FP_idx == -1:
-                    break
+            FP_idx = FirstProgenitor[subhalo_intreeX_idx]
+            while FP_idx != -1:
                 df.loc[f'snap_{SnapNum[FP_idx]}', f'global_idx_{subhalo_global_idx}'] = SubhaloNumber[FP_idx]
                 # Update FP_idx
                 FP_idx = FirstProgenitor[FP_idx]
                 
             # Descendant
-            for item in iterator:
-                if D_idx == -1:
-                    break
+            D_idx = Descendant[subhalo_intreeX_idx]
+            while D_idx != -1:
                 df.loc[f'snap_{SnapNum[D_idx]}', f'global_idx_{subhalo_global_idx}'] = SubhaloNumber[D_idx]
                 # Update D_idx
                 D_idx = Descendant[D_idx]
-    pass
-    # return df
+                
+    return df
   
 
-def get_field_values_of_lifeline(simpath, df, group_field=None, coords_idx=None):
+def get_halo_index_of_lifeline(simpath, df):
+    """Only specify the coordinates idx of group_fields includes GroupPos"""
+    from tqdm import tqdm
+    import numpy as np
+    import pandas as pd
+    import illustris_python as il
+    
+    for row_name, row_vals in tqdm(df.iterrows(), desc='snaps'):
+
+        snapnum = int(row_name[5:])
+        print(row_name)
+        
+        # Load subhalo global index 
+        SubhaloGrNr = il.groupcat.loadSubhalos(simpath+'/output', snapnum, fields='SubhaloGrNr')
+        
+        # Make a dictionary between SubhaloGrNr and parent halo group_field.
+        mapping = {subhalo_idx: SubhaloGrNr[subhalo_idx]
+                    for subhalo_idx in range(len(SubhaloGrNr))
+                    if SubhaloGrNr[subhalo_idx] >= 0}
+
+        # Substitute the subhalo global index with the parent halo index
+        df.loc[row_name] = [mapping.get(int(val), np.nan) if pd.notna(val) else np.nan
+                            for val in row_vals]
+    
+    return df
+
+
+def get_group_field_of_lifeline(simpath, df, group_field=None, coords_idx=None):
     """Only specify the coordinates idx of group_fields includes GroupPos"""
     from tqdm import tqdm
     import numpy as np
@@ -175,14 +192,37 @@ def get_field_values_of_lifeline(simpath, df, group_field=None, coords_idx=None)
         Halos = il.groupcat.loadHalos(simpath+'/output', snapnum, fields=group_field)
         if group_field == 'GroupPos':
             Halos = Halos[:, coords_idx]
-        else:
-            pass
-        
-        # Load subhalo global index 
-        SubhaloGrNr = il.groupcat.loadSubhalos(simpath+'/output', snapnum, fields='SubhaloGrNr')
+            
+        # Create mapping:
+        mapping = {i: Halos[i] for i in range(len(Halos))}
 
-        # Substitute the subhalo global index with the parent halo mass
-        df.loc[row_name] = [Halos[SubhaloGrNr[int(val)]] if pd.notna(val) else np.nan for val in row_vals]
+        # Replace halo index with corresponding mass
+        df.loc[row_name] = [mapping.get(int(val), np.nan) if pd.notna(val) else np.nan
+                            for val in row_vals]
+    
+    return df
+
+
+def get_subhalo_field_of_lifeline(simpath, df, subhalo_field=None):
+    from tqdm import tqdm
+    import numpy as np
+    import pandas as pd
+    import illustris_python as il
+    
+    for row_name, row_vals in tqdm(df.iterrows(), desc='snaps'):
+
+        snapnum = int(row_name[5:])
+        print(row_name)
+    
+        # Load halo field
+        Subhalos = il.groupcat.loadSubhalos(simpath+'/output', snapnum, fields=subhalo_field)
+            
+        # Create mapping:
+        mapping = {i: Subhalos[i] for i in range(len(Subhalos))}
+
+        # Replace halo index with corresponding mass
+        df.loc[row_name] = [mapping.get(int(val), np.nan) if pd.notna(val) else np.nan
+                            for val in row_vals]
     
     return df
 

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import illustris_python as il
 import h5py
+from tqdm import tqdm
 import os
 import argparse
 from colossus.cosmology import cosmology
@@ -14,7 +15,7 @@ cosmology.setCosmology('planck15')
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim', default='TNG300/sim_205_1250_Hydro/', type=str) # [TNG300/MTNG]
+parser.add_argument('--sim', default='TNG300/sim_205_1250_Hydro/', type=str) 
 args = parser.parse_args()
 
 print('')
@@ -33,8 +34,8 @@ elif 'Hydro' in args.sim:
     
 
 # Load the halo mass table
-load_halo_dir = f'result/DMhalo_table_mass/{args.sim}/'
-haloMass_df = pd.read_csv(f'{load_halo_dir}/halo_mass_table.csv', index_col=0) # Comoving mass
+load_halo_dir = f'result/DMhalo_table/{args.sim}/'
+haloMass_df = pd.read_csv(f'{load_halo_dir}/halo_mass_table.csv', index_col=0) # Comoving mass!!!
 print("Loaded haloMass:")
 print(haloMass_df)
 print('')        
@@ -68,15 +69,40 @@ print(pH_df)
 print('')
 
 
+
+# ----------------------------------------------------------------------------
 # Save the data as a 1D array which stores the row index / snapshot, which the
 # column entries are most close to 1.
+# ----------------------------------------------------------------------------
+
 abs_diff = (pH_df - 1).abs()
-select_rows = abs_diff.idxmin(skipna=True)
+
+threshold = 0.1  
+
+select_rows = []
+for col in tqdm(abs_diff.columns):
+    col_data = abs_diff[col]
+    non_nan = col_data.dropna()
+    
+    if len(non_nan) == 0:
+        # 全是NaN，返回NaN
+        select_rows.append(np.nan)
+    elif len(non_nan) == 1:
+        # 只有一个有效值，判断是否太远
+        if non_nan.iloc[0] > threshold:
+            select_rows.append(np.nan)
+        else:
+            select_rows.append(non_nan.index[0])
+    else:
+        # 正常使用 idxmin
+        select_rows.append(col_data.idxmin())
+
+
 
 # Convert the crossing snaps to redshifts
 crossing_z = np.array([snaps_dict[snap] if pd.notna(snap) else np.nan
-             for snap in select_rows.to_numpy()
-             ])
+                        for snap in select_rows
+                        ])
 del abs_diff, select_rows
 
 # Check the number of non-NaN crossing redshifts
@@ -91,7 +117,6 @@ for fname in halos_fnames:
     data = np.load(halos_dir+fname, allow_pickle=True).item()
     data['formz'] = crossing_z
     print(data['formz'].shape, data['halo_M_Mean200'].shape)
-    data.pop('formation_time', None)
     print(data.keys())
     np.save(halos_dir+fname, data)
     print('data saved! ')

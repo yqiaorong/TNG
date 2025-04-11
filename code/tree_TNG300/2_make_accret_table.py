@@ -26,7 +26,7 @@ elif sim_type == 'Hydro':
 
 
 # Load mass csv
-df = pd.read_csv(f'result/DMhalo_table_mass/TNG300/sim_{boxsize}_{res}_{sim_type}/halo_mass_table.csv', index_col=0)
+df = pd.read_csv(f'result/DMhalo_table/TNG300/sim_{boxsize}_{res}_{sim_type}/halo_mass_table.csv', index_col=0)
 
 # Create a dictionary of redshifts
 snap_list = df.index
@@ -75,7 +75,7 @@ rate_df.index = snap_list
     
 
 # Save the accretion rate df
-save_mass_dir = f'result/DMhalo_table_mass/TNG300/sim_{boxsize}_{res}_{sim_type}'
+save_mass_dir = f'result/DMhalo_table/TNG300/sim_{boxsize}_{res}_{sim_type}'
 if not os.path.exists(save_mass_dir):
     os.makedirs(save_mass_dir)
-rate_df.to_csv(f'{save_mass_dir}/accretion_table_new.csv', index=True)
+rate_df.to_csv(f'{save_mass_dir}/accretion_table.csv', index=True)
