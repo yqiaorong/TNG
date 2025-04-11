@@ -30,8 +30,7 @@ def init_bins(array_1d, bin_width, bin_start=None, bin_end=None):
     
 # Bootstrap setup
 def bootstrap_all_features(args, params, data, 
-                           bin_type, bins=None, bin_start=None, bin_end=None, bin_width=None, 
-                           formation_z=None):
+                           bin_type, bins=None, bin_start=None, bin_end=None, bin_width=None):
     
     z, h, rho_c = params[0], params[1], params[2]
     radial_bins, densities, bin_vals, halo_R_Mean200 = data[0], data[1], data[2], data[3]
@@ -143,8 +142,6 @@ def bootstrap_all_features(args, params, data,
                 
         # Get the statistical results 
         final_results = {'z': z, 'h': h, f'{bin_type}_bins': bins[:-1]}
-        if formation_z is not None:
-            final_results['formation_z'] = formation_z
         final_results[f'med_{bin_type}'] = np.percentile(results[:, 0, :], [16, 50, 84], axis=1)
         final_results['Rsp']            = np.percentile(results[:, 1, :], [16, 50, 84], axis=1)
         final_results['depth']          = np.percentile(results[:, 2, :], [16, 50, 84], axis=1)
