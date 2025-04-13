@@ -5,20 +5,19 @@ from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
 from func import *
 
+bin_type = 'mass'
 print('')
-print('>>> Plot depth and width vs mass <<<')
+print(f'>>> Plot depth and width vs {bin_type} <<<')
 print('')
 
-root_dir = 'result/bootstrap_stats/with_mass/'
-simus = ['Hydro', 'DM']
-features = [# abs_depth', 
-            'width_dimless',
-           'depth', 
-            ]
+root_dir = f'result/bootstrap_stats/with_{bin_type}/'
+simus = ['Hydro']
+features = ['width_dimless', 'depth']
 
 # ============================================================================================
 # Define the fitting function with two variables
 # ============================================================================================
+
 def mass_depth(inputs, a, d, e, f):
     mass, zval = inputs    
     return e + f*zval + d*np.log10(mass)/(zval+1) + a*np.log10(mass) 
@@ -26,6 +25,8 @@ def mass_depth(inputs, a, d, e, f):
 def mass_width(inputs, a, b, c, d, A, B, C, D):
     x, zval = inputs
     return a*(zval+1)**A + b*(zval+1)**B*np.log10(x) + c*(zval+1)**C*np.log10(x)**2 + d*zval + D*np.exp(-zval**2)*np.log10(x)**3
+
+
 
 for simu in simus:
     for feature in features:
@@ -56,7 +57,7 @@ for simu in simus:
         
         # Set up the colorbar
         # -----------------------------------------------------------------------------------------
-        cmap = plt.get_cmap('managua', len(TNG300_snaps))
+        cmap = plt.get_cmap('viridis', len(TNG300_snaps))
         bound = all_z
         norm = BoundaryNorm(bound, cmap.N)
         cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
@@ -133,6 +134,7 @@ for simu in simus:
                                               fit_func, [axs, cmap, norm],
                                               all_x_min, all_x_max, )
         print(popt)
+        
         # ============================================================================================
         # Save the plot
         # ============================================================================================
@@ -147,7 +149,7 @@ for simu in simus:
             Y_label = r"$\mathcal{D}$"
         axs.set_ylabel(Y_label)
         axs.legend(loc='best')
-        save_dir = f'result/paper_plots/'
+        save_dir = f'result/paper_plots/fig3/'
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 

@@ -7,14 +7,12 @@ import h5py
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--DM',       default=None,type=str)
+parser.add_argument('--DM',       default='Hydro',type=str)
 parser.add_argument('--snapnum',  default=None, type=int)
-parser.add_argument('--bin_start',default=1,    type=float)
-parser.add_argument('--bin_end',  default=None, type=float)
 args = parser.parse_args()
 
 print('')
-print('>>> Compile chunk files of DM density profiles <<<')
+print('>>> Compile chunk files of DM halo density profiles <<<')
 print('\nInput arguments:')
 for key, val in vars(args).items():
 	print('{:16} {}'.format(key, val))
@@ -27,15 +25,15 @@ boxsize = 205
 res = 1250
 data_path = '/n/holylfs05/LABS/hernquist_lab/IllustrisTNG/Runs/'
 if args.DM == 'DM':
-    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'_DM/output/'
+    basePath = data_path + 'L%dn%dTNG'%(205, 1250)+'_DM/output/'
 elif args.DM == 'Hydro':
-    basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'/output/'
+    basePath = data_path + 'L%dn%dTNG'%(205, 1250)+'/output/'
 
 
 
 # Make mass cuts
-bin_start = args.bin_start
-bin_end = args.bin_end
+bin_start = 1
+bin_end = 5
 print(f'The current mass range: 10^{bin_start+10} ~ 10^{bin_end+10} MSun/h')
 
 
@@ -53,33 +51,33 @@ with h5py.File(il.snapshot.snapPath(basePath, snap), 'r') as f:
 
 # Halos data root dir
 halos_dir = f'result/{root_dir}/sim_{boxsize}_{res}_{args.DM}/snap_{snap}/densities'
-
-# First round of rough selection of halos based on M200
-Group_M_Mean200 = il.groupcat.loadHalos(basePath, snap, fields='Group_M_Mean200')
-subset_idx = np.where((Group_M_Mean200 >= 10**bin_start) & (Group_M_Mean200 < 10**bin_end))[0]
-halos_list = [f'halo_{idx}.npy' for idx in subset_idx]
+halos_list = os.listdir(halos_dir)
 print(f'The total halo numbers: {len(halos_list)}')
-del Group_M_Mean200
 
 if len(halos_list) == 0:
     pass 
 else:
     total_R200, total_M200, total_rho, total_r = [], [], [], []
+    total_GrNr, total_FirstSub = [], []
     ### Compile density profiles 
-    for ihalo, halo in enumerate(tqdm(halos_list)):
+    for halo in tqdm(halos_list):
         data = np.load(f'{halos_dir}/{halo}', allow_pickle=True).item()
         
         total_R200.append(data['halo_R_Mean200'])
         total_M200.append(data['halo_M_Mean200'])
         total_rho.append(data['densities'])
         total_r.append(data['radial_bins'])
+        total_GrNr.append(data['GroupNum'])
+        total_FirstSub.append(data['GroupFirstSub'])
 
     total_R200 = np.array(total_R200)
     total_M200 = np.array(total_M200)
     total_rho = np.array(total_rho)
     total_r = np.array(total_r)
+    total_GrNr = np.array(total_GrNr)
+    total_FirstSub = np.array(total_FirstSub)
 
-    print(total_rho.shape, total_r.shape, total_R200.shape, total_M200.shape, subset_idx.shape)
+    print(total_rho.shape, total_r.shape, total_R200.shape, total_M200.shape, total_GrNr.shape, total_FirstSub.shape)
 
 
 
@@ -88,7 +86,10 @@ else:
                 'halo_M_Mean200':  total_M200, # [10^10 Msun/h]
                 'densities':       total_rho,  # [(Msun/h)/(ckpc/h)^3]
                 'radial_bins':     total_r,    # [ckpc/h]
+                'GroupNum':        total_GrNr,
+                'FirstSub':        total_FirstSub,
                 'h': h, 'scale_factor': scale_factor, 'z': z}  
+    print(save_dict.keys())
 
     save_dir = f'result/DMhalo_density_profiles_raw2/TNG300/sim_{boxsize}_{res}_{args.DM}/snap_{snap}/final_densities/'
     if not os.path.exists(save_dir):

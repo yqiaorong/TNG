@@ -7,9 +7,9 @@ import numpy as np
 parser = argparse.ArgumentParser()
 parser.add_argument('--boxsize',  default=205, type=int)
 parser.add_argument('--res',      default=1250,type=int)
-parser.add_argument('--sim_type', default=None,type=str)
+parser.add_argument('--sim_type', default='Hydro',type=str)
 parser.add_argument('--bin_start',default=1,   type=float)
-parser.add_argument('--bin_end',  default=4.5, type=float)
+parser.add_argument('--bin_end',  default=5, type=float)
 args = parser.parse_args()
 
 print('')
@@ -29,7 +29,8 @@ elif args.sim_type == 'Hydro':
     basePath = data_path + 'L%dn%dTNG'%(args.boxsize,args.res)+'/output/'
 
 # Select a subset of DM halos
-snaps = [8, 13, 17, 21, 25, 33, 40, 50, 67, 78, 99]
+snaps = [# 8, 13, 
+         17, 21, 25, 33, 40, 50, 67, 78, 99]
 for s in snaps:
     Halos = il.groupcat.loadHalos(basePath, s, fields='Group_M_Mean200')
     subset_idx = np.where((Halos >= 10**args.bin_start) & 

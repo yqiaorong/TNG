@@ -13,7 +13,7 @@ print('>>> Plot the absolute depth and width vs mass at z = 0 <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_mass/'
-simus = ['DM', 'Hydro']
+simus = ['Hydro']
 
 # ============================================================================================
 # Set up the plot
@@ -37,7 +37,7 @@ all_z = load_all_z(TNG300_dir, TNG300_snaps)
 
 # Set up the colorbar
 # -----------------------------------------------------------------------------------------
-cmap = plt.get_cmap('managua', len(TNG300_snaps))
+cmap = plt.get_cmap('viridis', len(TNG300_snaps))
 bound = all_z
 norm = BoundaryNorm(bound, cmap.N)
 cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
@@ -73,7 +73,7 @@ for simu in simus:
         plot_feature(simu, MTNG_z, MTNG_mass, MTNG_widths, [axs[1], cmap, norm])
 
 axs[0].set_xscale('log')
-axs[0].set_ylabel(r"|$\mathcal{D}$|")
+axs[0].set_ylabel(r"$\mathcal{D}$")
 
 axs[1].set_xscale('log')
 axs[1].set_xlabel('Mass [$M_\\odot$]')

@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
     
+    
 def load_stats(dir, fname, xlabel, ylabel, bin_val='z'):
     data = np.load(f'{dir}/{fname}', allow_pickle=True).item()
 
@@ -16,6 +17,20 @@ def load_stats(dir, fname, xlabel, ylabel, bin_val='z'):
     y_dict = {'median': y, f'min': ymin, f'max': ymax}
     return z, x_dict, y_dict
 
+def plot_feature(simu, z, x_dict, y_dict, plot_info):
+    axs, cmap, norm = plot_info
+    if simu == 'DM':
+        ls = '--'
+    else:
+        ls = '-'
+                    
+    # axs.plot(x_dict['median'], y_dict['median'], color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
+    axs.errorbar(x_dict['median'], y_dict['median'],
+                    xerr=[x_dict['median']-x_dict['min'], x_dict['max']-x_dict['median']],
+                    yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
+                    color=cmap(norm(z)), fmt='.')
+        
+        
 # Define the fitting with two variables
 def fitting(bins, x, y, ymin, ymax, func, plot_info, xmin=None, xmax=None):
     from scipy.odr import Model, RealData, ODR
@@ -102,19 +117,6 @@ def load_stats_per_bin(dir, fname_format, fname_val,
 
     return all_x, y_dict
 
-def plot_feature(simu, z, x_dict, y_dict, plot_info):
-    axs, cmap, norm = plot_info
-    if simu == 'DM':
-        ls = '--'
-    else:
-        ls = '-'
-                    
-    # axs.plot(x_dict['median'], y_dict['median'], color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
-    axs.errorbar(x_dict['median'], y_dict['median'],
-                    xerr=[x_dict['median']-x_dict['min'], x_dict['max']-x_dict['median']],
-                    yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
-                    color=cmap(norm(z)), fmt='.')
-        
 def plot_feature_vs_z(simu, bin_val, all_x, y_dict, plot_info):
    
     if len(all_x) == 0:
@@ -128,6 +130,7 @@ def plot_feature_vs_z(simu, bin_val, all_x, y_dict, plot_info):
         axs.errorbar(all_x, y_dict['median'],
                      yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
                      color=cmap(norm(bin_val)), fmt='.')
+
 
 def get_bins(min_bin, max_bin, bin_width):
     num_bins = int((max_bin - min_bin)/bin_width)
@@ -172,111 +175,111 @@ def character_mass(char_r, char_rho):
 
 # Fitting
 
-def x_z_fit_d(X, redshifts, Y, Yerr, axs, cmap, norm):
-    from scipy.optimize import curve_fit
+# def x_z_fit_d(X, redshifts, Y, Yerr, axs, cmap, norm):
+#     from scipy.optimize import curve_fit
     
-    def func(Inputs, a, b, c, d, e, f, g, h, i):
-        """Params:
-            Inputs: (x, redshifts)
-        """
-        x, z = Inputs
-        return a*x + b*z + d + c*x/(z-e) + f*z*(x-g*z)**2 + h*z/(x-i*z)
+#     def func(Inputs, a, b, c, d, e, f, g, h, i):
+#         """Params:
+#             Inputs: (x, redshifts)
+#         """
+#         x, z = Inputs
+#         return a*x + b*z + d + c*x/(z-e) + f*z*(x-g*z)**2 + h*z/(x-i*z)
 
-    popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*9, maxfev=10000)
+#     popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*9, maxfev=10000)
     
-    Y_fit = func((X, redshifts), *popt)
+#     Y_fit = func((X, redshifts), *popt)
 
-    # Calculate the reduced chi-square
-    if np.ndim(Yerr) == 2:
-       Yerr = np.mean(Yerr, axis=0)
+#     # Calculate the reduced chi-square
+#     if np.ndim(Yerr) == 2:
+#        Yerr = np.mean(Yerr, axis=0)
        
-    # Compute effective errors
-    red_chi2 = np.sum((Y - Y_fit)**2 / Yerr**2) / (len(Y) - len(popt))
-    # Plot
-    for z in np.unique(redshifts):
-        iz = np.where(redshifts == z)[0]
-        if 0 in iz:
-            axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
-        else:
-            axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), ls='--')
+#     # Compute effective errors
+#     red_chi2 = np.sum((Y - Y_fit)**2 / Yerr**2) / (len(Y) - len(popt))
+#     # Plot
+#     for z in np.unique(redshifts):
+#         iz = np.where(redshifts == z)[0]
+#         if 0 in iz:
+#             axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
+#         else:
+#             axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), ls='--')
 
-    # Confidence interval
-    perr = np.sqrt(np.diag(pcov))
+#     # Confidence interval
+#     perr = np.sqrt(np.diag(pcov))
 
-    dof = max(1, len(Y)-len(popt)) 
+#     dof = max(1, len(Y)-len(popt)) 
     
-    # 99% confidence level
-    from scipy.stats import t
-    alpha = 0.01 
-    t_score = t.ppf(1 - alpha/2, dof)
+#     # 99% confidence level
+#     from scipy.stats import t
+#     alpha = 0.01 
+#     t_score = t.ppf(1 - alpha/2, dof)
 
-    # Confidence interval = popt ± (t-score * std_err)
-    ci_lower = popt - t_score * perr
-    ci_upper = popt + t_score * perr
+#     # Confidence interval = popt ± (t-score * std_err)
+#     ci_lower = popt - t_score * perr
+#     ci_upper = popt + t_score * perr
 
-    # Print results
-    for i, (p, lo, up) in enumerate(zip(popt, ci_lower, ci_upper)):
-        print(f"Parameter {i}: {p:.4f} (99% CI: {lo:.4f} to {up:.4f})")
+#     # Print results
+#     for i, (p, lo, up) in enumerate(zip(popt, ci_lower, ci_upper)):
+#         print(f"Parameter {i}: {p:.4f} (99% CI: {lo:.4f} to {up:.4f})")
 
-def x_z_fit_w(X, redshifts, Y,Yerr, axs, cmap, norm):
-    from scipy.optimize import curve_fit
+# def x_z_fit_w(X, redshifts, Y,Yerr, axs, cmap, norm):
+#     from scipy.optimize import curve_fit
     
-    def func(Inputs, a, b, d, A, D, E, F):
-        """Params:
-            Inputs: (x, redshifts)
-        """
-        x, z = Inputs
-        return a*x + b*z + d + A*x**2 + D*z**3 + F*x**2*z + E*x*z**2 # + G*z/x  
+#     def func(Inputs, a, b, d, A, D, E, F):
+#         """Params:
+#             Inputs: (x, redshifts)
+#         """
+#         x, z = Inputs
+#         return a*x + b*z + d + A*x**2 + D*z**3 + F*x**2*z + E*x*z**2 # + G*z/x  
     
-    # def func(Inputs, a, d, A, G):
-    #     """Params:
-    #         Inputs: (x, redshifts)
-    #     """
-    #     x, z = Inputs
-    #     return a*x + d + A*x**2 + G/x 
+#     # def func(Inputs, a, d, A, G):
+#     #     """Params:
+#     #         Inputs: (x, redshifts)
+#     #     """
+#     #     x, z = Inputs
+#     #     return a*x + d + A*x**2 + G/x 
     
-    # def func(Inputs, a, b, c, d, e):
-    #     """Params:
-    #             Inputs: (x, redshifts)
-    #     """
-    #     x, z = Inputs
-    #     return a*z/x*np.tanh(-b*z*(x-d)) + c*np.tanh(-e*x)
+#     # def func(Inputs, a, b, c, d, e):
+#     #     """Params:
+#     #             Inputs: (x, redshifts)
+#     #     """
+#     #     x, z = Inputs
+#     #     return a*z/x*np.tanh(-b*z*(x-d)) + c*np.tanh(-e*x)
     
-    # def func(Inputs, a, b, c, e):
-    #     """Params:
-    #         Inputs: (x, redshifts)
-    #     """
-    #     x, z = Inputs
-    #     return (z/x+c)*np.exp(-(a*(x-e)**2)/b)+1/x
+#     # def func(Inputs, a, b, c, e):
+#     #     """Params:
+#     #         Inputs: (x, redshifts)
+#     #     """
+#     #     x, z = Inputs
+#     #     return (z/x+c)*np.exp(-(a*(x-e)**2)/b)+1/x
 
-    popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*7, maxfev=10000)
+#     popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*7, maxfev=10000)
     
-    Y_fit = func((X, redshifts), *popt)
+#     Y_fit = func((X, redshifts), *popt)
 
-    # Calculate the reduced chi-square
-    red_chi2 = np.sum((Y - Y_fit)**2 / Yerr**2) / (len(Y) - len(popt))
-    # Plot
-    for z in np.unique(redshifts):
-        iz = np.where(redshifts == z)[0]
-        if 0 in iz:
-            axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
-        else:
-            axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), ls='--')
-    # axs.scatter(X, Y_fit, c=cmap(norm(np.round(z, 2))), marker='x', s=20,
-    #             label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+#     # Calculate the reduced chi-square
+#     red_chi2 = np.sum((Y - Y_fit)**2 / Yerr**2) / (len(Y) - len(popt))
+#     # Plot
+#     for z in np.unique(redshifts):
+#         iz = np.where(redshifts == z)[0]
+#         if 0 in iz:
+#             axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
+#         else:
+#             axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), ls='--')
+#     # axs.scatter(X, Y_fit, c=cmap(norm(np.round(z, 2))), marker='x', s=20,
+#     #             label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
     
-    # 99% confidence level
-    from scipy.stats import t
-    perr = np.sqrt(np.diag(pcov))
-    dof = max(1, len(Y)-len(popt))
+#     # 99% confidence level
+#     from scipy.stats import t
+#     perr = np.sqrt(np.diag(pcov))
+#     dof = max(1, len(Y)-len(popt))
     
-    alpha = 0.01 
-    t_score = t.ppf(1 - alpha/2, dof)
+#     alpha = 0.01 
+#     t_score = t.ppf(1 - alpha/2, dof)
 
-    # Confidence interval = popt ± (t-score * std_err)
-    ci_lower = popt - t_score * perr
-    ci_upper = popt + t_score * perr
+#     # Confidence interval = popt ± (t-score * std_err)
+#     ci_lower = popt - t_score * perr
+#     ci_upper = popt + t_score * perr
 
-    # Print results
-    for i, (p, lo, up) in enumerate(zip(popt, ci_lower, ci_upper)):
-        print(f"Parameter {i}: {p:.4f} (99% CI: {lo:.4f} to {up:.4f})")
+#     # Print results
+#     for i, (p, lo, up) in enumerate(zip(popt, ci_lower, ci_upper)):
+#         print(f"Parameter {i}: {p:.4f} (99% CI: {lo:.4f} to {up:.4f})")

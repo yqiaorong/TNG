@@ -19,6 +19,7 @@ parser.add_argument('--z', default=0,  type=float) # [ckpc/h]
 # Halo mass and radius
 parser.add_argument('--M', default=0,  type=float) # [10^10 Msun/h]
 parser.add_argument('--R', default=0,  type=float) # [ckpc/h]
+parser.add_argument('--FirstSub', default=0,  type=float) 
 
 parser.add_argument('--save_root_dir', default=None,  type=str)
 args = parser.parse_args()
@@ -56,13 +57,11 @@ with h5py.File(il.snapshot.snapPath(basePath, snapnum), 'r') as f:
     scale_factor = header['Time']
     h = header['HubbleParam']
     DMmass = header['MassTable'][1] * 10**10 # [MSun / h]
-    print('DM mass:', DMmass)
     # BoxSize = header['BoxSize'] # [ckpc / h]
     
 
 
 # Select DM halo
-groupnum       = args.groupnum
 haloPos        = [args.x, args.y, args.z] # [ckpc / h]
 halo_M_Mean200 = args.M                   # [10^10 Msun / h]
 halo_R_Mean200 = args.R                   # [ckpc / h]
@@ -71,7 +70,9 @@ halo_R_Mean200 = args.R                   # [ckpc / h]
 save_dict = {'halo_R_Mean200': halo_R_Mean200, # [ckpc / h]
              'halo_M_Mean200': halo_M_Mean200, # [10^10 Msun / h]
              'h': h, 'scale_factor': scale_factor, 
-             'DMmass': DMmass                  # [MSun / h]
+             'DMmass': DMmass,                 # [MSun / h]
+             'GroupNum': args.groupnum,
+             'GroupFirstSub': args.FirstSub
              }
 
 
@@ -127,13 +128,9 @@ save_data_dir = os.path.join(save_dir, 'densities')
 if not os.path.exists(save_data_dir):
     os.makedirs(save_data_dir)
     
-save_plt_dir = os.path.join(save_dir, 'profiles')
-if not os.path.exists(save_plt_dir):
-    os.makedirs(save_plt_dir)
-    
     
     
 # Save data
 save_dict['radial_bins'] = radial_bins  # [ckpc/h]
 save_dict['densities'] = sum_densities_bins # [(Msun/h) / (ckpc/h)^3]
-np.save(os.path.join(save_data_dir, f'halo_{groupnum}'), save_dict)
+np.save(os.path.join(save_data_dir, f'halo_{args.groupnum}'), save_dict)

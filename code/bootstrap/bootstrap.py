@@ -32,7 +32,10 @@ for fname in halos_fnames:
     h            = data['h']
     rho_c        = data['rho_c']            # [(Msun) / (kpc)^3]
     halo_R_Mean200 = data['halo_R_Mean200'] # [kpc]
-    bin_data = data[args.bin_type]  
+    if args.bin_type == 'mass':
+        bin_data = data['halo_M_Mean200']    # [Msun]
+    else:
+        bin_data = data[args.bin_type]  
     densities    = data['densities']      # [Msun / (kpc)^3]
     radial_bins  = data['radial_bins']    # [kpc] (num halos, num radial bins,)
     del data
@@ -51,26 +54,39 @@ for fname in halos_fnames:
     bin_data       = bin_data[valid_indices]
     halo_R_Mean200 = halo_R_Mean200[valid_indices]
     print(f'Valid data shape: {bin_data.shape}')
-    
-if args.bin_type in ['mergerz', 'formz']:
-    bins = np.unique(bin_data)
-    if args.bin_type == 'formz':
-        bins = bins[:-1]
+
+
+
+# NGWconc: 5; peakHeight: 0.2; accretions: 0.5.
+if args.bin_type == 'acrretions':
+    bin_start, bin_end, bin_width = 1, 6, 0.5
+elif args.bin_type == 'NFWconc':
+    bin_start, bin_end, bin_width = 0, 40, 2
+elif args.bin_type == 'peakHeight':
+    bin_start, bin_end, bin_width = 0, 6, 0.2
+elif args.bin_type in ['formz', 'mergerz']:
+    bin_start, bin_end, bin_width = 0, 4, 0.1
 else:
-    bins = None
-
-# Bootstrap setup
-final_results = bootstrap_all_features(args, 
-                                [z, h, rho_c], 
-                                [radial_bins, densities, bin_data, halo_R_Mean200],
-                                args.bin_type, 
-                                # bins=bins,                                        # For mergerz, formz only
-                                bin_width = 0.5                                   # NGWconc: 10; peakHeight: 0.2; accretions: 0.5.
-                                ) 
+    bin_start, bin_end, bin_width = None, None, None
     
-# Save the results
-save_stats_dir = f'result/bootstrap_stats/with_{args.bin_type}/{args.sim}/Nboots_{args.Nboots}/'
-if not os.path.exists(save_stats_dir):
-    os.makedirs(save_stats_dir)
+    
+    
+if bin_data.shape[0] == 0:
+    print('No valid data found!')
+    exit()
+else:
+    # Bootstrap setup
+    final_results = bootstrap_all_features(args, 
+                                            [z, h, rho_c], 
+                                            [radial_bins, densities, bin_data, halo_R_Mean200],
+                                            args.bin_type,                                       
+                                            bin_start=bin_start, bin_end=bin_end, bin_width=bin_width                             
+                                            ) 
+        
+    # Save the results
+    save_stats_dir = f'result/bootstrap_stats/with_{args.bin_type}/{args.sim}/Nboots_{args.Nboots}/'
+    if not os.path.exists(save_stats_dir):
+        os.makedirs(save_stats_dir)
 
-np.save(save_stats_dir+f'snap_{args.snapnum}_Rsp_stats', final_results)
+    np.save(save_stats_dir+f'snap_{args.snapnum}_Rsp_stats', final_results)
+    print('Saved!')

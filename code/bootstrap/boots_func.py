@@ -2,44 +2,55 @@ from func import *
 import numpy as np
 import math
 
-def init_bins(array_1d, bin_width, bin_start=None, bin_end=None):
+def init_bins(args, array_1d, bins, bin_width=None, bin_start=None, bin_end=None):
     
     # Set up the bins
-    min_bin, max_bin = np.min(array_1d), np.max(array_1d)
-    if bin_start is None:
-        bin_start, bin_end = math.floor(min_bin*2)/2, math.ceil(max_bin*2)/2
-    bins = np.arange(bin_start, bin_end+bin_width, bin_width)
-    print('bins: ', bins)
-    
+    if bins is None:
+        if args.bin_type == 'mass':
+            # Logspace
+            bin_start, bin_end, bin_width = 1, 5, 0.5
+            bins = np.logspace(bin_start, bin_end, num=int((bin_end - bin_start) / bin_width) + 1)
+            print(bins)
+        else:
+            if bin_start is None or bin_end is None:
+                min_bin, max_bin = np.min(array_1d), np.max(array_1d)
+                bin_start, bin_end = math.floor(min_bin*2)/2, math.ceil(max_bin*2)/2
+            if bin_width is None:
+                # Ask to enter bin_width
+                bin_width = float(input(f'Enter bin width for {args.bin_type}: '))
+            bins = np.arange(bin_start, bin_end+bin_width, bin_width)
+            print('old bins: ', bins)
+
     # Check the number of halos in the largest bin. if it's less than 2, reject this bin
     new_bins = []
-    for b in bins[:-1]:
-        num_halos_in_bin = np.where((array_1d >= b) & (array_1d < b+bin_width))[0].shape[0]
+    for ib, b in enumerate(bins[:-1]):
+        num_halos_in_bin = np.where((array_1d >= b) & (array_1d < bins[ib+1]))[0].shape[0]
         if num_halos_in_bin > 50:
             new_bins.append(b)
             
     if len(new_bins) != 0:
-        new_bins.append(new_bins[-1]+bin_width)
+        if args.bin_type == 'mass':
+            new_bins.append(10**(np.log10(new_bins[-1])+bin_width))
+        else:
+            new_bins.append(new_bins[-1]+bin_width)
     else:
+        print('No valid bins found!')
         exit()
     del bins
-        
-    print('bins: ', new_bins)
-
+    
+    print('new bins: ', new_bins)
     return new_bins
     
 # Bootstrap setup
 def bootstrap_all_features(args, params, data, 
-                           bin_type, bins=None, bin_start=None, bin_end=None, bin_width=None):
+                           bin_type, bins=None, bin_width=None, bin_start=None, bin_end=None):
     
     z, h, rho_c = params[0], params[1], params[2]
     radial_bins, densities, bin_vals, halo_R_Mean200 = data[0], data[1], data[2], data[3]
     total_num_halos = bin_vals.shape[0]
     
-    if bins is None:
-        bins = init_bins(bin_vals, bin_width, bin_start, bin_end)
-    print('')
-    
+    bins = init_bins(args, bin_vals, bins=bins, bin_width=bin_width, bin_start=bin_start, bin_end=bin_end)
+
     if len(bins) != 0:
         # Initialize the results
         num_bins = len(bins) - 1
@@ -156,6 +167,7 @@ def bootstrap_all_features(args, params, data,
         
     return final_results
 
+
 def plot_profile(radius, 
                  rho, rho_err, 
                  slope, slope_err, 
@@ -218,6 +230,7 @@ def plot_profile(radius,
     #     if not os.path.exists(data_dir):
     #        os.makedirs(data_dir)
     #     np.save(os.path.join(data_dir, fname), data)
+
 
 def fit_density_profile(args, radii, densities, targets, r200, bin_start, bin_end, rho_c):
     # Select halos in the cut and compute density profiles

@@ -12,6 +12,12 @@ elif bin_type == 'NFWconc':
     xlabel = r'$R_{200m}/R_s$'
 elif bin_type == 'mergerz':
     xlabel = r'$z_{\rm merger}$'
+elif bin_type == 'formz':
+    xlabel = r'$z_{\rm form}$'
+elif bin_type in ['accretions', 'accretionsOLD', 'accret']:
+    xlabel = r'$\Gamma$'
+elif bin_type == 'mass':
+    xlabel = r'$M_{\odot}$'
     
 print('')
 print(f'>>> Plot depth and width vs {bin_type} <<<')
@@ -36,9 +42,11 @@ for simu in simus:
         # ============================================================================================
         
         if bin_type in ['mergerz', 'formz']:
-            TNG300_snaps = [99]
+            TNG300_snaps = [99, 78, 67, 50]
             MTNG_snaps = [264]
-            
+        elif bin_type in ['accretions']:
+            TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
+            MTNG_snaps = [264, 237, 214, 179, 151, 129]
         else:
             TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
             MTNG_snaps = [264, 237, 214, 179, 151, 129]
@@ -49,10 +57,12 @@ for simu in simus:
         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
         
         all_z = load_all_z(TNG300_dir, TNG300_snaps)
-        
+        if bin_type in ['mergerz', 'formz']:
+            all_z = np.linspace(min(all_z), max(all_z), 10)
+            
         # Set up the colorbar
         # -----------------------------------------------------------------------------------------
-        cmap = plt.get_cmap('managua', len(TNG300_snaps))
+        cmap = plt.get_cmap('viridis', len(all_z))
         if len(all_z) == 1:
             bound = [all_z[0], all_z[0]+0.1]
         else:
@@ -75,50 +85,26 @@ for simu in simus:
         # ============================================================================================
         # Plot
         # ============================================================================================
-        
-        # all_z, all_x_med, all_x_min, all_x_max = [], [], [], []
-        # all_y_med, all_y_min, all_y_max = [], [], []
               
-        # Plot TNG300
-        if bin_type in ['mergerz', 'formz']:
-            TNG300_snaps = [99]
-            MTNG_snaps = [264]
-        
+        # Plot TNG300       
         for snap in TNG300_snaps:
             TNG300_z, TNG300_bin_data, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy',  
                                                             f'med_{bin_type}', feature)
             plot_feature(simu, TNG300_z, TNG300_bin_data, TNG300_feat, [axs, cmap, norm])
             
-            # # Append the data
-            # all_x_med.append(TNG300_bin_data['median'])
-            # all_x_min.append(TNG300_bin_data['min'])
-            # all_x_max.append(TNG300_bin_data['max'])
-            # all_y_med.append(TNG300_feat['median'])
-            # all_y_min.append(TNG300_feat['min'])
-            # all_y_max.append(TNG300_feat['max'])
-            # # Duplicate z to the same length as the data
-            # all_z.append([TNG300_z]*len(TNG300_bin_data['median']))
-            
-        # Plot MTNG
-        for snap in MTNG_snaps:
-            MTNG_z, MTNG_bin_data, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
-                                                      f'med_{bin_type}', feature)            
-            plot_feature(simu, MTNG_z, MTNG_bin_data, MTNG_feat, [axs, cmap, norm])
-            
-        #     # Append the data
-        #     all_x_med.append(MTNG_bin_data['median'])
-        #     all_x_min.append(MTNG_bin_data['min'])
-        #     all_x_max.append(MTNG_bin_data['max'])
-        #     all_y_med.append(MTNG_feat['median'])
-        #     all_y_min.append(MTNG_feat['min'])
-        #     all_y_max.append(MTNG_feat['max'])
-        #     # Duplicate z to the same length as the data
-        #     all_z.append([MTNG_z]*len(MTNG_bin_data['median']))
+        # # Plot MTNG
+        # for snap in MTNG_snaps:
+        #     MTNG_z, MTNG_bin_data, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
+        #                                               f'med_{bin_type}', feature)            
+        #     plot_feature(simu, MTNG_z, MTNG_bin_data, MTNG_feat, [axs, cmap, norm])
+
         
         # ============================================================================================
         # Save the plot
         # ============================================================================================
         
+        if bin_type == 'mass':
+            axs.set_xscale('log')
         axs.set_xlabel(xlabel)
         if feature == 'abs_depth':
             Y_label = r"|$\mathcal{D}$|"
@@ -128,7 +114,7 @@ for simu in simus:
             Y_label = r"$\mathcal{D}$"
         axs.set_ylabel(Y_label)
         # axs.legend(loc='best')
-        save_dir = f'result/paper_plots/'
+        save_dir = f'result/paper_plots/fig3/'
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 

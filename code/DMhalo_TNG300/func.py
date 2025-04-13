@@ -51,13 +51,7 @@ def distance(x0, x1, dimensions):
     delta = np.where(delta > 0.5 * dimensions, dimensions - delta, delta)
     return np.sqrt((delta ** 2).sum(axis=-1))
 
-# def compt_density_profile_hist(coordinates, mass_weights, haloPos, radial_bins):
-    
-#     radii = np.sqrt(np.sum(coordinates-haloPos, axis=1)**2) # [ckpc/h]
-#     radial_volumes = 4/3*np.pi * (radial_bins[1:]**3 - radial_bins[:-1]**3) # [(ckpc/h)^3]
-#     densities = np.histogram(radii,radial_bins,weights=mass_weights)[0] / radial_volumes # [Msun/h / (ckpc/h)^3]
-#     return densities
-
+import os
 import numpy as np
 from scipy.optimize import curve_fit
 
@@ -66,7 +60,7 @@ def log_NFW_profile(r,
                 R_s):
     return np.log10(rho_0 / ((1 + r/R_s)**2 * (r/R_s)))
     
-def fit_log_NFW_profile(bin_centers, densities, R_200_mean, idx=None):
+def fit_log_NFW_profile(args, bin_centers, densities, R_200_mean, M_200_mean, plot=False, idx=None):
     
     def wrapped_log_NFW_profile(r:float, 
                                 rho_0:float, 
@@ -86,27 +80,38 @@ def fit_log_NFW_profile(bin_centers, densities, R_200_mean, idx=None):
                             maxfev=1000000)
     perr = np.diag(pcov) ** 0.5
     
-    # # Did we actually get a good fit? If not, we should dump this bootstrapping.
-    # predicted_values = wrapped_log_NFW_profile(bin_centers, *popt)
-    # new_chi_square = chi_square(predicted_values)
-    # # If we get a worse fit after tuning, cancel this one
-    # old_chi_square = chi_square(wrapped_log_NFW_profile(bin_centers, *base_p0))
-    # print(new_chi_square, old_chi_square)
+    if plot == True:
     
-    # if old_chi_square < new_chi_square:
-    #     pass
-    #   #  raise RuntimeError("Extremely poor fit for this bootstrap")
-    # elif new_chi_square > 2.0:
-    #     print("Bad Fit!")
-    #   #  raise RuntimeError("Extremely poor fit for this bootstrap")
-    
-    # # Plot densities
-    # from matplotlib import pyplot as plt
-    # fig, axs = plt.subplots(1,1)
-    # axs.scatter(bin_centers, densities)
-    # axs.plot(bin_centers, predicted_values)
-    # axs.set_yscale('log')
-    # axs.set_xscale('log')
-    # plt.savefig(f'output/MTNG_Hydro/log_{idx}')
+        # Did we actually get a good fit? If not, we should dump this bootstrapping.
+        predicted_values = wrapped_log_NFW_profile(bin_centers, *popt)
+        # new_chi_square = chi_square(predicted_values)
+        # # If we get a worse fit after tuning, cancel this one
+        # old_chi_square = chi_square(wrapped_log_NFW_profile(bin_centers, *base_p0))
+        # print(new_chi_square, old_chi_square)
+        
+        # if old_chi_square < new_chi_square:
+        #     pass
+        #   #  raise RuntimeError("Extremely poor fit for this bootstrap")
+        # elif new_chi_square > 2.0:
+        #     print("Bad Fit!")
+        #   #  raise RuntimeError("Extremely poor fit for this bootstrap")
+        
+        # Plot densities
+        from matplotlib import pyplot as plt
+        fig, axs = plt.subplots(1,1)
+        axs.scatter(bin_centers, densities)
+        axs.plot(bin_centers, predicted_values)
+        print('bin centers', bin_centers.shape)
+        # Plot vertical line at R_s
+        axs.axvline(x=popt[1], color='red', linestyle='--', label=f'R_s = {popt[1]:.2f}')
+        axs.axvline(x=R_200_mean, color='blue', linestyle='--', label=f'R_200 = {R_200_mean:.2f}')
+        axs.text(0.1, 0.1, f'M200 = {M_200_mean:.2e}', transform=axs.transAxes)
+        axs.legend()
+        axs.set_yscale('log')
+        axs.set_xscale('log')
+        save_dir = args.sim
+        if not os.path.exists(f'output/{save_dir}'):
+            os.makedirs(f'output/{save_dir}')
+        plt.savefig(f'output/{save_dir}/log_{idx}')
     
     return (popt,perr)  

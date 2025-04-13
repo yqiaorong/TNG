@@ -9,11 +9,12 @@ print('')
 print('>>> Plot depth and width vs accretion rate <<<')
 print('')
 
-root_dir = 'result/bootstrap_stats/with_accret/'
-simus = ['Hydro','DM']
+bin_type = 'accretions'
+root_dir = f'result/bootstrap_stats/with_{bin_type}/'
+simus = ['Hydro']
 features = ['width_dimless', 
             #'abs_depth',
-           # 'depth'
+           'depth'
             ]
 upper_limit = 6
     
@@ -60,7 +61,7 @@ for simu in simus:
 
         # Set up the colorbar
         # -----------------------------------------------------------------------------------------
-        cmap = plt.get_cmap('managua', len(TNG300_snaps))
+        cmap = plt.get_cmap('viridis', len(TNG300_snaps))
         bound = all_z
         norm = BoundaryNorm(bound, cmap.N)
         cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
@@ -86,7 +87,7 @@ for simu in simus:
         for snap in TNG300_snaps:  
 
             TNG300_z, TNG300_accret, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy', 
-                                                            'med_accret', feature)
+                                                             f'med_{bin_type}', feature)
             # Filter out data greater than 6
             mask = TNG300_accret['median'] <= upper_limit
             TNG300_accret['median'] = TNG300_accret['median'][mask]
@@ -112,7 +113,7 @@ for simu in simus:
         # for snap in MTNG_snaps:
 
         #     MTNG_z, MTNG_accret, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
-        #                                               'med_accret', feature)
+        #                                               f'med_{bin_type}', feature)
         #     # Filter out data greater than 6
         #     mask = MTNG_accret['median'] <= upper_limit
         #     MTNG_accret['median'] = MTNG_accret['median'][mask]
@@ -178,5 +179,5 @@ for simu in simus:
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        plt.savefig(f'{save_dir}/fig3_accret_{simu}_{feature}')
+        plt.savefig(f'{save_dir}/fig3_{bin_type}_{simu}_{feature}')
         plt.close()
