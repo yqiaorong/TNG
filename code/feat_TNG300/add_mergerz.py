@@ -68,10 +68,7 @@ for fname in halos_fnames:
     
     # Find last merger time
     mergerz = []
-    # for current_mass, subhalo_id in tqdm(
-    #                                     zip(data['halo_M_Mean200'][start:end], data['FirstSub'][start:end]),
-    #                                     total = end-start, desc = f"Rank {rank}" # Physical mass!
-    #                                     ):
+
     for current_mass, subhalo_id in tqdm(zip(data['halo_M_Mean200'][:5], data['FirstSub'][:5]), 
                                          total=len(data['FirstSub'])):
         # Find the first subhalo history
@@ -110,16 +107,16 @@ for fname in halos_fnames:
                         NP_s, NP_gr_id = snapnums[NPIndex], group_ids[NPIndex]
                         print(NP_gr_id, NP_s)
                         
-                        # Find the NP group mass
-                        NP_mass = il.groupcat.loadSingle(basePath, NP_s, haloID=NP_gr_id)
-                        NP_mass = NP_mass['Group_M_Mean200'] # Comoving mass!
+                    # Find the NP group mass
+                    NP_mass = il.groupcat.loadSingle(basePath, NP_s, haloID=NP_gr_id)
+                    NP_mass = NP_mass['Group_M_Mean200'] # Comoving mass!
+                    
+                    # Find the current group mass
+                    sub_mass = il.groupcat.loadSingle(basePath, sub_s, haloID=sub_gr_id)
+                    sub_mass = sub_mass['Group_M_Mean200'] # Comoving mass!
                         
-                        # Find the current group mass
-                        sub_mass = il.groupcat.loadSingle(basePath, sub_s, haloID=sub_gr_id)
-                        sub_mass = sub_mass['Group_M_Mean200'] # Comoving mass!
-                        
-                        f_result['NPmass'].append(NP_mass)
-                        f_result['Grmass'].append(sub_mass)
+                    f_result['NPmass'].append(NP_mass)
+                    f_result['Grmass'].append(sub_mass)
             print(f_result)
             print('')
             

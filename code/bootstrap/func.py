@@ -218,8 +218,7 @@ def density_profile(
     rho_g: float,
     b_e: float,
     S_e: float,
-    R_200_mean: float,
-) -> float:
+    R_200_mean: float,) -> float:
 
     rho_inner = rho_s * np.exp(-(2.0 / alpha) * (np.power(r / r_s, alpha) - 1.0))
     f_trans = np.power(1.0 + np.power(r / r_t, beta), -gamma / beta)
@@ -228,6 +227,7 @@ def density_profile(
     rho = rho_inner * f_trans + rho_outer
 
     return np.log10(rho)
+
 
 def density_gradient_profile(
     r: float,
@@ -240,8 +240,7 @@ def density_gradient_profile(
     rho_g: float,
     b_e: float,
     S_e: float,
-    R_200_mean: float,
-) -> float:
+    R_200_mean: float,) -> float:
 
     rho_inner = rho_s * np.exp(-(2.0 / alpha) * (np.power(r / r_s, alpha) - 1.0))
     f_trans = np.power(1.0 + np.power(r / r_t, beta), -gamma / beta)
@@ -260,6 +259,7 @@ def density_gradient_profile(
 
     return (r / rho) * d_rho_dr
 
+
 def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
     """
     Fits a profile in log-log spce based on Equation 6 in
@@ -276,10 +276,10 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
 
     log_rho = np.log10(densities / (R_200_mean ** 3))
 
-    log_rho_upper = np.log10((densities + density_errors) / (R_200_mean ** 3))
-    log_rho_lower = np.log10(np.maximum((densities - density_errors) / (R_200_mean ** 3), 0.01 * densities / (R_200_mean ** 3)))
+    # log_rho_upper = np.log10((densities + density_errors) / (R_200_mean ** 3))
+    # log_rho_lower = np.log10(np.maximum((densities - density_errors) / (R_200_mean ** 3), 0.01 * densities / (R_200_mean ** 3)))
 
-    log_rho_error = 0.5 * (log_rho_upper - log_rho_lower)
+    # log_rho_error = 0.5 * (log_rho_upper - log_rho_lower)
 
     def wrapped_profile(
         r: float,
@@ -454,6 +454,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                     return (
                         evaluate_profile_at,
                         10 ** wrapped_profile(evaluate_profile_at * R_200_mean, *popt) * R_200_mean ** 3,
+                        popt,
                     )
                 
                 # Entire curve fit error
@@ -462,6 +463,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                     return (
                         evaluate_profile_at,
                         np.array([0]),
+                        np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
                     )   
             
             # Ftrans curve fit error
@@ -470,6 +472,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
                 return (
                     evaluate_profile_at,
                     np.array([0]),
+                    np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
                 )           
             
         # Outer curve fit error
@@ -478,6 +481,7 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
             return (
                 evaluate_profile_at,
                 np.array([0]),
+                np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
             )
         
     # Inner curve fit error
@@ -486,4 +490,71 @@ def fit_profile_parametric(bin_centers, densities, density_errors, R_200_mean):
         return (
             evaluate_profile_at,
             np.array([0]),
+            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
+        )
+        
+        
+        
+def fit_gradient_parametric(bin_centers, gradients, gradients_errors, R_200_mean, init_p0):
+
+    # Global mask
+    global_mask = bin_centers > 0.02
+
+    ### First, fit inner profile. ###
+    r = bin_centers * R_200_mean
+    
+    def wrapped_gradients(
+        r: float,
+        rho_s: float,
+        r_s: float,
+        alpha: float,
+        r_t: float,
+        beta: float,
+        gamma: float,
+        rho_g: float,
+        b_e: float,
+        S_e: float,
+        R_200_mean: float,
+    ):
+        return density_gradient_profile(
+            r=r,
+            rho_s=rho_s,
+            r_s=r_s,
+            r_t=r_t,
+            alpha=alpha,
+            beta=beta,
+            gamma=gamma,
+            rho_g=rho_g,
+            b_e=b_e,
+            S_e=S_e,
+            R_200_mean=R_200_mean,
+        )
+    
+    try:
+        popt, _ = curve_fit(
+            density_gradient_profile,
+            r,
+            gradients,
+            p0=[*init_p0, R_200_mean],
+            # sigma=log_rho_error[inner_mask],
+            # # For some reason bounds make this go very wrong.
+            # bounds=(
+            #     [1e-10 * 10**log_rho[0], 0.001 * R_200_mean, 0.0],
+            #     [np.inf, 10.0 * R_200_mean, 1]
+            # ),
+            maxfev=1000000,
+        )       
+        print('Successfully found optimal params! ')
+        return (
+            evaluate_profile_at,
+            wrapped_gradients(evaluate_profile_at*R_200_mean, *popt) * R_200_mean ** 3,
+            popt,
+        )
+        
+    except RuntimeError as e:
+        print(f"Warning: Optimal parameters not found for gradient profile. Error: {e}")
+        return (
+            evaluate_profile_at,
+            np.array([0]),
+            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
         )

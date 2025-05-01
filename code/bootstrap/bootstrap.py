@@ -5,7 +5,7 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',      default=None, type=str)
+parser.add_argument('--sim',      default='MTNG/Hydro-Arepo/MTNG-L500-4320-A/', type=str)
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--Nsample',  default=10000,type=int)
 parser.add_argument('--Nboots',   default=1024, type=int)
@@ -58,19 +58,28 @@ for fname in halos_fnames:
 
 
 # NGWconc: 5; peakHeight: 0.2; accretions: 0.5.
-if args.bin_type == 'acrretions':
+if args.bin_type == 'accretions':
     bin_start, bin_end, bin_width = 1, 6, 0.5
 elif args.bin_type == 'NFWconc':
     bin_start, bin_end, bin_width = 0, 40, 2
 elif args.bin_type == 'peakHeight':
     bin_start, bin_end, bin_width = 0, 6, 0.2
-elif args.bin_type in ['formz', 'mergerz']:
-    bin_start, bin_end, bin_width = 0, 4, 0.1
+elif args.bin_type in ['formz', 'formzOLD', 'formzSub']:
+    bin_start, bin_end, bin_width = 0, 4, 0.5
+elif args.bin_type == 'mergerz':
+    bin_start, bin_end, bin_width = 0, 10, 0.5
 else:
     bin_start, bin_end, bin_width = None, None, None
     
+# Check the number of halos in each bin
+if bin_start is not None:
+    for i in range(int((bin_end - bin_start) / bin_width)):
+        bin_min = bin_start + i * bin_width
+        bin_max = bin_min + bin_width
+        count = np.sum((bin_data >= bin_min) & (bin_data < bin_max))
+
     
-    
+
 if bin_data.shape[0] == 0:
     print('No valid data found!')
     exit()
@@ -79,7 +88,7 @@ else:
     final_results = bootstrap_all_features(args, 
                                             [z, h, rho_c], 
                                             [radial_bins, densities, bin_data, halo_R_Mean200],
-                                            args.bin_type,                                       
+                                            args.bin_type, plot_bin_type_name=args.bin_type,                                      
                                             bin_start=bin_start, bin_end=bin_end, bin_width=bin_width                             
                                             ) 
         

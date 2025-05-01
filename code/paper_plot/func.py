@@ -7,6 +7,7 @@ def load_stats(dir, fname, xlabel, ylabel, bin_val='z'):
 
     z = np.round(data[bin_val], 3)
     x, xmin, xmax = data[xlabel][1], data[xlabel][0], data[xlabel][2]
+    print(x)
     if xlabel == 'med_mass':
         x = np.array([10**10*m for m in x])
         xmin = np.array([10**10*m for m in xmin])
@@ -17,22 +18,23 @@ def load_stats(dir, fname, xlabel, ylabel, bin_val='z'):
     y_dict = {'median': y, f'min': ymin, f'max': ymax}
     return z, x_dict, y_dict
 
-def plot_feature(simu, z, x_dict, y_dict, plot_info):
+def plot_feature(simu, z, x_dict, y_dict, plot_info, label=None, ls='.'):
     axs, cmap, norm = plot_info
-    if simu == 'DM':
-        ls = '--'
-    else:
-        ls = '-'
-                    
-    # axs.plot(x_dict['median'], y_dict['median'], color=cmap(norm(z)), lw=1, alpha=0.5, linestyle=ls) 
-    axs.errorbar(x_dict['median'], y_dict['median'],
+                     
+    if label==None:
+        axs.errorbar(x_dict['median'], y_dict['median'],
                     xerr=[x_dict['median']-x_dict['min'], x_dict['max']-x_dict['median']],
                     yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
-                    color=cmap(norm(z)), fmt='.')
+                    color=cmap(norm(z)), fmt=ls)
+    else:
+        axs.errorbar(x_dict['median'], y_dict['median'],
+                    xerr=[x_dict['median']-x_dict['min'], x_dict['max']-x_dict['median']],
+                    yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
+                    color=cmap(norm(z)), fmt=ls, label=label)
         
         
 # Define the fitting with two variables
-def fitting(bins, x, y, ymin, ymax, func, plot_info, xmin=None, xmax=None):
+def fitting(bin_type, feature, bins, x, y, ymin, ymax, func, plot_info, xmin=None, xmax=None):
     from scipy.odr import Model, RealData, ODR
     from scipy.optimize import curve_fit
     
@@ -63,7 +65,9 @@ def fitting(bins, x, y, ymin, ymax, func, plot_info, xmin=None, xmax=None):
     
     # Plot the fitting
     axs, cmap, norm = plot_info
-
+    
+    # fitted data
+    fitx, fity, fitbin = [], [], []
     for uniq_bin in np.unique(bins):
         ib = np.where(uniq_bin == bins)[0]
         if 0 in ib:
@@ -73,64 +77,74 @@ def fitting(bins, x, y, ymin, ymax, func, plot_info, xmin=None, xmax=None):
         else:
             idx = np.argsort(x[ib])
             axs.plot(x[ib][idx], y_fit[ib][idx], c=cmap(norm(uniq_bin)), ls='--')
-   
-    return popt, red_chi2, y_fit, axs
-    
-def load_stats_per_bin(dir, fname_format, fname_val, 
-                       xlabel, ylabel, bin_name, bin_start_val):
-    
-    all_x, all_y, all_y_min, all_y_max = [], [], [], []
-    
-    for val in fname_val:
-        data = np.load(dir+fname_format.format(val), allow_pickle=True).item()
+        fitx.append(x[ib][idx])
+        fity.append(y_fit[ib][idx])
+        fitbin.append(np.repeat(uniq_bin, len(x[ib][idx])))
 
-        bins = data[bin_name]
-        bin_start_idx =  np.where(bins == bin_start_val)[0]
+    fitted_data = {
+        bin_type: np.concatenate(fitx),
+        feature: np.concatenate(fity),
+        'z': np.concatenate(fitbin),
+        'red_chi2': red_chi2
+    }
+   
+    return popt, perr, red_chi2, y_fit, axs, fitted_data
+    
+    
+# def load_stats_per_bin(dir, fname_format, fname_val, 
+#                        xlabel, ylabel, bin_name, bin_start_val):
+    
+#     all_x, all_y, all_y_min, all_y_max = [], [], [], []
+    
+#     for val in fname_val:
+#         data = np.load(dir+fname_format.format(val), allow_pickle=True).item()
+
+#         bins = data[bin_name]
+#         bin_start_idx =  np.where(bins == bin_start_val)[0]
         
-        if len(bin_start_idx) == 0:
-            pass
-        else:
-            x = np.round(data[xlabel], 3)
+#         if len(bin_start_idx) == 0:
+#             pass
+#         else:
+#             x = np.round(data[xlabel], 3)
             
-            y, ymin, ymax = data[ylabel][1], data[ylabel][0], data[ylabel][2]
+#             y, ymin, ymax = data[ylabel][1], data[ylabel][0], data[ylabel][2]
             
-            # Select the corresponding bin vals
-            y, ymin, ymax = y[bin_start_idx], ymin[bin_start_idx], ymax[bin_start_idx]
+#             # Select the corresponding bin vals
+#             y, ymin, ymax = y[bin_start_idx], ymin[bin_start_idx], ymax[bin_start_idx]
            
-            # Append data
-            all_y.append(y)
-            all_y_min.append(ymin)
-            all_y_max.append(ymax)
-            all_x.append(x)
+#             # Append data
+#             all_y.append(y)
+#             all_y_min.append(ymin)
+#             all_y_max.append(ymax)
+#             all_x.append(x)
     
-    if len(all_x) < 2:
-        all_y = np.array(all_y).ravel()
-        all_y_min = np.array(all_y_min).ravel()
-        all_y_max = np.array(all_y_max).ravel()
-    else:
-        all_y = np.concatenate(all_y)
-        all_y_min = np.concatenate(all_y_min)
-        all_y_max = np.concatenate(all_y_max)
+#     if len(all_x) < 2:
+#         all_y = np.array(all_y).ravel()
+#         all_y_min = np.array(all_y_min).ravel()
+#         all_y_max = np.array(all_y_max).ravel()
+#     else:
+#         all_y = np.concatenate(all_y)
+#         all_y_min = np.concatenate(all_y_min)
+#         all_y_max = np.concatenate(all_y_max)
 
-    # Convert the data to dict
-    y_dict = {'median': all_y, f'min': all_y_min, f'max': all_y_max}
+#     # Convert the data to dict
+#     y_dict = {'median': all_y, f'min': all_y_min, f'max': all_y_max}
 
-    return all_x, y_dict
+#     return all_x, y_dict
 
-def plot_feature_vs_z(simu, bin_val, all_x, y_dict, plot_info):
+# def plot_feature_vs_z(simu, bin_val, all_x, y_dict, plot_info):
    
-    if len(all_x) == 0:
-        pass
-    else:
-        axs, cmap, norm = plot_info
-        if simu == 'DM':
-            ls = '--'
-        else:
-            ls = '-'
-        axs.errorbar(all_x, y_dict['median'],
-                     yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
-                     color=cmap(norm(bin_val)), fmt='.')
-
+#     if len(all_x) == 0:
+#         pass
+#     else:
+#         axs, cmap, norm = plot_info
+#         if simu == 'DM':
+#             ls = '--'
+#         else:
+#             ls = '-'
+#         axs.errorbar(all_x, y_dict['median'],
+#                      yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
+#                      color=cmap(norm(bin_val)), fmt='.')
 
 def get_bins(min_bin, max_bin, bin_width):
     num_bins = int((max_bin - min_bin)/bin_width)
@@ -172,114 +186,3 @@ def delta_c(z):
 
 def character_mass(char_r, char_rho):
     return 4/3 * np.pi * char_r**3 * char_rho
-
-# Fitting
-
-# def x_z_fit_d(X, redshifts, Y, Yerr, axs, cmap, norm):
-#     from scipy.optimize import curve_fit
-    
-#     def func(Inputs, a, b, c, d, e, f, g, h, i):
-#         """Params:
-#             Inputs: (x, redshifts)
-#         """
-#         x, z = Inputs
-#         return a*x + b*z + d + c*x/(z-e) + f*z*(x-g*z)**2 + h*z/(x-i*z)
-
-#     popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*9, maxfev=10000)
-    
-#     Y_fit = func((X, redshifts), *popt)
-
-#     # Calculate the reduced chi-square
-#     if np.ndim(Yerr) == 2:
-#        Yerr = np.mean(Yerr, axis=0)
-       
-#     # Compute effective errors
-#     red_chi2 = np.sum((Y - Y_fit)**2 / Yerr**2) / (len(Y) - len(popt))
-#     # Plot
-#     for z in np.unique(redshifts):
-#         iz = np.where(redshifts == z)[0]
-#         if 0 in iz:
-#             axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
-#         else:
-#             axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), ls='--')
-
-#     # Confidence interval
-#     perr = np.sqrt(np.diag(pcov))
-
-#     dof = max(1, len(Y)-len(popt)) 
-    
-#     # 99% confidence level
-#     from scipy.stats import t
-#     alpha = 0.01 
-#     t_score = t.ppf(1 - alpha/2, dof)
-
-#     # Confidence interval = popt ± (t-score * std_err)
-#     ci_lower = popt - t_score * perr
-#     ci_upper = popt + t_score * perr
-
-#     # Print results
-#     for i, (p, lo, up) in enumerate(zip(popt, ci_lower, ci_upper)):
-#         print(f"Parameter {i}: {p:.4f} (99% CI: {lo:.4f} to {up:.4f})")
-
-# def x_z_fit_w(X, redshifts, Y,Yerr, axs, cmap, norm):
-#     from scipy.optimize import curve_fit
-    
-#     def func(Inputs, a, b, d, A, D, E, F):
-#         """Params:
-#             Inputs: (x, redshifts)
-#         """
-#         x, z = Inputs
-#         return a*x + b*z + d + A*x**2 + D*z**3 + F*x**2*z + E*x*z**2 # + G*z/x  
-    
-#     # def func(Inputs, a, d, A, G):
-#     #     """Params:
-#     #         Inputs: (x, redshifts)
-#     #     """
-#     #     x, z = Inputs
-#     #     return a*x + d + A*x**2 + G/x 
-    
-#     # def func(Inputs, a, b, c, d, e):
-#     #     """Params:
-#     #             Inputs: (x, redshifts)
-#     #     """
-#     #     x, z = Inputs
-#     #     return a*z/x*np.tanh(-b*z*(x-d)) + c*np.tanh(-e*x)
-    
-#     # def func(Inputs, a, b, c, e):
-#     #     """Params:
-#     #         Inputs: (x, redshifts)
-#     #     """
-#     #     x, z = Inputs
-#     #     return (z/x+c)*np.exp(-(a*(x-e)**2)/b)+1/x
-
-#     popt, pcov = curve_fit(func, (X, redshifts), Y, p0=[1]*7, maxfev=10000)
-    
-#     Y_fit = func((X, redshifts), *popt)
-
-#     # Calculate the reduced chi-square
-#     red_chi2 = np.sum((Y - Y_fit)**2 / Yerr**2) / (len(Y) - len(popt))
-#     # Plot
-#     for z in np.unique(redshifts):
-#         iz = np.where(redshifts == z)[0]
-#         if 0 in iz:
-#             axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}', ls='--')
-#         else:
-#             axs.plot(X[iz], Y_fit[iz], c=cmap(norm(np.round(z, 2))), ls='--')
-#     # axs.scatter(X, Y_fit, c=cmap(norm(np.round(z, 2))), marker='x', s=20,
-#     #             label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
-    
-#     # 99% confidence level
-#     from scipy.stats import t
-#     perr = np.sqrt(np.diag(pcov))
-#     dof = max(1, len(Y)-len(popt))
-    
-#     alpha = 0.01 
-#     t_score = t.ppf(1 - alpha/2, dof)
-
-#     # Confidence interval = popt ± (t-score * std_err)
-#     ci_lower = popt - t_score * perr
-#     ci_upper = popt + t_score * perr
-
-#     # Print results
-#     for i, (p, lo, up) in enumerate(zip(popt, ci_lower, ci_upper)):
-#         print(f"Parameter {i}: {p:.4f} (99% CI: {lo:.4f} to {up:.4f})")

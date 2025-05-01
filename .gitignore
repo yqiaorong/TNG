@@ -8,14 +8,19 @@ result/DMhalo_table_mass
 
 result/bootstrap_stats
 result/bootstrap_plots/
+result/bootstrap_videos/
 
-result/temp_archive
+result/archive
 
 output/
-data/
+raw_phys_data/
 code/illustris_python
 archive/
+buffer/
 
 code/illustris_python/
 
 __pycache__/
+
+trash/
+job/

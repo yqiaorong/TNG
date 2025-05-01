@@ -3,17 +3,21 @@ from matplotlib import cm
 from matplotlib import pyplot as plt 
 from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
-from func import *
+from func import load_stats, load_all_z, plot_feature
 
 bin_type = 'NFWconc'
 if bin_type == 'peakHeight':
     xlabel=r'$v$'
 elif bin_type == 'NFWconc':
-    xlabel = r'$R_{200m}/R_s$'
+    xlabel = r'$c$'
 elif bin_type == 'mergerz':
     xlabel = r'$z_{\rm merger}$'
 elif bin_type == 'formz':
     xlabel = r'$z_{\rm form}$'
+elif bin_type == 'formzOLD':
+    xlabel = r'$z_{\rm form}$ (half mass)'
+elif bin_type == 'formzSub':
+    xlabel = r'$z_{\rm form}$ (half subhalo mass)'
 elif bin_type in ['accretions', 'accretionsOLD', 'accret']:
     xlabel = r'$\Gamma$'
 elif bin_type == 'mass':
@@ -25,7 +29,7 @@ print('')
 
 root_dir = f'result/bootstrap_stats/with_{bin_type}/'
 simus = ['Hydro']
-features = ['width_dimless','depth']
+features = ['width_dimless','depth', 'DWratio']
 
 
 for simu in simus:
@@ -44,21 +48,28 @@ for simu in simus:
         if bin_type in ['mergerz', 'formz']:
             TNG300_snaps = [99, 78, 67, 50]
             MTNG_snaps = [264]
+        elif bin_type in ['formzOLD', 'formzSub']:
+            TNG300_snaps = [99, 78, 67, 50, 40, 33, 25]
+            MTNG_snaps = [264]
         elif bin_type in ['accretions']:
             TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
             MTNG_snaps = [264, 237, 214, 179, 151, 129]
         else:
             TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
-            MTNG_snaps = [264, 237, 214, 179, 151, 129]
+            MTNG_snaps = [264, 
+                        237, 214, 179, 
+                          151, 
+                         129
+                          ]
             
         TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
-        TNG300_z_i, TNG300_z_f = load_all_z(TNG300_dir, [min(TNG300_snaps), max(TNG300_snaps)])
        
         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
         
-        all_z = load_all_z(TNG300_dir, TNG300_snaps)
-        if bin_type in ['mergerz', 'formz']:
-            all_z = np.linspace(min(all_z), max(all_z), 10)
+        all_z = load_all_z(MTNG_dir, MTNG_snaps)
+        all_z.append(2.1)
+        # if bin_type in ['mergerz', 'formz']:
+        #     all_z = np.linspace(min(all_z), max(all_z), 10)
             
         # Set up the colorbar
         # -----------------------------------------------------------------------------------------
@@ -86,35 +97,38 @@ for simu in simus:
         # Plot
         # ============================================================================================
               
-        # Plot TNG300       
-        for snap in TNG300_snaps:
-            TNG300_z, TNG300_bin_data, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy',  
-                                                            f'med_{bin_type}', feature)
-            plot_feature(simu, TNG300_z, TNG300_bin_data, TNG300_feat, [axs, cmap, norm])
+        # # Plot TNG300       
+        # for snap in TNG300_snaps:
+        #     TNG300_z, TNG300_bin_data, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy',  
+        #                                                     f'med_{bin_type}', feature)
+        #     plot_feature(simu, TNG300_z, TNG300_bin_data, TNG300_feat, [axs, cmap, norm])
             
-        # # Plot MTNG
-        # for snap in MTNG_snaps:
-        #     MTNG_z, MTNG_bin_data, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
-        #                                               f'med_{bin_type}', feature)            
-        #     plot_feature(simu, MTNG_z, MTNG_bin_data, MTNG_feat, [axs, cmap, norm])
+        # Plot MTNG
+        for snap in MTNG_snaps:
+            print(snap)
+            MTNG_z, MTNG_bin_data, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
+                                                      f'med_{bin_type}', feature)            
+            plot_feature(simu, MTNG_z, MTNG_bin_data, MTNG_feat, [axs, cmap, norm], label=f'z={MTNG_z:.1f}')
 
         
         # ============================================================================================
         # Save the plot
         # ============================================================================================
-        
+        if feature == 'DWratio':
+            axs.set_ylim(0, 6)
         if bin_type == 'mass':
             axs.set_xscale('log')
         axs.set_xlabel(xlabel)
-        if feature == 'abs_depth':
-            Y_label = r"|$\mathcal{D}$|"
+        if feature == 'depth':
+            Y_label = r"$\mathcal{D}$"
         elif feature == 'width_dimless':
             Y_label = r"$\mathcal{W}$"
-        else:
-            Y_label = r"$\mathcal{D}$"
+        elif feature == 'DWratio':
+            Y_label = r"$\mathcal{D}/\mathcal{W}$"
         axs.set_ylabel(Y_label)
         # axs.legend(loc='best')
-        save_dir = f'result/paper_plots/fig3/'
+        
+        save_dir = f'result/paper_plots/fig3/MTNG-Hydro/'
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
