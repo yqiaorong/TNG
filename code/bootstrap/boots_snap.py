@@ -5,13 +5,14 @@ import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--sim',      default='MTNG/Hydro-Arepo/MTNG-L500-4320-A/', type=str)
-parser.add_argument('--snapnum',  default=264, type=int)
-parser.add_argument('--Nsample',  default=5000, type=int)
-parser.add_argument('--Nboots',   default=1024, type=int)
-parser.add_argument('--bin_type', default=None, type=str) 
+parser.add_argument('--sim',        default='MTNG/Hydro-Arepo/MTNG-L500-4320-A/', type=str)
+parser.add_argument('--snapnum',    default=264,  type=int)
+parser.add_argument('--Nsample',    default=5000, type=int)
+parser.add_argument('--Nboots',     default=1024, type=int)
+parser.add_argument('--bin_type',   default=None, type=str) 
 parser.add_argument('--mass_start', default=None, type=float)
 parser.add_argument('--mass_end',   default=None, type=float)
+parser.add_argument('--reject_limit',default=1000, type=int)
 args = parser.parse_args()
 
 print('')
@@ -75,9 +76,9 @@ elif args.bin_type == 'NFWconc':
 elif args.bin_type == 'peakHeight':
     bin_start, bin_end, bin_width = 0, 6, 0.2
 elif args.bin_type in ['formz', 'formzOLD', 'formzSub']:
-    bin_start, bin_end, bin_width = 0, 2, 0.1
+    bin_start, bin_end, bin_width = 0, 1.6, 0.2
 elif args.bin_type == 'mergerz':
-    bin_start, bin_end, bin_width = 0, 10, 0.5
+    bin_start, bin_end, bin_width = 0, 10, 1
 else:
     bin_start, bin_end, bin_width = None, None, None
     
@@ -88,7 +89,7 @@ if bin_data.shape[0] == 0:
     exit()
 else:
     # Bootstrap setup
-    final_results = bootstrap_all_features(args, 
+    final_results, _ = bootstrap_all_features(args, 
                                             [z, h, rho_c], 
                                             [radial_bins, densities, bin_data, halo_R_Mean200],
                                             args.bin_type, plot_bin_type_name=args.bin_type+f'_mass_{str(int(args.mass_start*10))}',                                     
@@ -102,3 +103,11 @@ else:
 
     np.save(save_stats_dir+f'snap_{args.snapnum}_mass_{str(int(args.mass_start*10))}_Rsp_stats', final_results)
     print('Saved!')
+    
+    # # Save the parameters
+    # save_stats_dir2 = f'result/bootstrap_stats2/with_{args.bin_type}_perMassCut/{args.sim}/Nboots_{args.Nboots}/'
+    # if not os.path.exists(save_stats_dir2):
+    #     os.makedirs(save_stats_dir2)
+
+    # np.save(save_stats_dir2+f'snap_{args.snapnum}_mass_{str(int(args.mass_start*10))}_Rsp_stats', final_params_results)
+    # print('Saved!')

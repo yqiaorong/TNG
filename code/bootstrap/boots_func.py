@@ -1,3 +1,4 @@
+# If func has been imported, ignore the import
 from func import *
 import numpy as np
 import math
@@ -62,6 +63,7 @@ def bootstrap_all_features(args, params, data,
         # Initialize the results
         num_bins = len(bins) - 1
         results = np.empty((num_bins, 7, args.Nboots))   # [med_bin_type, Rsp, depth, min_grad, width_dimless, width_physical, DWratio]
+        params_results = np.empty((num_bins, 10, args.Nboots)) 
         # Bootstrap!
         valid_boots = 0
         reject_times = {ib: 0 for ib in range(num_bins)}
@@ -84,7 +86,7 @@ def bootstrap_all_features(args, params, data,
                 
                 for i in range(num_bins):
                     print(f'>>>>>> Processing {bin_type} cut {i}: <<<<<<')
-                    if reject_times[i] < 50:
+                    if reject_times[i] < args.reject_limit:
                         # Select halos in the cut and compute density profiles
                         
                         fit_data = fit_density_profile(args, select_radii, select_densities, select_vals, select_r200, 
@@ -93,13 +95,21 @@ def bootstrap_all_features(args, params, data,
                         radius, rho, rho_err, slope, slope_err = fit_profile[0], fit_profile[1], fit_profile[2], fit_profile[3], fit_profile[4]
                         fitted_radius, fitted_rho, fitted_slope = fit_slope[0], fit_slope[1], fit_slope[2]
                         
-                        ### If the optimal params are not found! ###
-                        if np.all(fitted_rho) == 0:
+                        # If the optimal params are not found! 
+                        if np.all(fitted_slope) == 0:
                             print('     This bootstrap is abandoned!-----No fitted profile found!')
                             results[:, :, valid_boots] = -1
                             print('reject times: ', reject_times[i])
                             break
-                    
+                                        
+                        # If the left part of the gradients are not increasing, keep this bootstrap
+                        if not np.all(np.diff(fitted_slope[fitted_radius < 0.1]) < 0):
+                            print('     This bootstrap is abandoned!-----Left part of the gradients are increasing!')
+                            reject_times[i] += 1
+                            results[i, :, valid_boots] = -1
+                            print(f'     Cut {i} reject times: ', reject_times[i])
+                            break                          
+                        
                         # # Fit the slope
                         # fitted_slope = num_deriv(np.log(fitted_radius), np.log(fitted_rho)) # [dimensionless]
             
@@ -111,6 +121,14 @@ def bootstrap_all_features(args, params, data,
                         Rsp_dimless = fitted_radius[np.argmin(fitted_slope)]  # [dimensionless]
                         Rsp = physical_fitted_radius[np.argmin(fitted_slope)] # [kpc]
                         
+                        # If the gradients have more than one minimum, reject this bootstrap
+                        if test_shape(fitted_radius, fitted_slope, Rsp_dimless):
+                            print('     This bootstrap is abandoned!-----More than one minimum found!')
+                            reject_times[i] += 1
+                            results[i, :, valid_boots] = -1
+                            print(f'     Cut {i} reject times: ', reject_times[i])
+                            break
+                            
                         # depth
                         min_grad = np.min(fitted_slope)
                         min_grad_idx = np.argmin(fitted_slope)
@@ -121,7 +139,13 @@ def bootstrap_all_features(args, params, data,
                             results[i, :, valid_boots] = -1
                             print(f'     Cut {i} reject times: ', reject_times[i])
                             break
-                            
+                        elif args.bin_type == 'mass' and min_grad < -5:
+                            print('     This bootstrap is abandoned!-----Inaccurate Rsp found!')
+                            reject_times[i] += 1
+                            results[i, :, valid_boots] = -1
+                            print(f'     Cut {i} reject times: ', reject_times[i])
+                            break
+                        
                         if min_grad_idx < 600:
                             print('     This bootstrap is abandoned!-----Inaccurate Rsp found!')
                             reject_times[i] += 1
@@ -140,109 +164,138 @@ def bootstrap_all_features(args, params, data,
                         
                         left_idx = np.argmin(np.abs(left_data - half_grad))
                         print(f'left width index: {left_idx}')
-                        # peakHeight
-                        if args.bin_type == 'peakHeight':
-                            if left_idx < 600 and args.snapnum == 129:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 500 and args.snapnum == 179:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 400 and args.snapnum == 214:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 200 and args.snapnum in [237, 264]:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                        # Accretions
-                        elif args.bin_type == 'accretions':
-                            if left_idx < 400 and args.snapnum == 264:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 450 and args.snapnum == 237:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 500 and args.snapnum in [151, 214]:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 600 and args.snapnum == 179:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                        # NFWconc
-                        elif args.bin_type == 'NFWconc':
-                            if left_idx < 500 and args.snapnum == 129:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 400 and args.snapnum == 151:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 600 and args.snapnum == 179 and i == 0:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 300 and args.snapnum == 179 and i != 0:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 600 and args.snapnum == 214 and i == 0:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 200 and args.snapnum == 214 and i != 0:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 600 and args.snapnum == 237 and i in [0, 1]:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
-                            elif left_idx < 100 and args.snapnum in [237, 264]:
-                                print('     This bootstrap is abandoned!-----Inaccurate width found!')
-                                reject_times[i] += 1
-                                results[i, :, valid_boots] = -1
-                                print(f'     Cut {i} reject times: ', reject_times[i])
-                                break
                         
+                        
+                        # # peakHeight
+                        # if args.bin_type == 'peakHeight':
+                        #     if left_idx < 600 and args.snapnum == 129:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 500 and args.snapnum == 179:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 400 and args.snapnum == 214:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 200 and args.snapnum in [237, 264]:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        # # Accretions
+                        # elif args.bin_type == 'accretions':
+                        #     if left_idx < 400 and args.snapnum == 264:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 450 and args.snapnum == 237:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 500 and args.snapnum in [151, 214]:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 600 and args.snapnum == 179:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        # # NFWconc
+                        # elif args.bin_type == 'NFWconc':
+                        #     if left_idx < 500 and args.snapnum == 129:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 400 and args.snapnum == 151:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 600 and args.snapnum == 179 and i == 0:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 300 and args.snapnum == 179 and i != 0:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 600 and args.snapnum == 214 and i == 0:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 200 and args.snapnum == 214 and i != 0:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 600 and args.snapnum == 237 and i in [0, 1]:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif left_idx < 100 and args.snapnum in [237, 264]:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        # # Mass
+                        # elif args.bin_type == 'mass':
+                        #     if args.snapnum in [129, 151] and left_idx < 600:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif args.snapnum == 179 and left_idx < 500:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif args.snapnum == 214 and left_idx < 300:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+                        #     elif args.snapnum in [237, 264] and left_idx < 200:
+                        #         print('     This bootstrap is abandoned!-----Inaccurate width found!')
+                        #         reject_times[i] += 1
+                        #         results[i, :, valid_boots] = -1
+                        #         print(f'     Cut {i} reject times: ', reject_times[i])
+                        #         break
+
+                            
                         right_idx = min_grad_idx + np.argmin(np.abs(right_data - half_grad))
                         
                         width = physical_fitted_radius[right_idx] - physical_fitted_radius[left_idx]
@@ -262,24 +315,21 @@ def bootstrap_all_features(args, params, data,
                         if not os.path.exists(plot_dir):
                             os.makedirs(plot_dir)
                         plot_fname = f'boot_{valid_boots}.png'
-                        plot_profile(radius, rho, rho_err, slope, slope_err, 
-                                    fitted_radius, fitted_rho, fitted_slope,
+                        plot_profile(radius=radius, rho=rho, rho_err=rho_err, 
+                                     slope=slope, slope_err=slope_err, 
+                                     fitted_radius=fitted_radius, fitted_rho=fitted_rho, fitted_slope=fitted_slope,
                                         depth_coords = [(Rsp_dimless, min_grad), (Rsp_dimless, max_grad)],
                                         width_coords = [(fitted_radius[left_idx], half_grad), (fitted_radius[right_idx], half_grad)], 
-                                        plot_dir=plot_dir, plot_fname=plot_fname, i=i)
+                                        plot_dir=plot_dir, plot_fname=plot_fname, plot_text=f'cut_{i}_{plot_fname.split('_')[1]}')
                         
                         # Append results
-                        results[i, :, valid_boots] = med, Rsp, depth, min_grad, width_dimless, width, DWratio
+                        results[i, :, valid_boots]        = med, Rsp, depth, min_grad, width_dimless, width, DWratio
+                        params_results[i, :, valid_boots] = fitted_params
+                        
                     else:
                         print(f'>>>>>>>>>> This {bin_type} cut {i} is rejected: {reject_times[i]} <<<<<<<<<<')
-                        results[i, :, valid_boots] = np.nan
-                        # # Remove the corresponding plot folders
-                        # remove_dir = f'result/bootstrap_plots/{args.sim}/with_{bin_type}/snap_{args.snapnum}/cut_{i}/'
-                        # if os.path.exists(remove_dir):
-                        #     import shutil
-                        #     shutil.rmtree(remove_dir)
-                        # print(f'    Removed plot directory: {remove_dir}')
-                        # continue
+                        results[i, :, valid_boots]        = np.nan
+                        params_results[i, :, valid_boots] = np.nan
             
                 ### Only the for loop is complete, update valid_boots
                 if np.all(results[:, :, valid_boots] != -1):
@@ -300,31 +350,55 @@ def bootstrap_all_features(args, params, data,
         final_results['DWratio']        = np.percentile(results[:, 6, :], [16, 50, 84], axis=1)
         final_results['full_results']   = results 
         print(final_results.keys())
+        
+        # Final params results
+        final_params_results = {}
+        final_params_keys = ['rho_s', 'r_s', 'alpha', 'r_t', 'beta', 'gamma', 'rho_g', 'b_e', 'S_e', 'R200']
+        for i, key in enumerate(final_params_keys):
+            final_params_results[key] = np.percentile(params_results[:, i, :], [16, 50, 84], axis=1)
+        final_results['params'] = final_params_results
+        print(final_params_results.keys())
     
     else:
         final_results = {}
+        final_params_results = {}
         
-    return final_results
+    return final_results, final_params_results
+
+def test_shape(radius, slopes, Rsp):
+    from scipy.ndimage import median_filter
+    
+    ctr_idx = np.where(radius == Rsp)[0][0]
+    middles = slopes[int(ctr_idx-300) : int(ctr_idx+400)]
+    smoothed = median_filter(middles, size=11)
+    residual = middles - smoothed
+
+    if np.any(np.abs(residual) > 0.05):
+        return True
+    else:
+        return False
 
 
-def plot_profile(radius, rho, rho_err, 
-                 slope, slope_err, 
+def plot_profile(radius, rho, slope, 
                  fitted_radius, fitted_rho, fitted_slope, 
-                 depth_coords, width_coords,
-                 plot_dir, plot_fname, i):
+                 plot_dir, plot_fname, plot_text=None,
+                 rho_err=None, slope_err=None, 
+                 depth_coords=None, width_coords=None,):
     
     import os
     from matplotlib import pyplot as plt  
     plt.style.use('code/style.mplstyle')
     
     fig, axs = plt.subplots(2, 1, figsize=(2, 3))
+ 
     axs[0].scatter(radius, rho, s=1, # color='b', 
                 #    label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
                    # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                    )
-    axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, # color = 'b',
-                        # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-                        )
+    if rho_err is not None:
+        axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, # color = 'b',
+                            # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
+                            )
     axs[0].plot(fitted_radius, fitted_rho, lw=0.5, # color='salmon',
                 # label=f'Fit: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                 )
@@ -334,21 +408,24 @@ def plot_profile(radius, rho, rho_err,
                   # label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
                    # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                    )
-    axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, # color = 'b',
-                        # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
-                        )
+    if slope_err is not None:
+        axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, # color = 'b',
+                            # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
+                            )
     axs[1].plot(fitted_radius, fitted_slope, lw=0.5, # color='salmon',
                 # label=f'Theory: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                 )
     
     # Plot the depth and width as segments on axs1
-    x_depth, y_depth = zip(*depth_coords)
-    x_width, y_width = zip(*width_coords)
-    axs[1].plot(x_depth, y_depth, color='red', linestyle='-', label='Depth')
-    axs[1].plot(x_width, y_width, color='blue', linestyle='-', label='Width')
+    if depth_coords is not None:
+        x_depth, y_depth = zip(*depth_coords)
+        x_width, y_width = zip(*width_coords)
+        axs[1].plot(x_depth, y_depth, color='red', linestyle='-', label='Depth')
+        axs[1].plot(x_width, y_width, color='blue', linestyle='-', label='Width')
     
     # Plot text
-    axs[0].text(0.5, 0.8, f'cut_{i}_{plot_fname.split('_')[1]}', transform=axs[0].transAxes, fontsize=8, verticalalignment='top')
+    if plot_text is not None:
+        axs[0].text(0.5, 0.8, plot_text, transform=axs[0].transAxes, fontsize=8, verticalalignment='top')
     
     # General settings
     axs[0].set_xscale('log')
@@ -363,23 +440,9 @@ def plot_profile(radius, rho, rho_err,
     # Save the plot
     if not os.path.exists(plot_dir):
         os.makedirs(plot_dir)
-    # print(plot_dir)
-    # print(plot_fname)
     plt.savefig(plot_dir+plot_fname, dpi=100)
     plt.close()
     
-    # # Save data
-    # if save_data == True:
-    #     data = {'radius': radius, 'rho': rho, 'rho_err': rho_err,
-    #             'slope': slope, 'slope_err': slope_err, 
-    #             'fitted_radius': fitted_radius, 'fitted_rho': fitted_rho, 'fitted_slope': fitted_slope,
-    #             'R200_median': R200_median}
-        
-    #     data_dir = save_dir + f'/data/mass_cut_{start}'
-    #     if not os.path.exists(data_dir):
-    #        os.makedirs(data_dir)
-    #     np.save(os.path.join(data_dir, fname), data)
-
 
 def fit_density_profile(args, radii, densities, targets, r200, bin_start, bin_end, rho_c):
     # Select halos in the cut and compute density profiles
@@ -405,12 +468,12 @@ def fit_density_profile(args, radii, densities, targets, r200, bin_start, bin_en
     slope_err = num_deriv_err(radius, rho, rho_err)                                     # [dimensionless]
     
     # Fit the density profiles
-    fit_profiles = fit_profile_parametric(radius, rho, np.mean(rho_err, axis=1), 1)
+    fit_profiles = fit_profile_parametric(radius, rho, 1, density_errors=np.mean(rho_err, axis=1))
     fitted_radius, fitted_rho, fitted_params = fit_profiles[0], fit_profiles[1], fit_profiles[2] 
     del fit_profiles
     
     # Fit the slope
-    fit_slopes = fit_gradient_parametric(radius, slope, np.mean(slope_err, axis=1), 1, init_p0=fitted_params)
+    fit_slopes = fit_gradient_parametric(radius, slope, 1, init_p0=fitted_params, gradients_errors=np.mean(slope_err, axis=1))
     fitted_slope, fitted_params = fit_slopes[1], fit_slopes[2]
     del fit_slopes
     

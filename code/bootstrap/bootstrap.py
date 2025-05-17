@@ -10,6 +10,7 @@ parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--Nsample',  default=10000,type=int)
 parser.add_argument('--Nboots',   default=1024, type=int)
 parser.add_argument('--bin_type', default=None, type=str) # [ conc / peakHeight / accretions ]
+parser.add_argument('--reject_limit',default=2000, type=int)
 args = parser.parse_args()
 
 print('')
@@ -65,9 +66,9 @@ elif args.bin_type == 'NFWconc':
 elif args.bin_type == 'peakHeight':
     bin_start, bin_end, bin_width = 0, 6, 0.2
 elif args.bin_type in ['formz', 'formzOLD', 'formzSub']:
-    bin_start, bin_end, bin_width = 0, 4, 0.5
+    bin_start, bin_end, bin_width = 0, 1.6, 0.2
 elif args.bin_type == 'mergerz':
-    bin_start, bin_end, bin_width = 0, 10, 0.5
+    bin_start, bin_end, bin_width = 0, 10, 1
 else:
     bin_start, bin_end, bin_width = None, None, None
     
@@ -85,7 +86,7 @@ if bin_data.shape[0] == 0:
     exit()
 else:
     # Bootstrap setup
-    final_results = bootstrap_all_features(args, 
+    final_results, _ = bootstrap_all_features(args, 
                                             [z, h, rho_c], 
                                             [radial_bins, densities, bin_data, halo_R_Mean200],
                                             args.bin_type, plot_bin_type_name=args.bin_type,                                      

@@ -54,14 +54,11 @@ for simu in simus:
         # Set up the colorbar
         # ============================================================================================
 
-        # TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
-        # TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
-        # TNG300_z_i, TNG300_z_f = load_all_z(TNG300_dir, [min(TNG300_snaps), max(TNG300_snaps)])
-
         MTNG_snaps = [264, 237, 214, 179, 151, 129]
         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
         
         all_z = load_all_z(MTNG_dir, MTNG_snaps)
+        all_z.append(2.1)
         
         # Set up the colorbar
         # -----------------------------------------------------------------------------------------
@@ -135,6 +132,16 @@ for simu in simus:
         
         all_z = np.concatenate(all_z)
         
+        # Remove NaN values
+        valid_indices = ~np.isnan(all_y_med)
+        all_x_med = all_x_med[valid_indices]
+        all_x_min = all_x_min[valid_indices]
+        all_x_max = all_x_max[valid_indices]
+        all_y_med = all_y_med[valid_indices]
+        all_y_min = all_y_min[valid_indices]
+        all_y_max = all_y_max[valid_indices]
+        all_z = all_z[valid_indices]
+        
         # Fit the data
         popt, perr, red_chi2, y_fit, axs, fitted_data = fitting(bin_type, feature, 
                                                                 all_z, 
@@ -142,8 +149,10 @@ for simu in simus:
                                                                 all_y_med, all_y_min, all_y_max,
                                                                 fit_func, [axs, cmap, norm],
                                                                 all_x_min, all_x_max, )
+        print(feature)
         print(popt, red_chi2)
-        
+        print(perr)
+        print('')
         
         # Save fitted data
         fitted_data_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
@@ -163,9 +172,10 @@ for simu in simus:
             Y_label = r"$\mathcal{W}$"
         elif feature == 'DWratio':
             Y_label = r"$\mathcal{D}/\mathcal{W}$"
+            axs.set_ylim(0.7, 5)
         axs.set_ylabel(Y_label)
         axs.legend(loc='best')
-        save_dir = f'result/paper_plots/fig6/MTNG-Hydro/'
+        save_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 

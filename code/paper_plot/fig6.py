@@ -30,7 +30,7 @@ print('')
 
 root_dir = f'result/bootstrap_stats/with_{bin_type}_perMassCut/'
 simus = ['Hydro']
-features = ['width_dimless','depth', 'DWratio']
+features = ['depth','width_dimless','DWratio']
 
 
 for simu in simus:

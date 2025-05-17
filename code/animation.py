@@ -2,10 +2,10 @@ from PIL import Image
 import os
 from tqdm import tqdm
 
-# bin_types = ['mergerz_A', 'mergerz_B']
-bin_types = ['NFWconc']
-# bin_types = ['mergerz_mass_30_A', 'mergerz_mass_30_B', 'mergerz_mass_35_A', 'mergerz_mass_35_B', 'mergerz_mass_40_A', 'mergerz_mass_40_B', 'mergerz_mass_45']
-snaps = [214]  # MTNG snapshots
+# bin_types = ['mergerz']
+bin_types = ['mergerz_mass_30', 'mergerz_mass_35', 'mergerz_mass_40', 'mergerz_mass_45']
+snaps = [# 129, 151, 179, 214, 237, 
+         264] # MTNG snapshots
 
 def collect_all_pngs(folder):
     all_pngs = []

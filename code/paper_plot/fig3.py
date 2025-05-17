@@ -5,7 +5,7 @@ from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
 from func import load_stats, load_all_z, plot_feature
 
-bin_type = 'NFWconc'
+bin_type = 'mergerz'
 if bin_type == 'peakHeight':
     xlabel=r'$v$'
 elif bin_type == 'NFWconc':
@@ -39,37 +39,30 @@ for simu in simus:
         # Set up the plot
         # ============================================================================================
 
-        fig, axs = plt.subplots(1, 1, figsize=(4, 3.5), dpi=500, sharex=True, constrained_layout=True)
+        fig, axs = plt.subplots(1, 1, figsize=(4, 3.3), dpi=500, sharex=True, constrained_layout=True)
 
         # ============================================================================================
         # Set up the colorbar
         # ============================================================================================
         
         if bin_type in ['mergerz', 'formz']:
-            TNG300_snaps = [99, 78, 67, 50]
+            # TNG300_snaps = [99, 78, 67, 50]
             MTNG_snaps = [264]
         elif bin_type in ['formzOLD', 'formzSub']:
-            TNG300_snaps = [99, 78, 67, 50, 40, 33, 25]
+            # TNG300_snaps = [99, 78, 67, 50, 40, 33, 25]
             MTNG_snaps = [264]
         elif bin_type in ['accretions']:
-            TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
+            # TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
             MTNG_snaps = [264, 237, 214, 179, 151, 129]
         else:
-            TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
-            MTNG_snaps = [264, 
-                        237, 214, 179, 
-                          151, 
-                         129
-                          ]
+            # TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
+            MTNG_snaps = [264, 237, 214, 179, 151, 129]
             
-        TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
-       
+        # TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
         
         all_z = load_all_z(MTNG_dir, MTNG_snaps)
         all_z.append(2.1)
-        # if bin_type in ['mergerz', 'formz']:
-        #     all_z = np.linspace(min(all_z), max(all_z), 10)
             
         # Set up the colorbar
         # -----------------------------------------------------------------------------------------
@@ -80,18 +73,18 @@ for simu in simus:
             bound = all_z
         norm = BoundaryNorm(bound, cmap.N)
         
-        if len(all_z) > 1:
-            cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
-                            ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
+        # if len(all_z) > 1:
+        #     cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
+        #                     ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
             # -----------------------------------------------------------------------------------------
 
-            # Reduce colormap ticks sf
-            from matplotlib.ticker import FuncFormatter
-            def custom_format(x, pos):
-                return f'{x:.1f}'  
-            cb.ax.xaxis.set_major_formatter(FuncFormatter(custom_format)) 
-            cb.ax.tick_params(axis='x', rotation=70) 
-            cb.set_label('z')
+            # # Reduce colormap ticks sf
+            # from matplotlib.ticker import FuncFormatter
+            # def custom_format(x, pos):
+            #     return f'{x:.1f}'  
+            # cb.ax.xaxis.set_major_formatter(FuncFormatter(custom_format)) 
+            # cb.ax.tick_params(axis='x', rotation=70) 
+            # cb.set_label('z')
 
         # ============================================================================================
         # Plot

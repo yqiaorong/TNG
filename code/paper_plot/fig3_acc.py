@@ -4,7 +4,7 @@ from matplotlib import cm
 from matplotlib import pyplot as plt 
 from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
-from func import load_stats, load_all_z, plot_feature, fitting
+from func import load_stats, load_all_z, plot_feature
 
 bin_type = 'accretions'
 print('')
@@ -135,7 +135,6 @@ for simu in simus:
         all_y_max = np.concatenate(all_y_max)
         
         all_z = np.concatenate(all_z)
-        
         
         # Remove nan
         mask = ~np.isnan(all_x_med)

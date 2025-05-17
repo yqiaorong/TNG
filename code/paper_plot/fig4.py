@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
 
-bin_type = 'accretions'
+bin_type = 'peakHeight'
 if bin_type == 'peakHeight':
     label=r'$v$'
 elif bin_type == 'NFWconc':
@@ -29,7 +29,7 @@ print('')
 
 root_dir = f'result/bootstrap_stats/with_{bin_type}/'
 simus = ['Hydro']
-features = ['width_dimless' , 'depth', 'DWratio']
+features = ['width_dimless', 'depth', 'DWratio']
 for simu in simus:
     for feature in features:
 
@@ -42,16 +42,6 @@ for simu in simus:
         # ============================================================================================
         # Load data 
         # ============================================================================================
-        
-        if bin_type == 'formz':
-            TNG300_snaps = [99, 78, 67, 50]
-        elif bin_type == 'formzOLD':
-            TNG300_snaps = [99, 78, 67, 50, 40, 33, 25]
-        elif bin_type == 'accretions':
-            TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13]
-        else:
-            TNG300_snaps = [99, 78, 67, 50, 40, 33, 25, 21, 17, 13, 8]
-        TNG300_dir = f'{root_dir}/TNG300/sim_205_1250_{simu}/Nboots_1024/'
 
         MTNG_snaps = [264, 237, 214, 179, 151, 129]
         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'            
@@ -73,12 +63,26 @@ for simu in simus:
         elif bin_type == 'formzOLD':
             min_bin, max_bin, bin_width = 0, 3.5, 0.4
         num_bins, all_bins, _, _ = get_bins(min_bin, max_bin, bin_width)
-
-        cmap = plt.get_cmap('plasma', num_bins)
+        
+        # ============================================================================================
+        # Load fitted data and plot
+        # ============================================================================================
+        
+        fitted_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
+        fitted_data = np.load(fitted_dir + f'{bin_type}_{feature}_fitted_data.npy', allow_pickle=True).item()
+        
+        fitted_vals_bins = np.unique(fitted_data[bin_type])
+        fitted_vals      = np.concatenate(fitted_data[bin_type])
+        fitted_z         = np.concatenate(fitted_data['z'])
+        fitted_y         = np.concatenate(fitted_data[feature])
+        del fitted_data
+        
+        # Set up the colorbar
+        cmap = plt.get_cmap('plasma', len(fitted_vals_bins))
         if bin_type == 'mass':
-            bound = np.logspace(min_bin, max_bin+0.01, num_bins+1) 
+            bound = np.logspace(min(fitted_vals_bins), max(fitted_vals_bins)+0.01, len(fitted_vals_bins)+1) 
         else:
-            bound = np.linspace(min_bin, max_bin+0.01, num_bins+1) 
+            bound = np.linspace(min(fitted_vals_bins), max(fitted_vals_bins)+0.01, len(fitted_vals_bins)+1) 
         norm = BoundaryNorm(bound, cmap.N)
         cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
                           ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
@@ -94,23 +98,21 @@ for simu in simus:
         if bin_type == 'mass':
             cb._set_scale('log')
 
+        # Plot the fitted data
+        for bin_start, bin_end in zip(fitted_vals_bins[:-1], fitted_vals_bins[1:]):
+            select_idx = np.where((fitted_vals >= bin_start) & (fitted_vals < bin_end))[0]
+            if select_idx.size == 0:
+                pass
+            else:
+                color_val = np.mean(fitted_vals[select_idx])
+
+                plot_x = fitted_z[select_idx]
+                plot_y = fitted_y[select_idx]
+                axs.plot(plot_x, plot_y, color=cmap(norm(color_val)), ls='--') 
+        
         # ============================================================================================
         # Plot
         # ============================================================================================
-              
-        # # Plot TNG300        
-        # for snap in TNG300_snaps:
-        #     TNG300_z, TNG300_bin_data, TNG300_feat = load_stats(TNG300_dir, f'snap_{snap}_Rsp_stats.npy',  
-        #                                                     f'med_{bin_type}', feature)
-
-        #     # Duplicate z to the length of the bin data
-        #     TNG300_z = np.repeat(TNG300_z, len(TNG300_bin_data['median']))
-        #     # Plot
-        #     for i in range(len(TNG300_z)):
-        #         axs.errorbar(TNG300_z[i], TNG300_feat['median'][i],
-        #                      yerr=[[TNG300_feat['median'][i]-TNG300_feat['min'][i]], 
-        #                            [TNG300_feat['max'][i]-TNG300_feat['median'][i]]],
-        #                     color=cmap(norm(TNG300_bin_data['median'][i])), fmt='.')
                  
         # Plot MTNG
         for snap in MTNG_snaps:
@@ -126,42 +128,23 @@ for simu in simus:
                                    [MTNG_feat['max'][i]-MTNG_feat['median'][i]]],
                             color=cmap(norm(MTNG_bin_data['median'][i])), fmt='.')
         
-        # ============================================================================================
-        # Load fitted data and plot
-        # ============================================================================================
-        # fitted_dir = f'result/paper_plots/fig4/MTNG-Hydro/'
-        # fitted_data = np.load(fitted_dir + f'{bin_type}_{feature}_fitted_data.npy', allow_pickle=True).item()
-        
-        # for bin_start, bin_end in zip(all_bins[:-1], all_bins[1:]):
-        #     if bin_type == 'mass':
-        #         select_idx = np.where((np.log10(fitted_data[bin_type]) >= bin_start) &
-        #                                 (np.log10(fitted_data[bin_type]) < bin_end))[0]
-        #         color_val = np.mean(np.log10(fitted_data[bin_type][select_idx]))
-        #         plot_x = fitted_data['z'][select_idx]
-        #         plot_y = fitted_data[feature][select_idx]
-        #         axs.plot(plot_x, plot_y, color=cmap(norm(10**color_val)), ls='--') 
-        #     else:
-        #         select_idx = np.where((fitted_data[bin_type] >= bin_start) &
-        #                               (fitted_data[bin_type] < bin_end))[0]
-        #         if select_idx.size == 0:
-        #             pass
-        #         else:
-        #             color_val = np.mean(fitted_data[bin_type][select_idx])
-        #             plot_x = fitted_data['z'][select_idx]
-        #             plot_y = fitted_data[feature][select_idx]
-        #             axs.plot(plot_x, plot_y, color=cmap(norm(color_val)), ls='--') 
-        
-        
         # Final edit
         axs.set_xlabel('z')
         if feature == 'depth':
             Y_label = r"$\mathcal{D}$"
+            if bin_type == 'peakHeight':
+                axs.set_ylim(2.3, 4)
+            elif bin_type == 'NFWconc':
+                axs.set_ylim(2.3, 3.5)
         elif feature == 'width_dimless':
             Y_label = r"$\mathcal{W}$"
         elif feature == 'DWratio':
             Y_label = r"$\mathcal{D}/\mathcal{W}$"
+            if bin_type == 'NFWconc':
+                axs.set_ylim(1, 3.8)
         axs.set_ylabel(Y_label)
-        axs.legend(loc='best')
+        # axs.legend(loc='best')
+        
         # ============================================================================================
         # Save the plot
         # ============================================================================================
