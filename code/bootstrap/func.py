@@ -9,7 +9,7 @@ def count_halos(target_1d_array, bin_start_list, bin_end_list):
     return counts_list
 
 def stacked_density_profile(radii_2d_array, densities_2d_array, target_1d_array, R200_1d_array, 
-                            bin_start, bin_end, rho_c, use_bootstrap=True):
+                            bin_start, bin_end, use_bootstrap=True):
     """The function computes the stacked density profiles.
     
     INPUT:
@@ -52,7 +52,7 @@ def stacked_density_profile(radii_2d_array, densities_2d_array, target_1d_array,
             radius200_list.append(radius200)
             
             # density profile
-            densities_list.append(densities / rho_c)   # [dimensionless]
+            densities_list.append(densities)   # [dimensionless]
         else:
             pass 
     
@@ -231,7 +231,6 @@ def density_profile(
 
     return np.log10(rho)
 
-
 def density_gradient_profile(
     r: float,
     rho_s: float,
@@ -261,298 +260,8 @@ def density_gradient_profile(
     d_rho_dr = d_rho_inner_dr * f_trans + rho_inner * d_ftrans_dr + d_rho_outer_dr
 
     return (r / rho) * d_rho_dr
-
-
-# def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=None):
-#     """
-#     Fits a profile in log-log spce based on Equation 6 in
-#     O'Neil et al. 2021.
-
-#     First fits the inner and outer profile separately, then freezes those
-#     parameters, fitting the transfer function. Finally, all parameters are
-#     released to fine-tune the fit.
-
-#     Doesn't make use of sigma.
-#     """
-       
-#     global p0_full
-
-#     log_rho = np.log10(densities)
-
-#     # log_rho_upper = np.log10((densities + density_errors) / (R_200_mean ** 3))
-#     # log_rho_lower = np.log10(np.maximum((densities - density_errors) / (R_200_mean ** 3), 0.01 * densities / (R_200_mean ** 3)))
-
-#     # log_rho_error = 0.5 * (log_rho_upper - log_rho_lower)
-
-#     def wrapped_profile(
-#         r: float,
-#         rho_s: float,
-#         r_s: float,
-#         alpha: float,
-#         r_t: float,
-#         beta: float,
-#         gamma: float,
-#         rho_g: float,
-#         b_e: float,
-#         S_e: float,
-#     ):
-#         return density_profile(
-#             r=r,
-#             rho_s=rho_s,
-#             r_s=r_s,
-#             r_t=r_t,
-#             alpha=alpha,
-#             beta=beta,
-#             gamma=gamma,
-#             rho_g=rho_g,
-#             b_e=b_e,
-#             S_e=S_e,
-#             R_200_mean=R_200_mean,
-#         )
-        
-#     def wrapped_outer(
-#             r: float,
-#             rho_g,
-#             b_e,
-#             S_e,
-#         ):
-#             return density_profile_outer(
-#                     r=r,
-#                     rho_g=rho_g,
-#                     b_e=b_e,
-#                     S_e=S_e,
-#                     R_200_mean=R_200_mean,
-#                 )
-
-
-#     # Global mask
-#     global_mask = bin_centers > 0.02*R_200_mean
-
-#     ### First, fit inner profile. ###
-#     inner_mask = np.logical_and(bin_centers > 0.02*R_200_mean, bin_centers < 0.5*R_200_mean)
-#     try:
-#         popt_inner, _ = curve_fit(density_profile_inner,
-#                                     bin_centers[inner_mask],
-#                                     log_rho[inner_mask],
-#                                     p0=(10**log_rho[0], R_200_mean, 1),
-#                                     # sigma=log_rho_error[inner_mask],
-#                                     # # For some reason bounds make this go very wrong.
-#                                     # bounds=(
-#                                     #     [1e-10 * 10**log_rho[0], 0.001 * R_200_mean, 0.0],
-#                                     #     [np.inf, 10.0 * R_200_mean, 1]
-#                                     # ),
-#                                     maxfev=1000000,
-#                                     )       
-        
-#         ### Second, fit outer profile. ###
-#         outer_mask = bin_centers > 2.0*R_200_mean
-
-#         # Using bounds here messes this up because it can no longer
-#         # use lm, and instead uses trf, unless they are very tight.
-#         # In particular, our requirement that b_e > 1.0 is required.
-        
-#         try:
-#             popt_outer, _ = curve_fit(wrapped_outer,
-#                                         bin_centers[outer_mask],
-#                                         log_rho[outer_mask],
-#                                         p0=(10**log_rho[-1], 2.0, 2.0,),
-#                                         # sigma=log_rho_error[outer_mask],
-#                                         bounds=(
-#                                             [0.01 * 10**log_rho[-1], 1.0, 1.0],
-#                                             [10 * 10**log_rho[-1], 5.0, 5.0]
-#                                             ),
-#                                         maxfev=1000000,
-#                                     )
-
-#             ### Now fit f_trans separately ###
-#             def wrapped_ftrans_only(
-#                 r: float,
-#                 r_t: float,
-#                 beta: float,
-#                 gamma: float,
-#             ):
-#                 return wrapped_profile(
-#                     r,
-#                     *popt_inner,
-#                     r_t,
-#                     beta,
-#                     gamma,
-#                     *popt_outer,
-#                 )
-
-#             middle_mask = np.logical_and(bin_centers > 0.5*R_200_mean, bin_centers < 2.0*R_200_mean)
-            
-#             try:
-#                 popt_ft, _ = curve_fit(
-#                     wrapped_ftrans_only,
-#                     bin_centers[middle_mask],
-#                     log_rho[middle_mask],
-#                     p0=(R_200_mean,
-#                         2,
-#                         4,),
-#                     maxfev=1000000,
-#                     # sigma=log_rho_error[middle_mask],
-#                     bounds=(
-#                         [0.1 * R_200_mean, 1.0, 1.0],
-#                         [2.0 * R_200_mean, 5.0, 12.0]
-#                     )
-#                 )
-
-#                 base_p0 = (
-#                     *popt_inner, *popt_ft, *popt_outer,
-#                 )
-
-#                 change_frac = 1.1
-
-#                 # base_lower = [x / change_frac if x >=0 else x * change_frac for x in base_p0]
-#                 # base_upper = [x * change_frac if x >=0 else x / change_frac for x in base_p0]
-                
-#                 base_lower = [x / change_frac if x > 0 else (-0.1 if x == 0 else x * change_frac) for x in base_p0]
-#                 base_upper = [x * change_frac if x > 0 else (0.1 if x == 0 else x / change_frac) for x in base_p0]
-#                 # print(base_lower)
-#                 # print(base_upper)
-
-#                 # p0 = p0_full if p0_full is not None else base_p0
-                
-#                 ### Fit the entire profile ###
-#                 try:
-#                     popt, _ = curve_fit(wrapped_profile,
-#                                         bin_centers[global_mask],
-#                                         log_rho[global_mask],
-#                                         p0=base_p0,
-#                                         maxfev=1000000,
-#                                         bounds=[base_lower, base_upper],
-#                                         # sigma=log_rho_error[global_mask],
-#                                      )
-
-#                     # def chi_square(p):
-#                     #     return np.sum(((p[global_mask] - log_rho[global_mask])/ log_rho_error[global_mask])**2) / (len(p[global_mask]) - len(popt))
-
-#                     # # Did we actually get a good fit? If not, we should dump this bootstrapping.
-#                     # predicted_values = wrapped_profile(bin_centers * R_200_mean, *popt)
-#                     # new_chi_square = chi_square(predicted_values)
-
-#                     # # If we get a worse fit after tuning, cancel this one
-#                     # old_chi_square = chi_square(wrapped_profile(bin_centers * R_200_mean, *base_p0))
-
-#                     # if old_chi_square < new_chi_square:
-#                     #     # Just use base_p0
-#                     #     popt = base_p0
-#                     #     if old_chi_square > 2.0:
-#                     #         raise RuntimeError("Extremely poor fit for this bootstrap")
-#                     # if new_chi_square > 2.0:
-#                     #     raise RuntimeError("Unable to find good fit for this bootstrap")
-                    
-#                     print('Successfully found optimal params! ')
-#                     return (
-#                         evaluate_profile_at * R_200_mean,
-#                         10 ** wrapped_profile(evaluate_profile_at * R_200_mean, *popt),
-#                         popt,
-#                     )
-                
-#                 # Entire curve fit error
-#                 except RuntimeError as e:
-#                     print(f"Warning: Optimal parameters not found for entire profile. Error: {e}")
-#                     return (
-#                         evaluate_profile_at,
-#                         np.array([0]),
-#                         np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-#                     )   
-            
-#             # Ftrans curve fit error
-#             except RuntimeError as e:
-#                 print(f"Warning: Optimal parameters not found for ftrans profile. Error: {e}")
-#                 return (
-#                     evaluate_profile_at,
-#                     np.array([0]),
-#                     np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-#                 )           
-            
-#         # Outer curve fit error
-#         except RuntimeError as e:
-#             print(f"Warning: Optimal parameters not found for outer profile. Error: {e}")
-#             return (
-#                 evaluate_profile_at,
-#                 np.array([0]),
-#                 np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-#             )
-        
-#     # Inner curve fit error
-#     except RuntimeError as e:
-#         print(f"Warning: Optimal parameters not found for inner profile. Error: {e}")
-#         return (
-#             evaluate_profile_at,
-#             np.array([0]),
-#             np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
-#         )
-
-
-# def fit_gradient_parametric(bin_centers, gradients, R_200_mean, init_p0, gradients_errors=None):
-
-#     # Global mask
-#     global_mask = bin_centers > 0.02*R_200_mean
-
-#     ### First, fit inner profile. ###
-#     r = bin_centers
-    
-#     def wrapped_gradients(
-#         r: float,
-#         rho_s: float,
-#         r_s: float,
-#         alpha: float,
-#         r_t: float,
-#         beta: float,
-#         gamma: float,
-#         rho_g: float,
-#         b_e: float,
-#         S_e: float,
-#         R_200_mean: float,
-#     ):
-#         return density_gradient_profile(
-#             r=r,
-#             rho_s=rho_s,
-#             r_s=r_s,
-#             r_t=r_t,
-#             alpha=alpha,
-#             beta=beta,
-#             gamma=gamma,
-#             rho_g=rho_g,
-#             b_e=b_e,
-#             S_e=S_e,
-#             R_200_mean=R_200_mean,
-#         )
-    
-#     try:
-#         popt, _ = curve_fit(
-#                             density_gradient_profile,
-#                             r,
-#                             gradients,
-#                             p0=[*init_p0, R_200_mean],
-#                             # sigma=log_rho_error[inner_mask],
-#                             # # For some reason bounds make this go very wrong.
-#                             # bounds=(
-#                             #     [1e-10 * 10**log_rho[0], 0.001 * R_200_mean, 0.0],
-#                             #     [np.inf, 10.0 * R_200_mean, 1]
-#                             # ),
-#                             maxfev=1000000,
-#         )       
-#         print('Successfully found optimal params! ')
-#         return (
-#             evaluate_profile_at,
-#             wrapped_gradients(evaluate_profile_at*R_200_mean, *popt) * R_200_mean ** 3,
-#             popt,
-#         )
-        
-#     except RuntimeError as e:
-#         print(f"Warning: Optimal parameters not found for gradient profile. Error: {e}")
-#         return (
-#             evaluate_profile_at,
-#             np.array([0]),
-#             np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
-#         )
-        
-        
-def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=None):
+   
+def fit_profile_parametric_DK14(bin_centers, densities, R_200_mean, density_errors=None):
     """
     Fits a profile in log-log spce based on Equation 6 in
     O'Neil et al. 2021.
@@ -567,11 +276,12 @@ def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=No
     global p0_full
 
     log_rho = np.log10(densities / (R_200_mean ** 3))
+    
+    # if density_errors is not None:
+    #     log_rho_upper = np.log10((densities + density_errors) / (R_200_mean ** 3))
+    #     log_rho_lower = np.log10(np.maximum((densities - density_errors) / (R_200_mean ** 3), 0.01 * densities / (R_200_mean ** 3)))
+    #     log_rho_error = 0.5 * (log_rho_upper - log_rho_lower)
 
-    # log_rho_upper = np.log10((densities + density_errors) / (R_200_mean ** 3))
-    # log_rho_lower = np.log10(np.maximum((densities - density_errors) / (R_200_mean ** 3), 0.01 * densities / (R_200_mean ** 3)))
-
-    # log_rho_error = 0.5 * (log_rho_upper - log_rho_lower)
 
     def wrapped_profile(
         r: float,
@@ -598,6 +308,32 @@ def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=No
             S_e=S_e,
             R_200_mean=R_200_mean,
         )
+        
+    def wrapped_profile_functional(
+        r: float,
+        rho_s: float,
+        r_s: float,
+        alpha: float,
+        r_t: float,
+        beta: float,
+        gamma: float,
+        rho_g: float,
+        b_e: float,
+        S_e: float,
+    ):
+        return density_profile_functional(
+            r=r,
+            rho_s=rho_s,
+            r_s=r_s,
+            r_t=r_t,
+            alpha=alpha,
+            beta=beta,
+            gamma=gamma,
+            rho_g=rho_g,
+            b_e=b_e,
+            S_e=S_e,
+            R_200_mean=R_200_mean,
+        )
 
 
     # Global mask
@@ -607,7 +343,6 @@ def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=No
     r = bin_centers * R_200_mean
 
     inner_mask = np.logical_and(bin_centers > 0.02, bin_centers < 0.8)
-    
     try:
         popt_inner, _ = curve_fit(density_profile_inner,
                                     r[inner_mask],
@@ -623,7 +358,6 @@ def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=No
                                 )       
         
         ### Second, fit outer profile. ###
-        
         def wrapped_outer(
             r: float,
             rho_g,
@@ -639,11 +373,9 @@ def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=No
                 )
 
         outer_mask = bin_centers > 2.0
-
         # Using bounds here messes this up because it can no longer
         # use lm, and instead uses trf, unless they are very tight.
         # In particular, our requirement that b_e > 1.0 is required.
-        
         try:
             popt_outer, _ = curve_fit(wrapped_outer,
                                         r[outer_mask],
@@ -660,7 +392,6 @@ def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=No
                                     )
 
             ### Now fit f_trans separately ###
-            
             def wrapped_ftrans_only(
                 r: float,
                 r_t: float,
@@ -677,7 +408,6 @@ def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=No
                 )
 
             middle_mask = np.logical_and(bin_centers > 0.5, bin_centers < 2.0)
-            
             try:
                 popt_ft, _ = curve_fit(wrapped_ftrans_only,
                                         r[middle_mask],
@@ -692,21 +422,14 @@ def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=No
                                             [2.0 * R_200_mean, 5.0, 12.0]
                                         )
                                     )
-
-                base_p0 = (
-                    *popt_inner, *popt_ft, *popt_outer,
-                )
-
-                change_frac = 1.1
-
-                # base_lower = [x / change_frac if x >=0 else x * change_frac for x in base_p0]
-                # base_upper = [x * change_frac if x >=0 else x / change_frac for x in base_p0]
                 
+                ### Final parameter set ###
+                base_p0 = (*popt_inner, *popt_ft, *popt_outer)
+                change_frac = 1.1
                 base_lower = [x / change_frac if x > 0 else (-0.1 if x == 0 else x * change_frac) for x in base_p0]
                 base_upper = [x * change_frac if x > 0 else (0.1 if x == 0 else x / change_frac) for x in base_p0]
                 # print(base_lower)
                 # print(base_upper)
-
                 # p0 = p0_full if p0_full is not None else base_p0
                 
                 ### Fit the entire profile ###
@@ -779,42 +502,15 @@ def fit_profile_parametric(bin_centers, densities, R_200_mean, density_errors=No
             evaluate_profile_at,
             np.array([0]),
             np.array([0, 0, 0, 0, 0, 0, 0, 0, 0])
-        )       
+        )           
         
-def fit_gradient_parametric(bin_centers, gradients, R_200_mean, init_p0, gradients_errors=None):
+def fit_gradient_parametric_DK14(bin_centers, gradients, R_200_mean, init_p0, gradients_errors=None):
 
     # Global mask
     global_mask = bin_centers > 0.02*R_200_mean
 
     ### First, fit inner profile. ###
     r = bin_centers * R_200_mean
-    
-    def wrapped_gradients(
-        r: float,
-        rho_s: float,
-        r_s: float,
-        alpha: float,
-        r_t: float,
-        beta: float,
-        gamma: float,
-        rho_g: float,
-        b_e: float,
-        S_e: float,
-        R_200_mean: float,
-    ):
-        return density_gradient_profile(
-            r=r,
-            rho_s=rho_s,
-            r_s=r_s,
-            r_t=r_t,
-            alpha=alpha,
-            beta=beta,
-            gamma=gamma,
-            rho_g=rho_g,
-            b_e=b_e,
-            S_e=S_e,
-            R_200_mean=R_200_mean,
-        )
     
     try:
         popt, _ = curve_fit(
@@ -833,7 +529,7 @@ def fit_gradient_parametric(bin_centers, gradients, R_200_mean, init_p0, gradien
         print('Successfully found optimal params! ')
         return (
             evaluate_profile_at,
-            wrapped_gradients(evaluate_profile_at*R_200_mean, *popt) * R_200_mean ** 3,
+            density_gradient_profile(evaluate_profile_at*R_200_mean, *popt) * R_200_mean ** 3,
             popt,
         )
         

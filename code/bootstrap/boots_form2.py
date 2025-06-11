@@ -1,12 +1,10 @@
 import os
 import numpy as np
 from boots_func import *
-from func import count_halos
 import argparse
 
 # Input arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--profile',  default='DK14', type=str)
 parser.add_argument('--sim',      default='MTNG/Hydro-Arepo/MTNG-L500-4320-A/', type=str)
 parser.add_argument('--snapnum',  default=None, type=int)
 parser.add_argument('--Nsample',  default=10000,type=int)
@@ -75,14 +73,13 @@ else:
     bin_start, bin_end, bin_width = None, None, None
     
 # Check the number of halos in each bin
-# if bin_start is not None:
-#     for i in range(int((bin_end - bin_start) / bin_width)):
-#         bin_min = bin_start + i * bin_width
-#         bin_max = bin_min + bin_width
-#         count = np.sum((bin_data >= bin_min) & (bin_data < bin_max))
+if bin_start is not None:
+    for i in range(int((bin_end - bin_start) / bin_width)):
+        bin_min = bin_start + i * bin_width
+        bin_max = bin_min + bin_width
+        count = np.sum((bin_data >= bin_min) & (bin_data < bin_max))
 
-# count = count_halos(bin_data, [10**3, 10**3.5, 10**4, 10**4.5, 10**5], [10**3.5, 10**4, 10**4.5, 10**5, 10**5.5])
-# print(count)
+
 
 if bin_data.shape[0] == 0:
     print('No valid data found!')
@@ -97,7 +94,7 @@ else:
                                             ) 
         
     # Save the results
-    save_stats_dir = f'result/bootstrap_stats_{args.profile}/with_{args.bin_type}/{args.sim}/Nboots_{args.Nboots}/'
+    save_stats_dir = f'result/bootstrap_stats_form2/with_{args.bin_type}/{args.sim}/Nboots_{args.Nboots}/'
     if not os.path.exists(save_stats_dir):
         os.makedirs(save_stats_dir)
 
