@@ -7,8 +7,7 @@ from func import load_stats
 from matplotlib import cm
 from matplotlib import pyplot as plt 
 from matplotlib.colors import BoundaryNorm
-from scipy.stats import pearsonr, spearmanr
-from scipy.stats import linregress
+from scipy.stats import pearsonr
 import pandas as pd
 import seaborn as sns
 plt.style.use('code/style.mplstyle')
@@ -25,7 +24,7 @@ print('')
 print(f'>>> Plot depth and width vs {x_type} per {bin_type} cut <<<')
 print('')
 
-root_dir = f'result/bootstrap_stats/with_{bin_type}/'
+root_dir = f'result/bootstrap_stats_DK14/with_{bin_type}/'
 simus = ['Hydro']
 features = [#'width_dimless', 
            'depth',

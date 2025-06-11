@@ -38,7 +38,7 @@ num_bins, all_bins, _, _ = get_bins(min_bin, max_bin, bin_width)
     
 
 
-root_dir = f'result/bootstrap_stats/with_{bin_type}/'
+root_dir = f'result/bootstrap_stats_DK14/with_{bin_type}/'
 simu = 'Hydro'
 features = ['depth', 'width_dimless', #'DWratio'
             ]

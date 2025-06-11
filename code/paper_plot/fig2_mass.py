@@ -11,7 +11,7 @@ print('')
 print('>>> Plot the depth and width vs mass at z = 0 <<<')
 print('')
 
-root_dir = 'result/bootstrap_stats/with_mass/'
+root_dir = 'result/bootstrap_stats_DK14/with_mass/'
 simus = ['Hydro']
 features = ['width_dimless', 'depth', 'DWratio']
 

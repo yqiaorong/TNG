@@ -16,7 +16,7 @@ print('')
 print(f'>>> Plot depth and width vs {bin_type} _perMassCut <<<')
 print('')
 
-root_dir = f'result/bootstrap_stats/with_{bin_type}_perMassCut/'
+root_dir = f'result/bootstrap_stats_DK14/with_{bin_type}_perMassCut/'
 simu = 'Hydro'
 features = ['depth', 'width_dimless', 'DWratio']
 Ylabels = [r"$\mathcal{D}$", r"$\mathcal{W}$", r"$\mathcal{D}/\mathcal{W}$"]

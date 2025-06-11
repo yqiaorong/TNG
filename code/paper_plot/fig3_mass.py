@@ -11,7 +11,7 @@ print('')
 print(f'>>> Plot depth and width vs {x_type} <<<')
 print('')
 
-root_dir = f'result/bootstrap_stats/with_{x_type}/'
+root_dir = f'result/bootstrap_stats_DK14/with_{x_type}/'
 simu = 'Hydro'
 features = ['depth', 'width_dimless', #'DWratio'
             ]

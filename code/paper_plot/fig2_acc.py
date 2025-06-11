@@ -10,7 +10,7 @@ print('')
 
 current_snap = 214
 bin_type = 'accretions'
-root_dir = f'result/bootstrap_stats/with_{bin_type}'
+root_dir = f'result/bootstrap_stats_DK14/with_{bin_type}'
 simus = ['Hydro']
 features = ['width_dimless', 'depth',]
 

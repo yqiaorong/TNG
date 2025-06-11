@@ -44,7 +44,7 @@ def accret_width2(inputs, a, b):
 #     return a*zval**b + c
 
 
-root_dir = f'result/bootstrap_stats/with_{bin_type}/'
+root_dir = f'result/bootstrap_stats_DK14/with_{bin_type}/'
 simu = 'Hydro'
 features = ['depth', 'width_dimless',]
 Ylabels = [r"$\mathcal{D}$", r"$\mathcal{W}$",]

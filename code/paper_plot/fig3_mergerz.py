@@ -48,13 +48,13 @@ for ifeat, feature in enumerate(features):
     cb._set_scale('log')
    
     # Row 0
-    MTNG_z, MTNG_bin_data, MTNG_feat = load_stats(f'result/bootstrap_stats/with_{bin_type}/MTNG/{simus}-Arepo/MTNG-L500-4320-A/Nboots_1024/',
+    MTNG_z, MTNG_bin_data, MTNG_feat = load_stats(f'result/bootstrap_stats_DK14/with_{bin_type}/MTNG/{simus}-Arepo/MTNG-L500-4320-A/Nboots_1024/',
                                                       f'snap_{snap}_Rsp_stats.npy',
                                                     f'med_{bin_type}', feature)            
     plot_feature(simus, MTNG_z, MTNG_bin_data, MTNG_feat, [axs[0,ifeat], cmap, norm], label=f'z={MTNG_z:.1f}')
     
     # Row 1
-    data_dir = f'result/bootstrap_stats/with_{bin_type}_perMassCut/MTNG/{simus}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
+    data_dir = f'result/bootstrap_stats_DK14/with_{bin_type}_perMassCut/MTNG/{simus}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
     for fname in os.listdir(data_dir):
         print(fname)
         _, MTNG_bin_data, MTNG_feat = load_stats(data_dir, fname, f'med_{bin_type}', feature)    
