@@ -38,6 +38,7 @@ def load_stats(dir, fname, xlabel, ylabel=None, bin_val='z', Pick_z=True):
     
     return z, x_dict, y_dict
 
+
 def plot_feature(simu, z, x_dict, y_dict, plot_info, label=None, ls='.'):
     axs, cmap, norm = plot_info
                      
@@ -52,6 +53,7 @@ def plot_feature(simu, z, x_dict, y_dict, plot_info, label=None, ls='.'):
                     yerr=[y_dict['median']-y_dict['min'], y_dict['max']-y_dict['median']],
                     color=cmap(norm(z)), fmt=ls, label=label)
 
+
 def plot_theory_feature(z, x_dict, y_dict, plot_info, label=None, ls='--'):
     axs, cmap, norm = plot_info
                      
@@ -59,6 +61,7 @@ def plot_theory_feature(z, x_dict, y_dict, plot_info, label=None, ls='--'):
         axs.plot(x_dict, y_dict, color=cmap(norm(z)), ls=ls)
     else:
         axs.plot(x_dict, y_dict, color=cmap(norm(z)), ls=ls, label=label)
+         
                
 def plot_slope_profile(radius, slopes, save_dir, save_name):
     fig_s, axs_s = plt.subplots(1, 1, figsize=(4, 3.3), dpi=500, sharex=True, constrained_layout=True)
@@ -72,7 +75,7 @@ def plot_slope_profile(radius, slopes, save_dir, save_name):
         
         
 # Define the fitting with two variables
-def fitting(func, values, labels, plot_info, bootstrap=False):
+def fitting(func, values, labels, plot_info, p0=None, bounds=None, bootstrap=False):
     from scipy.optimize import curve_fit
     
     x1, x2, y, ymax, ymin = np.asarray(values[0]), np.asarray(values[1]), np.asarray(values[2]),\
@@ -86,14 +89,22 @@ def fitting(func, values, labels, plot_info, bootstrap=False):
     yerr_mean[yerr_mean == 0] = 1e-1
     
     # Curve fitting with input sigma
-    p0 = [1] * (func.__code__.co_argcount - 1) 
+    if p0 is None:
+        p0 = [1] * (func.__code__.co_argcount - 1) 
     # For fiiting width as a function of z
     # p0= [-7.20882095, 1.63511888, -7.05248173E-2, -1.17051206E1,
     #      -3.66871643E-1,  1.07646616,  1.09160168, -9.71760263e-05]
-
-    popt, pcov = curve_fit(func, (x1, x2), y, p0=p0,   
+    
+    if bounds is None:
+        popt, pcov = curve_fit(func, (x1, x2), y, p0=p0,   
                            sigma=yerr_mean, 
                            maxfev=1000000)
+    else:
+        popt, pcov = curve_fit(func, (x1, x2), y, p0=p0,   
+                            sigma=yerr_mean, 
+                            #    bounds = ([-5] * len(p0), [5] * len(p0)),
+                            bounds = bounds,
+                            maxfev=1000000)
     if bootstrap:
         perr = boots_err([x1, x2], y, yerr_mean, func, popt)
     else:
@@ -105,30 +116,37 @@ def fitting(func, values, labels, plot_info, bootstrap=False):
         red_chi2 = np.sum((y-y_fit)**2 / yerr_mean**2) / len(y)
     else:
         red_chi2 = np.sum((y-y_fit)**2 / yerr_mean**2) / (len(y) - len(popt))
+    print('Non reduced chi2:', np.sum((y-y_fit)**2 / yerr_mean**2))
+    print('Reduced chi2:', red_chi2)
     
     # Plot the fitting
-    axs, cmap, norm = plot_info
-    
+    axs, cmap, norm, linestyle = plot_info      
+
     # fitted data
     fitx1, fitx2, fity = [], [], []
     for uniq_x2 in np.unique(x2):
+        if cmap is None:
+            color= 'black'
+        else:
+            color = cmap(norm(uniq_x2))
         ib = np.where(uniq_x2 == x2)[0]
         
         # Find minimum and maximum values
         # ---------------------------------------
-        x1_fit = np.linspace(0, 1.6, 10)
+        x1_fit = np.linspace(1, 14, 20)
+        # x1_fit = np.logspace(13, 15.5, 20)
         x2_fit = np.repeat(uniq_x2, len(x1_fit))
         # ---------------------------------------
         
         y_fit = func([x1_fit, x2_fit], *popt)
         if 0 in ib:
             axs.plot(x1_fit, y_fit, # c='black', 
-                     c=cmap(norm(uniq_x2)), 
-                     ls='--', label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
+                     c=color, 
+                     ls=linestyle, label=r'$\chi^2_{\nu}$ = '+f'{red_chi2:.4f}')
         else:
             axs.plot(x1_fit, y_fit, # c='black', 
-                     c=cmap(norm(uniq_x2)), 
-                     ls='--')
+                     c=color, 
+                     ls=linestyle)
         fitx1.append(x1_fit)
         fitx2.append(np.repeat(uniq_x2, len(x1_fit)))
         fity.append(y_fit)
@@ -170,8 +188,8 @@ def boots_err(xdata, ydata, yerr, your_model, popt):
     # asymmetric errors
     errors_minus = popt - lower_bounds
     errors_plus = upper_bounds - popt
-    print('errors_minus:', errors_minus)
-    print('errors_plus:', errors_plus)
+    # print('errors_minus:', errors_minus)
+    # print('errors_plus:', errors_plus)
     return [errors_plus, errors_minus]
 
     

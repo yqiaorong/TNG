@@ -1,23 +1,27 @@
 import os
-from matplotlib import cm
 from matplotlib import pyplot as plt 
 from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
 from func import *
 
 print('')
-print('>>> Plot the absolute depth and width vs accretions at z = 0 <<<')
+print('>>> Plot the depth and width vs accretions at z = 0 <<<')
 print('')
 
+current_snap = 214
 bin_type = 'accretions'
 root_dir = f'result/bootstrap_stats/with_{bin_type}'
 simus = ['Hydro']
-features = ['width_dimless', 'depth', 'DWratio']
+features = ['width_dimless', 'depth',]
 
 
 def depth(inputs, a, b):
     x, zval = inputs    
     return a*x**b
+
+def depth2(inputs, a, b):
+    x, zval = inputs    
+    return a*x+ b
 
 def width(inputs, a, b):
     x, zval = inputs
@@ -73,7 +77,7 @@ for simu in simus:
         
         # Plot MTNG
         MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
-        MTNG_z, MTNG_bin, MTNG_feat = load_stats(MTNG_dir, 'snap_264_Rsp_stats.npy', f'med_{bin_type}', feature)
+        MTNG_z, MTNG_bin, MTNG_feat = load_stats(MTNG_dir, f'snap_{current_snap}_Rsp_stats.npy', f'med_{bin_type}', feature)
         plot_feature(simu, MTNG_z, MTNG_bin, MTNG_feat, [axs, cmap, norm])
         # Append the data
         all_x_med.append(MTNG_bin['median'])
@@ -112,16 +116,27 @@ for simu in simus:
         all_z = all_z[valid_indices]
         
         # Fit the data
-        popt, perr, red_chi2, y_fit, axs, fitted_data = fitting(bin_type, feature, 
-                                                                all_z, 
-                                                                all_x_med, 
-                                                                all_y_med, all_y_min, all_y_max,
-                                                                fit_func, [axs, cmap, norm],
-                                                                all_x_min, all_x_max, )
+        popt, perr, red_chi2, y_fit, axs, fitted_data = fitting(fit_func, 
+                                                            values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
+                                                            labels = ['accretions', 'z', feature],
+                                                            plot_info = [axs, cmap, norm, '--'], 
+                                                            bootstrap=True)
         print(feature)
         print(popt, red_chi2)
         print(perr)
         print('')
+        
+        # Fit the data
+        if feature == 'depth':
+            popt, perr, red_chi2, y_fit, axs, fitted_data = fitting(depth2, 
+                                                            values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
+                                                            labels = ['accretions', 'z', feature],
+                                                            plot_info = [axs, cmap, norm, 'dotted'], 
+                                                            bootstrap=True)
+            print(feature)
+            print(popt, red_chi2)
+            print(perr)
+            print('')
         
         # ============================================================================================
         # Save the plot
@@ -135,7 +150,7 @@ for simu in simus:
             Y_label = r"$\mathcal{D}/\mathcal{W}$"
         axs.set_ylabel(Y_label)
         axs.set_xlabel(r'$\Gamma$')
-        axs.legend(loc='best')
+        # axs.legend(loc='best')
         
         # ============================================================================================
         # Save the plot
@@ -145,5 +160,5 @@ for simu in simus:
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        plt.savefig(f'{save_dir}/fig2_{bin_type}_{feature}')
+        plt.savefig(f'{save_dir}/fig2_{bin_type}_{feature}_snap{current_snap}')
         plt.close()

@@ -1,53 +1,52 @@
 import os
 import numpy as np
+from matplotlib import cm
 from matplotlib import pyplot as plt 
 from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
-from func import load_stats, plot_feature, fitting
+from func import load_stats, get_bins, plot_feature, fitting
 
 x_type = 'formzOLD'
+if x_type == 'formz':
+    xlabel = r'$z_{\rm form}$'
+elif x_type == 'formzOLD':
+    xlabel = r'$z_{\rm form}$'
+elif x_type == 'formzSub':
+    xlabel = r'$z_{\rm form}$ (half subhalo mass)'
+    
 print('')
 print(f'>>> Plot depth and width vs {x_type} <<<')
 print('')
 
-root_dir = f'result/bootstrap_stats/with_{x_type}/'
+root_dir = f'result/bootstrap_stats/with_{x_type}_perMassCut/'
 simu = 'Hydro'
 features = ['depth', 'width_dimless']
 Ylabels = [r"$\mathcal{D}$", r"$\mathcal{W}$"]
 
-# ============================================================================================
-# Define the fitting function with two variables
-# ============================================================================================
 
 def depth(inputs, a, b):
-    x, zval = inputs
+    x, z = inputs
     return a*x + b
 
-# def depth_from_mass(inputs, a):
-#     x, z = inputs
-#     return 0.008 * (a-np.log10(x))**2.23
 def depth_from_mass(inputs, a, A, B):
     x, z = inputs
     return A * (a-np.log10(x))**B
 
 def width(inputs, a, b):
-    x, zval = inputs
+    x, z = inputs
     return a*np.log(x) + b
 
-# def width_from_mass(inputs, a):
-#     x, z = inputs
-#     return 4.9*1E6 * (a-np.log10(x))**(-5.6)
 def width_from_mass(inputs, A, a, B):
     x, z = inputs
     return A * (a-np.log10(x))**B
     
 # def DW(inputs, a, b, c):
-#     x, zval = inputs
-    # if x_type == 'formzOLD':
-    #     return (-0.34200887*x+3.14556083)/(0.5975754*np.log(x)+2.04735604) # formzOLD
-    # if x_type == 'formzOLD':
-    #     return (-0.59763004*x+3.34975648)/(0.76350522*np.log(x)+2.10171115) # formzOLD
-    
+#     x, mass = inputs
+#     if bin_type == 'formzOLD':
+#        return (-0.3247421*x+3.42859174)/(0.62699963*np.log(x)+1.78740844) # formzOLD
+#     elif bin_type == 'formzSub':
+#         return (-0.26160318*x+3.28166956)/(0.783429*np.log(x)+1.91953979) # formzSub
+
 # ============================================================================================
 # Set up the plot
 # ============================================================================================
@@ -58,24 +57,30 @@ fig, axs = plt.subplots(2, 1, figsize=(4, 6), dpi=500, sharex=True, constrained_
 # Set up the colorbar
 # ============================================================================================
 
-MTNG_snaps = [264]
-MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
+# Use mass cuts
+min_bin, max_bin, bin_width = 13, 15, 0.25
+num_bins, all_bins, _, _ = get_bins(min_bin, max_bin, bin_width)
 
-# all_z = load_all_z(MTNG_dir, MTNG_snaps)
-# all_z.append(2.1)
-all_z = np.array([0, 1, 2])
+cmap = plt.get_cmap('plasma', num_bins)
+bound = np.logspace(min_bin, max_bin+0.01, num_bins+1) 
+norm = BoundaryNorm(bound, cmap.N)
+cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
+                    ax=axs[-1], orientation='horizontal', spacing='proportional', ticks=bound)
 
-# Set up the colorbar
-# -----------------------------------------------------------------------------------------
-cmap = plt.get_cmap('viridis', len(all_z))
-norm = BoundaryNorm(all_z, cmap.N)
-# cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
-#                 ax=axs, orientation='horizontal', spacing='proportional', ticks=bound)
-# # -----------------------------------------------------------------------------------------
+# Reduce colormap ticks sf
+from matplotlib.ticker import FuncFormatter
+def custom_format(x, pos):
+    return f'{x:.1f}'  
+cb.ax.xaxis.set_major_formatter(FuncFormatter(custom_format)) 
+cb.ax.tick_params(axis='x', rotation=0) 
 
+cb.set_label(r'$M_{200m} / M_{\odot}$')
+cb._set_scale('log')
+        
 # ============================================================================================
 # Plot
 # ============================================================================================
+    
 for ifeat, feature in enumerate(features):
     print(feature)
     if feature == 'depth':
@@ -83,30 +88,31 @@ for ifeat, feature in enumerate(features):
     elif feature == 'width_dimless':
         fit_func = width
     
-    all_z, all_x_med, all_x_min, all_x_max = [], [], [], []
+    all_x2, all_x_med, all_x_min, all_x_max = [], [], [], []
     all_y_med, all_y_min, all_y_max = [], [], []
-        
+    
     # Plot MTNG
-    for snap in MTNG_snaps:
-        MTNG_z, MTNG_x_data, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
-                                                    f'med_{x_type}', feature)
+    MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
+    MTNG_list = os.listdir(MTNG_dir)
+    for fname in MTNG_list:
+        MTNG_z, MTNG_x, MTNG_feat = load_stats(MTNG_dir, fname, f'med_{x_type}', feature)    
+        bin_val = 10**(10+float(fname.split('_')[3])/10)
         
         # select x data which >= 0.25
-        MTNG_feat = {k: v[MTNG_x_data['median'] >= 0.25] for k, v in MTNG_feat.items()}
-        MTNG_x_data = {k: v[MTNG_x_data['median'] >= 0.25] for k, v in MTNG_x_data.items()}
+        MTNG_feat = {k: v[MTNG_x['median'] >= 0.25] for k, v in MTNG_feat.items()}
+        MTNG_x = {k: v[MTNG_x['median'] >= 0.25] for k, v in MTNG_x.items()}
         
-        plot_feature(simu, np.round(MTNG_z, 1), MTNG_x_data, MTNG_feat, [axs[ifeat], cmap, norm])
+        plot_feature(simu, bin_val, MTNG_x, MTNG_feat, [axs[ifeat], cmap, norm])
         
         # Append the data
-        all_x_med.append(MTNG_x_data['median'])
-        all_x_min.append(MTNG_x_data['min'])
-        all_x_max.append(MTNG_x_data['max'])
+        all_x_med.append(MTNG_x['median'])
+        all_x_min.append(MTNG_x['min'])
+        all_x_max.append(MTNG_x['max'])
         all_y_med.append(MTNG_feat['median'])
         all_y_min.append(MTNG_feat['min'])
         all_y_max.append(MTNG_feat['max'])
-        # Duplicate z to the same length as the data
-        all_z.append([MTNG_z]*len(MTNG_x_data['median']))
-    
+        all_x2.append(np.repeat(bin_val, len(MTNG_feat['median'])))
+        
     # ============================================================================================
     # Fitting
     # ============================================================================================
@@ -121,7 +127,7 @@ for ifeat, feature in enumerate(features):
     all_y_min = np.concatenate(all_y_min)
     all_y_max = np.concatenate(all_y_max)
     
-    all_z = np.concatenate(all_z)
+    all_x2 = np.concatenate(all_x2)
     
     # Remove NaN values
     valid_indices = ~np.isnan(all_y_med)
@@ -131,38 +137,33 @@ for ifeat, feature in enumerate(features):
     all_y_med = all_y_med[valid_indices]
     all_y_min = all_y_min[valid_indices]
     all_y_max = all_y_max[valid_indices]
-    all_z = all_z[valid_indices]
+    all_x2 = all_x2[valid_indices]
     
     # Fit the data
     if fit_func is not None:
         popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func, 
-                                                            values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
-                                                            labels = [x_type, 'z', feature],
-                                                            plot_info = [axs[ifeat], cmap, norm, '--'], 
+                                                            values = [all_x_med, all_x2, all_y_med, all_y_min, all_y_max],
+                                                            labels = [x_type, 'mass', feature],
+                                                            plot_info = [axs[ifeat], None, norm,  '--'], 
                                                             bootstrap=True)
         print(popt)
-        print(perr)
-        
-        # Save fitted data
-        fitted_data_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
-        if not os.path.exists(fitted_data_dir):
-            os.makedirs(fitted_data_dir)
-        np.save(fitted_data_dir + f'{x_type}_{feature}_fitted_data.npy', fitted_data)
+        print(red_chi2)
+        print('')
         
     # ============================================================================================
     # Plot the fitting from mass equation
     # ============================================================================================
     if feature == 'depth':
         popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(depth_from_mass, 
-                                                            values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
-                                                            labels = [x_type, 'z', feature],
-                                                            plot_info = [axs[ifeat], cmap, norm,  'dotted'], 
+                                                            values = [all_x_med, all_x2, all_y_med, all_y_min, all_y_max],
+                                                            labels = [x_type, 'mass', feature],
+                                                            plot_info = [axs[ifeat], None, norm,  'dotted'], 
                                                             bootstrap=False)
     if feature == 'width_dimless':
         popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(width_from_mass, 
-                                                            values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
-                                                            labels = [x_type, 'z', feature],
-                                                            plot_info = [axs[ifeat], cmap, norm,  'dotted'], 
+                                                            values = [all_x_med, all_x2, all_y_med, all_y_min, all_y_max],
+                                                            labels = [x_type, 'mass', feature],
+                                                            plot_info = [axs[ifeat], None, norm,  'dotted'], 
                                                             bootstrap=False, 
                                                             p0 = [5*10**6, 1, -1],
                                                             bounds=([4*10**6, 0, -10], [5.5*10**6, 10, 0])
@@ -170,17 +171,17 @@ for ifeat, feature in enumerate(features):
     print(popt)
     print(perr)           
     print('')
-    
     axs[ifeat].set_ylabel(Ylabels[ifeat])
-    # axs.legend(loc='best')
     
 # ============================================================================================
 # Save the plot
 # ============================================================================================
-axs[-1].set_xlabel(r'$z_{\rm form}$')
-save_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
+
+axs[-1].set_xlabel(xlabel)
+
+save_dir = f'result/paper_plots/fig4_fit/MTNG-Hydro/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
-plt.savefig(f'{save_dir}/fig3_{x_type}_{simu}')
+plt.savefig(f'{save_dir}/fig4_{x_type}_perMassCut_{simu}')
 plt.close()

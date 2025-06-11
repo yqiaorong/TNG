@@ -2,14 +2,13 @@
     Hydro simulations only."""
 
 import os
-from matplotlib import cm
 from matplotlib import pyplot as plt 
 from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
 from func import *
 
 print('')
-print('>>> Plot the absolute depth and width vs mass at z = 0 <<<')
+print('>>> Plot the depth and width vs mass at z = 0 <<<')
 print('')
 
 root_dir = 'result/bootstrap_stats/with_mass/'
@@ -114,12 +113,11 @@ for simu in simus:
         all_z = all_z[valid_indices]
         
         # Fit the data
-        popt, perr, red_chi2, y_fit, axs, fitted_data = fitting('mass', feature, 
-                                                                all_z, 
-                                                                all_x_med, 
-                                                                all_y_med, all_y_min, all_y_max,
-                                                                fit_func, [axs, cmap, norm],
-                                                                all_x_min, all_x_max, )
+        popt, perr, red_chi2, y_fit, axs, fitted_data = fitting(fit_func, 
+                                                            values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
+                                                            labels = ['mass', 'z', feature],
+                                                            plot_info = [axs, cmap, norm, '--'], 
+                                                            bootstrap=True)
         print(feature)
         print(popt, red_chi2)
         print(perr)
@@ -137,7 +135,7 @@ for simu in simus:
         elif feature == 'DWratio':
             Y_label = r"$\mathcal{D}/\mathcal{W}$"
         axs.set_ylabel(Y_label)
-        axs.set_xlabel('$M_\\odot$')
+        axs.set_xlabel(r'$M_{200m} /M_\odot$')
         axs.legend(loc='best')
         
         # ============================================================================================
