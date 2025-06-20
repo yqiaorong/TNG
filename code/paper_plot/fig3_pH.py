@@ -24,9 +24,9 @@ def depth(inputs, a, b, c, d):
     x, zval = inputs
     return a*x**b + c*zval**d
 
-def width(inputs, a, b, c):
+def width(inputs, a, b):
     x, zval = inputs
-    return a*x**b + c*zval
+    return a*x**b #+ c*zval
 
 def DW(inputs, a, b, c, d):
     x, zval = inputs
@@ -123,22 +123,25 @@ for ifeat, feature in enumerate(features):
     all_z = all_z[valid_indices]
     
     # Fit the data
-    if fit_func is not None:
+    if feature != 'width_dimless':
         popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func, 
                                                             values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
                                                             labels = [x_type, 'z', feature],
                                                             plot_info = [axs[ifeat], cmap, norm, '--'], 
                                                             bootstrap=True)
-        print(popt)
-        print(perr)
-        print(red_chi2)
-        print('')
-        
-        # Save fitted data
-        fitted_data_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
-        if not os.path.exists(fitted_data_dir):
-            os.makedirs(fitted_data_dir)
-        np.save(fitted_data_dir + f'{x_type}_{feature}_fitted_data.npy', fitted_data)
+    else:
+        popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func, 
+                                                            values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
+                                                            labels = [x_type, 'z', feature],
+                                                            plot_info = [axs[ifeat], None, norm, '--'], 
+                                                            bootstrap=True)
+    print('')
+    
+    # Save fitted data
+    fitted_data_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
+    if not os.path.exists(fitted_data_dir):
+        os.makedirs(fitted_data_dir)
+    np.save(fitted_data_dir + f'{x_type}_{feature}_fitted_data.npy', fitted_data)
     
     axs[ifeat].set_ylabel(Ylabels[ifeat])
     # axs[ifeat].legend(loc='best')
@@ -146,8 +149,10 @@ for ifeat, feature in enumerate(features):
 # ============================================================================================
 # Save the plot
 # ============================================================================================
-
-axs[0].set_ylim(2.25, 4)
+#
+# Set lower limit for y-axis
+axs[0].set_ylim(1.5, None)
+axs[-1].set_ylim(0, None)
 axs[-1].set_xlabel(r"$\nu$")
 
 save_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'

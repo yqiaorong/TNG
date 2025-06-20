@@ -518,12 +518,6 @@ def fit_gradient_parametric_DK14(bin_centers, gradients, R_200_mean, init_p0, gr
             r,
             gradients,
             p0=[*init_p0, R_200_mean],
-            # sigma=log_rho_error[inner_mask],
-            # # For some reason bounds make this go very wrong.
-            # bounds=(
-            #     [1e-10 * 10**log_rho[0], 0.001 * R_200_mean, 0.0],
-            #     [np.inf, 10.0 * R_200_mean, 1]
-            # ),
             maxfev=1000000,
         )       
         print('Successfully found optimal params! ')
@@ -538,5 +532,5 @@ def fit_gradient_parametric_DK14(bin_centers, gradients, R_200_mean, init_p0, gr
         return (
             evaluate_profile_at,
             np.full((1023), 0),
-            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0]),
+            np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
         ) 

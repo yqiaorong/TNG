@@ -29,13 +29,15 @@ def gradient_profile_fk(
     r_t: float,
     beta: float,) -> float:
     
-    rho = rho_s * np.exp(-(2.0/alpha)*(np.power(r/r_s, alpha) - (1.0/beta)*(r/r_t)**beta))
+    return r * ( - (2.0/r_s)*np.power(r/r_s, alpha-1) - (1.0/r_t)*np.power(r/r_t, beta-1) )
     
-    # Different functional form for inner profile
-    # -------------------------------------------
-    d_rho_dr = ( - (2.0/r_s)*np.power(r/r_s, alpha-1) - (1.0/r_t)*np.power(r/r_t, beta-1) ) * rho
+    # rho = rho_s * np.exp(-(2.0/alpha)*(np.power(r/r_s, alpha) - (1.0/beta)*(r/r_t)**beta))
+    
+    # # Different functional form for inner profile
+    # # -------------------------------------------
+    # d_rho_dr = ( - (2.0/r_s)*np.power(r/r_s, alpha-1) - (1.0/r_t)*np.power(r/r_t, beta-1) ) * rho
 
-    return r/rho * d_rho_dr
+    # return r/rho * d_rho_dr
         
         
 def fit_profile_parametric_fk(bin_centers, densities, R_200_mean):
@@ -44,78 +46,127 @@ def fit_profile_parametric_fk(bin_centers, densities, R_200_mean):
     r = bin_centers * R_200_mean
     
     try:
-        popt1, _ = curve_fit(density_profile_fk, r, log_rho,
-                                    p0=(10**log_rho[0], 
-                                        R_200_mean, 0.18,
-                                        R_200_mean, 0.3,), # Different functional form
-                                    # sigma=log_rho_error[inner_mask],
-                                    bounds=(
-                                        [0.01*10**log_rho[0], 0.01*R_200_mean, 0.03, 0.5*R_200_mean, 0.1],
-                                        [20*10**log_rho[0],   4.5*R_200_mean, 0.4,  3*R_200_mean, 10]
-                                           ),
-                                    maxfev=10000000,
-                                )       
-        # Fit again
-        popt2, _ = curve_fit(density_profile_fk, r, log_rho, p0=popt1, maxfev=10000000)   
+        # Step 1: Fix alpha and beta
+        def fixed_ab_profile(r, rho_s, r_s, r_t):
+            alpha_fixed = 0.18
+            beta_fixed = 3.0
+            return density_profile_fk(r, rho_s, r_s, alpha_fixed, r_t, beta_fixed)
         
-        # Compare the chi square
-        chi2_1 = np.sum((density_profile_fk(r, *popt1) - log_rho) ** 2)
-        chi2_2 = np.sum((density_profile_fk(r, *popt2) - log_rho) ** 2)
-        if chi2_2 < chi2_1: 
-            print('Successfully found optimal params! ')
-            return (
-                evaluate_profile_at,
-                10 ** density_profile_fk(evaluate_profile_at * R_200_mean, *popt2) * R_200_mean ** 3,
-                popt2,
-            )  
-        else:
-            print('Warning: Optimal parameters not found, using the first fit.')
-            return (
-                evaluate_profile_at,
-                10 ** density_profile_fk(evaluate_profile_at * R_200_mean, *popt1) * R_200_mean ** 3,
-                popt1,
-            )
-                        
-    # Inner curve fit error
+        popt_step1, _ = curve_fit(fixed_ab_profile, r, log_rho,
+                                p0=(10**log_rho[0], R_200_mean, R_200_mean),
+                                bounds=(
+                                    [0.01*10**log_rho[0], 0.01*R_200_mean, 0.5*R_200_mean],
+                                    [20*10**log_rho[0], 4.5*R_200_mean, 3*R_200_mean]
+                                       ),
+                                maxfev=100000
+                                )
+        
+        # Step 2: Use popt from step 1 as initial guess, with alpha=0.18 and beta=3
+        p0_all = [popt_step1[0], popt_step1[1], 0.18, popt_step1[2], 3.0]
+        popt_all, _ = curve_fit(density_profile_fk, r, log_rho,
+                                p0=p0_all,
+                                # bounds=(
+                                #     [0.01*10**log_rho[0], 0.01*R_200_mean, 0.03, 0.5*R_200_mean, 0.1],
+                                #     [20*10**log_rho[0], 4.5*R_200_mean, 0.4, 3*R_200_mean, 10]
+                                # ),
+                                maxfev=1000000
+                            )    
+        print('Successfully fitted all parameters!')
+
+        return (
+            evaluate_profile_at,
+            10 ** density_profile_fk(evaluate_profile_at * R_200_mean, *popt_all) * R_200_mean ** 3,
+            popt_all
+        )
+
     except RuntimeError as e:
         print(f"Warning: Optimal parameters not found. Error: {e}")
         return (
             evaluate_profile_at,
             np.array([0]),
             np.array([0, 0, 0, 0, 0])
-        )       
+        )    
         
         
 def fit_gradient_parametric_fk(bin_centers, gradients, R_200_mean, init_p0):
 
     r = bin_centers * R_200_mean
     print('print p0', init_p0)
+    
+    # Step 1: Fix alpha and beta
+    def fixed_ab_gradient(r, rho_s, r_s, r_t):
+        alpha_fixed = 0.18
+        beta_fixed = 3.0
+        rho = rho_s * np.exp(-(2.0/alpha_fixed)*(np.power(r/r_s, alpha_fixed) - (1.0/beta_fixed)*(r/r_t)**beta_fixed))
+        d_rho_dr = (- (2.0/r_s)*np.power(r/r_s, alpha_fixed - 1) - (1.0/r_t)*np.power(r/r_t, beta_fixed - 1)) * rho
+        return r/rho * d_rho_dr
+    
     try:
-        popt, _ = curve_fit(gradient_profile_fk,
-                            r,gradients,
-                            p0=init_p0,
-                            # sigma=log_rho_error,
-                            maxfev=1000000,
-                            # bounds=(
-                            #     [0.01*10**init_p0[0], 0.1*init_p0[1], 0.1,  0.01*R_200_mean, 0.01],
-                            #     [20*10**init_p0[0],   50*init_p0[1],  20.0, 100*R_200_mean,  50.0]
-                            #         ),
-                        )    
-           
-        print('Successfully found optimal params! ')
+        # Step 1 fit
+        popt_step1, _ = curve_fit(
+                                fixed_ab_gradient, r, gradients,
+                                p0=(1e-5, R_200_mean, R_200_mean),  # Reasonable starting point
+                                bounds=(
+                                    [1e-8, 0.01*R_200_mean, 0.5*R_200_mean],
+                                    [1e3, 10*R_200_mean, 3.0*R_200_mean]
+                                       ),
+                                maxfev=100000
+                                )
+
+        # Step 2: Use popt from step 1 to fit all 5 parameters
+        init_p0 = [popt_step1[0], popt_step1[1], 0.18, popt_step1[2], 3.0]
+
+        popt_all, _ = curve_fit(gradient_profile_fk, r, gradients,
+                                p0=init_p0,
+                                # bounds=(
+                                #     [1e-8, 0.01*R_200_mean, 0.03, 0.5*R_200_mean, 0.1],
+                                #     [1e3, 10*R_200_mean, 0.4, 3.0*R_200_mean, 10.0]
+                                # ),
+                                maxfev=1000000
+                            )
+
+        print('Successfully fitted all parameters!')
+
         return (
             evaluate_profile_at,
-            gradient_profile_fk(evaluate_profile_at*R_200_mean, *popt) * R_200_mean ** 3,
-            popt,
+            gradient_profile_fk(evaluate_profile_at * R_200_mean, *popt_all) * R_200_mean ** 3,
+            popt_all,
         )
-        
+
     except RuntimeError as e:
         print(f"Warning: Optimal parameters not found. Error: {e}")
         return (
             evaluate_profile_at,
-            np.full((1023), 0),
-            np.array([0, 0, 0, 0, 0,]),
-        ) 
+            np.full((1023,), 0),
+            np.array([0, 0, 0, 0, 0]),
+        )
+        
+    # try:
+    #     popt, _ = curve_fit(gradient_profile_fk,
+    #                         r,gradients,
+    #                         p0=init_p0,
+    #                         # sigma=log_rho_error,
+    #                         maxfev=1000000,
+    #                         # bounds=(
+    #                         #     [0.01*10**init_p0[0], 0.1*init_p0[1], 0.1,  0.01*R_200_mean, 0.01],
+    #                         #     [20*10**init_p0[0],   50*init_p0[1],  20.0, 100*R_200_mean,  50.0]
+    #                         #         ),
+    #                     )    
+           
+    #     print('Successfully found optimal params! ')
+    #     return (
+    #         evaluate_profile_at,
+    #         gradient_profile_fk(evaluate_profile_at*R_200_mean, *popt) * R_200_mean ** 3,
+    #         popt,
+    #     )
+        
+    # except RuntimeError as e:
+    #     print(f"Warning: Optimal parameters not found. Error: {e}")
+    #     return (
+    #         evaluate_profile_at,
+    #         np.full((1023), 0),
+    #         np.array([0, 0, 0, 0, 0,]),
+    #     ) 
         
         
         

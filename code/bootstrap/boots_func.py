@@ -5,13 +5,13 @@ import os
 from func import *
 from func2 import *
 
-def init_bins(args, array_1d, bin_type, bins=None, bin_width=None, bin_start=None, bin_end=None):
+def init_bins(array_1d, bin_type, bins=None, bin_width=None, bin_start=None, bin_end=None):
     
     # Set up the bins
     if bins is None:
         if bin_type == 'mass':
             # Logspace
-            bin_start, bin_end, bin_width = 3, 6, 0.5
+            bin_start, bin_end, bin_width = 3, 5.5, 0.5
             bins = np.logspace(bin_start, bin_end, num=int((bin_end - bin_start) / bin_width) + 1)
         else:
             if bin_start is None or bin_end is None:
@@ -19,7 +19,7 @@ def init_bins(args, array_1d, bin_type, bins=None, bin_width=None, bin_start=Non
                 bin_start, bin_end = math.floor(min_bin*2)/2, math.ceil(max_bin*2)/2
             if bin_width is None:
                 # Ask to enter bin_width
-                bin_width = float(input(f'Enter bin width for {args.bin_type}: '))
+                bin_width = float(input(f'Enter bin width for {bin_type}: '))
             bins = np.arange(bin_start, bin_end+bin_width, bin_width)
             print('old bins: ', bins)
 
@@ -31,7 +31,7 @@ def init_bins(args, array_1d, bin_type, bins=None, bin_width=None, bin_start=Non
             new_bins.append(b)
             
     if len(new_bins) != 0:
-        if args.bin_type == 'mass':
+        if bin_type == 'mass':
             new_bins.append(10**(np.log10(new_bins[-1])+bin_width))
         else:
             new_bins.append(new_bins[-1]+bin_width)
@@ -58,7 +58,7 @@ def bootstrap_all_features(args, params, data, x_type,
     radial_bins, densities, x_vals, halo_R_Mean200 = data[0], data[1], data[2], data[3]
     total_num_halos = x_vals.shape[0]
 
-    x_bins = init_bins(args, x_vals, bin_type=x_type, bins=x_bins, bin_width=x_width, bin_start=x_start, bin_end=x_end)
+    x_bins = init_bins(x_vals, bin_type=x_type, bins=x_bins, bin_width=x_width, bin_start=x_start, bin_end=x_end)
     
     if len(x_bins) != 0:
         # Initialize the results
@@ -110,13 +110,13 @@ def bootstrap_all_features(args, params, data, x_type,
                             break
                                         
                         # If the left part of the gradients are not increasing, keep this bootstrap
-                        # if not np.all(np.diff(fitted_slope[fitted_radius < 0.1]) < 1E-3):
-                        #     print('     This bootstrap is abandoned!-----Left part of the gradients are increasing!')
-                        #     reject_times[i] += 1
-                        #     results[i, :, valid_boots] = -1
-                        #     print(f'     Cut {i} reject times: ', reject_times[i])
-                        #     # exit()
-                        #     break                          
+                        if not np.all(np.diff(fitted_slope[fitted_radius < 0.1]) < 1E-3):
+                            print('     This bootstrap is abandoned!-----Left part of the gradients are increasing!')
+                            reject_times[i] += 1
+                            results[i, :, valid_boots] = -1
+                            print(f'     Cut {i} reject times: ', reject_times[i])
+                            # exit()
+                            break                          
         
                         # Compute the median mass in the mass cut
                         med = compute_median(select_vals, x_bins[i], x_bins[i+1])
@@ -126,7 +126,7 @@ def bootstrap_all_features(args, params, data, x_type,
                         Rsp_dimless = fitted_radius[np.argmin(fitted_slope)]  # [dimensionless]
                         Rsp = physical_fitted_radius[np.argmin(fitted_slope)] # [kpc]
                         
-                        # # If the gradients have more than one minimum, reject this bootstrap
+                        # If the gradients have more than one minimum, reject this bootstrap
                         # if test_shape(fitted_radius, fitted_slope, Rsp_dimless):
                         #     print('     This bootstrap is abandoned!-----More than one minimum found!')
                         #     reject_times[i] += 1
@@ -138,34 +138,22 @@ def bootstrap_all_features(args, params, data, x_type,
                         min_grad = np.min(fitted_slope)
                         min_grad_idx = np.argmin(fitted_slope)
                         print(f'min grad index: {min_grad_idx}, min grad val: {min_grad}')
-                        # if args.bin_type == 'NFWconc' and i == 3 and min_grad < -4:
-                        #     print('     This bootstrap is abandoned!-----Inaccurate Rsp found!')
-                        #     reject_times[i] += 1
-                        #     results[i, :, valid_boots] = -1
-                        #     print(f'     Cut {i} reject times: ', reject_times[i])
-                        #     break
-                        # elif args.bin_type == 'mass' and min_grad < -5:
-                        #     print('     This bootstrap is abandoned!-----Inaccurate Rsp found!')
-                        #     reject_times[i] += 1
-                        #     results[i, :, valid_boots] = -1
-                        #     print(f'     Cut {i} reject times: ', reject_times[i])
-                        #     break
-                        
-                        # if min_grad_idx < 600:
-                        #     print('     This bootstrap is abandoned!-----Inaccurate Rsp found!')
-                        #     reject_times[i] += 1
-                        #     results[i, :, valid_boots] = -1
-                        #     print(f'     Cut {i} reject times: ', reject_times[i])
-                        #     break
                    
                         left_data = fitted_slope[:min_grad_idx]
+                        if len(left_data) < 10:
+                            print('     This bootstrap is abandoned!-----Inaccurate Rsp found!')
+                            reject_times[i] += 1
+                            results[i, :, valid_boots] = -1
+                            print(f'     Cut {i} reject times: ', reject_times[i])
+                            break
                         right_data = fitted_slope[min_grad_idx:] 
                         
-                        max_grad = np.max(right_data) 
-                        if max_grad > 0:
-                            max_grad = np.max(slope) 
-                        if max_grad > 0:
-                            max_grad = 0
+                        # max_grad = np.max(right_data) 
+                        # if max_grad > 0:
+                        #     max_grad = np.max(slope) 
+                        # if max_grad > 0:
+                        #     max_grad = 0
+                        _, max_grad = find_turning(np.log10(fitted_radius[min_grad_idx:]), right_data)
                         print('max grad', max_grad)
                         depth = max_grad - min_grad
                         
@@ -182,13 +170,13 @@ def bootstrap_all_features(args, params, data, x_type,
                         
                         # Depth vs width
                         DWratio = depth / width_dimless
-                        # print(f'DW ratio: {DWratio}')
-                        # if DWratio > 8 or DWratio < 0.5:
-                        #     print('     This bootstrap is abandoned!-----Inaccurate DWratio found!')
-                        #     reject_times[i] += 1
-                        #     results[i, :, valid_boots] = -1
-                        #     print(f'     Cut {i} reject times: ', reject_times[i])
-                        #     break
+                        print(f'DW ratio: {DWratio}')
+                        if DWratio > 8 or DWratio < 0.1:
+                            print('     This bootstrap is abandoned!-----Inaccurate DWratio found!')
+                            reject_times[i] += 1
+                            results[i, :, valid_boots] = -1
+                            print(f'     Cut {i} reject times: ', reject_times[i])
+                            break
                         
                         try:
                             plot_dir = f'result/bootstrap_plots_{args.profile}/{args.sim}/with_{plot_x_type_name}/snap_{args.snapnum}/cut_{i}/'
@@ -200,6 +188,7 @@ def bootstrap_all_features(args, params, data, x_type,
                         plot_profile(radius=radius, rho=rho, rho_err=rho_err, 
                                      slope=slope, slope_err=slope_err, 
                                      fitted_radius=fitted_radius, fitted_rho=fitted_rho, fitted_slope=fitted_slope,
+                                     Rsp = Rsp_dimless,
                                         depth_coords = [(Rsp_dimless, min_grad), (Rsp_dimless, max_grad)],
                                         width_coords = [(fitted_radius[left_idx], half_grad), (fitted_radius[right_idx], half_grad)], 
                                         plot_dir=plot_dir, plot_fname=plot_fname, plot_text=f'cut_{i}_{plot_fname.split('_')[1]}')
@@ -223,7 +212,7 @@ def bootstrap_all_features(args, params, data, x_type,
                 
         # Get the statistical results 
         final_results = {'z': z, 'h': h, f'{x_type}_bins': x_bins[:-1]}
-        final_results[f'med_{x_type}'] = np.percentile(results[:, 0, :], [16, 50, 84], axis=1)
+        final_results[f'med_{x_type}']  = np.percentile(results[:, 0, :], [16, 50, 84], axis=1)
         final_results['Rsp']            = np.percentile(results[:, 1, :], [16, 50, 84], axis=1)
         final_results['depth']          = np.percentile(results[:, 2, :], [16, 50, 84], axis=1)
         final_results['abs_depth']      = np.percentile(results[:, 3, :], [16, 50, 84], axis=1)    
@@ -246,9 +235,45 @@ def bootstrap_all_features(args, params, data, x_type,
     
     else:
         final_results = {}
-        final_params_results = {}
         
-    return final_results, final_params_results
+    return final_results
+
+
+def find_turning(x, y):
+    from scipy.ndimage import gaussian_filter1d
+    y = gaussian_filter1d(y, sigma=2)
+  
+    dydx = np.gradient(y, x)
+    d2ydx = np.gradient(dydx, x)
+    d3ydx = np.gradient(d2ydx, x)
+    
+    # Remove the sides
+    x = x[:-10]
+    y = y[:-10]
+    dydx = dydx[:-10]
+    d2ydx = d2ydx[:-10]
+    d3ydx = d3ydx[:-10]
+    
+    d3ydx_min_idx = np.argmin(d3ydx)
+    d3ydx_right = d3ydx[d3ydx_min_idx:]
+    
+    final_idx = np.argmax(d3ydx_right) + d3ydx_min_idx
+    
+    x_curv = x[final_idx]
+    y_curv = y[final_idx]
+    
+    # from matplotlib import pyplot as plt
+    # plt.plot(x, y, label='y')
+    # plt.plot(x, dydx, label='dydx')
+    # plt.plot(x, d2ydx, label='d2ydx')
+    # plt.plot(x, d3ydx, label='d3ydx')
+    # plt.axvline(x=x_curv, color='k', linestyle='--', label='Turning point')
+    
+    # plt.legend()
+    # plt.ylim(-4000, 4000)
+    # plt.savefig('test.png')
+    # plt.close()
+    return x_curv, y_curv
 
 
 def test_shape(radius, slopes, Rsp):
@@ -267,6 +292,7 @@ def test_shape(radius, slopes, Rsp):
 
 def plot_profile(radius, rho, slope, 
                  fitted_radius, fitted_rho, fitted_slope, 
+                 Rsp,
                  plot_dir, plot_fname, plot_text=None,
                  rho_err=None, slope_err=None, 
                  depth_coords=None, width_coords=None,):
@@ -275,30 +301,34 @@ def plot_profile(radius, rho, slope,
     from matplotlib import pyplot as plt  
     plt.style.use('code/style.mplstyle')
     
-    fig, axs = plt.subplots(2, 1, figsize=(2, 3))
+    fig, axs = plt.subplots(2, 1, figsize=(3, 4), sharex=True, dpi=500)
+    
+    # Plot vertical line for Rsp
+    axs[1].axvline(x=Rsp, color='C0', linestyle='dotted', label='Rsp')
+    axs[0].axvline(x=Rsp, color='C0', linestyle='dotted')
  
-    axs[0].scatter(radius, rho, s=1, # color='b', 
+    axs[0].scatter(radius, rho, s=1, # color='C2',
                 #    label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
                    # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                    )
     if rho_err is not None:
-        axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, # color = 'b',
+        axs[0].fill_between(radius, rho-rho_err[:,0], rho+rho_err[:,1], alpha = 0.2, # color='C2',
                             # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                             )
-    axs[0].plot(fitted_radius, fitted_rho, lw=0.5, # color='salmon',
+    axs[0].plot(fitted_radius, fitted_rho, lw=0.5, # color='C2',
                 # label=f'Fit: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                 )
     
     # Plot the fitted gradients
-    axs[1].scatter(radius, slope, s=1, # color='b',
+    axs[1].scatter(radius, slope, s=1, # color='C2',
                   # label=r"mass = $10^{{{:.1f}}}$ ~ $10^{{{:.1f}}}$ $M_\odot$".format(mass_cut[0]+10, mass_cut[1]+10)
                    # label=f'Data: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                    )
     if slope_err is not None:
-        axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, # color = 'b',
+        axs[1].fill_between(radius, slope-slope_err[:,0], slope+slope_err[:,1], alpha = 0.2, # color='C2',
                             # label=f'Errorbar: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                             )
-    axs[1].plot(fitted_radius, fitted_slope, lw=0.5, # color='salmon',
+    axs[1].plot(fitted_radius, fitted_slope, lw=0.5, # color='C2',
                 # label=f'Theory: mass bin 10^{mass_cut[0]+10} ~ 10^{mass_cut[1]+10} Msun/h: {num_halo} halos'
                 )
     
@@ -306,12 +336,13 @@ def plot_profile(radius, rho, slope,
     if depth_coords is not None:
         x_depth, y_depth = zip(*depth_coords)
         x_width, y_width = zip(*width_coords)
-        axs[1].plot(x_depth, y_depth, color='red', linestyle='-', label='Depth')
-        axs[1].plot(x_width, y_width, color='blue', linestyle='-', label='Width')
+        axs[1].plot(x_depth, y_depth, color='C3', linestyle='-', label='Depth')
+        axs[1].plot(x_width, y_width, color='C2', linestyle='-', label='Width')
+    
     
     # Plot text
-    if plot_text is not None:
-        axs[0].text(0.5, 0.8, plot_text, transform=axs[0].transAxes, fontsize=8, verticalalignment='top')
+    # if plot_text is not None:
+    #     axs[0].text(0.5, 0.8, plot_text, transform=axs[0].transAxes, fontsize=8, verticalalignment='top')
     
     # General settings
     axs[0].set_xscale('log')
@@ -319,14 +350,14 @@ def plot_profile(radius, rho, slope,
     axs[0].set_ylabel(r"$\rho$/$\rho_c$")
 
     axs[1].set_xscale('log')
-    axs[1].set_xlabel(r"r/$R_{200}$")
-    axs[1].set_ylabel("Slope")
-    axs[1].set_ylim(-6,-0)
+    axs[1].set_xlabel(r"r/$R_{200m}$")
+    axs[1].set_ylabel(r"dlog$\rho$/dlogr")
+    # axs[1].set_ylim(-6,-0)
     
     # Save the plot
     if not os.path.exists(plot_dir):
         os.makedirs(plot_dir)
-    plt.savefig(plot_dir+plot_fname, dpi=100)
+    plt.savefig(plot_dir+plot_fname)
     plt.close()
     
 

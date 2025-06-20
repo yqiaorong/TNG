@@ -22,7 +22,19 @@ Ylabels = [r"$\mathcal{D}$", r"$\mathcal{W}$", r"$\mathcal{D}/\mathcal{W}$"]
 # Set up the plot
 # ============================================================================================
 
-fig, axs = plt.subplots(2, 3, figsize=(9,5), dpi=500, sharex=True, constrained_layout=True)
+import matplotlib.gridspec as gridspec
+
+fig = plt.figure(figsize=(9, 5), dpi=500)
+gs = gridspec.GridSpec(3, 3, figure=fig, height_ratios=[1, 1, 0.05], hspace=0.05)  # 2 rows for plots, 1 for colorbar
+
+axs = np.empty((2, 3), dtype=object)  # 2 rows × 3 columns subplot array
+
+# Create subplots for top 2 rows
+for col in range(3):
+    # axs[row, col] = fig.add_subplot(gs[row, col])
+    axs[0, col] = fig.add_subplot(gs[0, col])
+    axs[1, col] = fig.add_subplot(gs[1, col], sharex=axs[0, col]) 
+    axs[0, col].tick_params(labelbottom=False)
 
 # ============================================================================================
 # Set up the colorbar
@@ -36,16 +48,23 @@ cmap = plt.get_cmap('plasma', num_bins)
 bound = np.logspace(min_bin, max_bin+0.01, num_bins+1) 
 norm = BoundaryNorm(bound, cmap.N)
 
+# Create long horizontal colorbar in the third row
+cbar_ax = fig.add_subplot(gs[2, :])  # full-width colorbar
+cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), cax=cbar_ax,
+                  orientation='horizontal', spacing='proportional', ticks=bound)
+cb.set_label(r'$M_{200m}/M_{\odot}$')
+cb._set_scale('log')
+
 # ============================================================================================
 # Plot
 # ============================================================================================
 
 for ifeat, feature in enumerate(features):
-    # Plot colour bar
-    cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=axs[1,ifeat], 
-                      orientation='horizontal', spacing='proportional', ticks=bound)
-    cb.set_label(r'$M_{200m}/M_{\odot}$')
-    cb._set_scale('log')
+    # # Plot colour bar
+    # cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap), ax=axs[1,ifeat], 
+    #                   orientation='horizontal', spacing='proportional', ticks=bound)
+    # cb.set_label(r'$M_{200m}/M_{\odot}$')
+    # cb._set_scale('log')
    
     # Row 0
     MTNG_z, MTNG_bin_data, MTNG_feat = load_stats(f'result/bootstrap_stats_DK14/with_{bin_type}/MTNG/{simus}-Arepo/MTNG-L500-4320-A/Nboots_1024/',

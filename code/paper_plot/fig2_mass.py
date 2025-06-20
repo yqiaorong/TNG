@@ -27,6 +27,7 @@ def mass_width(inputs, a, b):
 
 for simu in simus:
     for feature in features:
+        print(feature)
         
         if feature == 'depth':
             fit_func = mass_depth
@@ -118,9 +119,9 @@ for simu in simus:
                                                             labels = ['mass', 'z', feature],
                                                             plot_info = [axs, cmap, norm, '--'], 
                                                             bootstrap=True)
-        print(feature)
-        print(popt, red_chi2)
-        print(perr)
+
+        # print(popt, red_chi2)
+        # print(perr)
         print('')
         
         # ============================================================================================
@@ -136,7 +137,7 @@ for simu in simus:
             Y_label = r"$\mathcal{D}/\mathcal{W}$"
         axs.set_ylabel(Y_label)
         axs.set_xlabel(r'$M_{200m} /M_\odot$')
-        axs.legend(loc='best')
+        # axs.legend(loc='best')
         
         # ============================================================================================
         # Save the plot

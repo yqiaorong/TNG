@@ -105,10 +105,12 @@ def fitting(func, values, labels, plot_info, p0=None, bounds=None, bootstrap=Fal
                             #    bounds = ([-5] * len(p0), [5] * len(p0)),
                             bounds = bounds,
                             maxfev=1000000)
+    print('Optimal parameters:', popt)
     if bootstrap:
         perr = boots_err([x1, x2], y, yerr_mean, func, popt)
     else:
         perr = np.sqrt(np.diag(pcov))
+        print('Errors:', perr)
 
     # Compute reduced chi-square 
     y_fit = func([x1, x2], *popt)
@@ -133,8 +135,8 @@ def fitting(func, values, labels, plot_info, p0=None, bounds=None, bootstrap=Fal
         
         # Find minimum and maximum values
         # ---------------------------------------
-        x1_fit = np.linspace(1, 14, 20)
-        # x1_fit = np.logspace(13, 15.5, 20)
+        x1_fit = np.linspace(0, 2, 10)
+        # x1_fit = np.logspace(13, 15.5, 6)
         x2_fit = np.repeat(uniq_x2, len(x1_fit))
         # ---------------------------------------
         
@@ -190,6 +192,9 @@ def boots_err(xdata, ydata, yerr, your_model, popt):
     errors_plus = upper_bounds - popt
     # print('errors_minus:', errors_minus)
     # print('errors_plus:', errors_plus)
+    # Get average error
+    errors_avg = (errors_minus + errors_plus) / 2
+    print('average error:', errors_avg)
     return [errors_plus, errors_minus]
 
     

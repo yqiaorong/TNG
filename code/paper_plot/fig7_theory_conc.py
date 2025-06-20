@@ -7,6 +7,43 @@ plt.style.use('code/style.mplstyle')
 from func import *
 from matplotlib.ticker import FormatStrFormatter
 
+def find_turning(x, y):
+    from scipy.ndimage import gaussian_filter1d
+    y = gaussian_filter1d(y, sigma=2)
+  
+    dydx = np.gradient(y, x)
+    d2ydx = np.gradient(dydx, x)
+    d3ydx = np.gradient(d2ydx, x)
+    
+    # Remove the sides
+    x = x[:-10]
+    y = y[:-10]
+    dydx = dydx[:-10]
+    d2ydx = d2ydx[:-10]
+    d3ydx = d3ydx[:-10]
+    
+    d3ydx_min_idx = np.argmin(d3ydx)
+    d3ydx_right = d3ydx[d3ydx_min_idx:]
+    
+    final_idx = np.argmax(d3ydx_right) + d3ydx_min_idx
+    
+    x_curv = x[final_idx]
+    y_curv = y[final_idx]
+    
+    # from matplotlib import pyplot as plt
+    # plt.plot(x, y, label='y')
+    # plt.plot(x, dydx, label='dydx')
+    # plt.plot(x, d2ydx, label='d2ydx')
+    # plt.plot(x, d3ydx, label='d3ydx')
+    # plt.axvline(x=x_curv, color='k', linestyle='--', label='Turning point')
+    
+    # plt.legend()
+    # plt.ylim(-4000, 4000)
+    # plt.savefig('test.png')
+    # plt.close()
+    return x_curv, y_curv
+
+
 
 bin_type = 'NFWconc'
 xlabel = r'$c$'
@@ -101,7 +138,9 @@ for ifeat, feature in enumerate(features):
                 left_data = slopes[:min_grad_idx]
                 right_data = slopes[min_grad_idx:]
                 
+                # Depth
                 max_grad = np.max(right_data)
+                _, max_grad = find_turning(np.log10(radius[min_grad_idx:]), right_data)
                 depth = max_grad - min_grad
                 
                 # Width
@@ -113,6 +152,9 @@ for ifeat, feature in enumerate(features):
                 # Depth vs width
                 DWratio = depth / width_dimless
                 
+                # if fname == 'snap_264_mass_30_Rsp_stats.npy' and i == params.shape[1]-1:
+                #     theory_feats.append(np.nan)
+                # else:                
                 if feature == 'depth':
                     theory_feats.append(depth)
                 elif feature == 'width_dimless':
@@ -121,13 +163,19 @@ for ifeat, feature in enumerate(features):
                     theory_feats.append(DWratio)
                 elif feature == 'abs_depth':
                     theory_feats.append(min_grad)
+                        
             else:
                 theory_feats.append(np.nan)
-
-        # Sort data
-        sort_idx = np.argsort(MTNG_bin_data_acc['median'])
-        if feature != 'depth':
-            plot_theory_feature(bin_val, MTNG_bin_data_acc['median'][sort_idx], np.array(theory_feats)[sort_idx], 
+        # Ensure the shape matches
+        theory_feats = np.array(theory_feats)
+        
+        # Remove nan
+        valid = ~np.isnan(MTNG_feat_acc['median']) & ~np.isnan(theory_feats)
+        MTNG_feat_acc = {key: val[valid] for key, val in MTNG_feat_acc.items()}
+        theory_feats  = theory_feats[valid]
+        MTNG_bin_data_acc = {key: val[valid] for key, val in MTNG_bin_data_acc.items()}
+        
+        plot_theory_feature(bin_val, MTNG_bin_data_acc['median'], theory_feats, 
                             [axs[ifeat], cmap, norm], label=f'z=0.0')
                 
         plot_feature(simu, bin_val, MTNG_bin_data_acc, MTNG_feat_acc, 
@@ -140,10 +188,8 @@ for ifeat, feature in enumerate(features):
 # ============================================================================================
 # Save the plot
 # ============================================================================================
-# if feature == 'DWratio':
-#     axs.set_ylim(0.5, 4)
 
-axs[2].set_xlabel(xlabel)
+axs[-1].set_xlabel(xlabel)
 
 plt.savefig(f'{save_dir}/{bin_type}_{simu}')
 plt.close()

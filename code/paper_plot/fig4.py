@@ -28,21 +28,21 @@ elif bin_type == 'formz':
 elif bin_type == 'formzOLD':
     label = r'$z_{\rm form}$ (half mass)'
     min_bin, max_bin, bin_width = 0, 3.5, 0.4
-# elif bin_type in ['accretions', 'accretionsOLD', 'accret']:
-#     label = r'$\Gamma$'
-#     min_bin, max_bin, bin_width = 0, 6, 0.5
+elif bin_type == 'accretions':
+    label = r'$\Gamma$'
+    min_bin, max_bin, bin_width = 1, 6, 0.5
 elif bin_type == 'mass':
     label = r"$M_{200m} / M_\odot$"
     min_bin, max_bin, bin_width = 13, 15.5, 0.5
 num_bins, all_bins, _, _ = get_bins(min_bin, max_bin, bin_width)
-    
+print(all_bins)
 
 
 root_dir = f'result/bootstrap_stats_DK14/with_{bin_type}/'
 simu = 'Hydro'
-features = ['depth', 'width_dimless', #'DWratio'
+features = ['depth', 'width_dimless',# 'DWratio'
             ]
-Ylabels = [r"$\mathcal{D}$", r"$\mathcal{W}$", # r"$\mathcal{D}/\mathcal{W}$"
+Ylabels = [r"$\mathcal{D}$", r"$\mathcal{W}$", #r"$\mathcal{D}/\mathcal{W}$"
            ]
 
 fig, axs = plt.subplots(2, 1, figsize=(4, 6), dpi=500, sharex=True, constrained_layout=True) 
@@ -51,12 +51,12 @@ fig, axs = plt.subplots(2, 1, figsize=(4, 6), dpi=500, sharex=True, constrained_
 # Set up the colorbar
 cmap = plt.get_cmap('plasma', len(all_bins))
 if bin_type == 'mass':
-    bound = np.logspace(min(all_bins), max(all_bins)+0.01, len(all_bins)+1) 
+    bound = np.logspace(min(all_bins), max(all_bins)+0.01, len(all_bins)) 
 else:
-    bound = np.linspace(min(all_bins), max(all_bins)+0.01, len(all_bins)+1) 
+    bound = np.linspace(min(all_bins), max(all_bins)+0.01, len(all_bins)) 
 norm = BoundaryNorm(bound, cmap.N)
 cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
-                    ax=axs[1], orientation='horizontal', spacing='proportional', ticks=bound)
+                    ax=axs[-1], orientation='horizontal', spacing='proportional', ticks=bound)
 
 # Reduce colormap ticks sf
 from matplotlib.ticker import FuncFormatter
@@ -79,33 +79,30 @@ MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
 
 for ifeat, feature in enumerate(features):
     
-    if bin_type == 'NFWconc' and feature == 'depth':
-        pass
-    else:
-        # ============================================================================================
-        # Load fitted data and plot
-        # ============================================================================================
-        
-        fitted_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
-        fitted_data = np.load(fitted_dir + f'{bin_type}_{feature}_fitted_data.npy', allow_pickle=True).item()
-        
-        fitted_vals_bins = np.unique(fitted_data[bin_type])
-        fitted_vals      = np.concatenate(fitted_data[bin_type])
-        fitted_z         = np.concatenate(fitted_data['z'])
-        fitted_y         = np.concatenate(fitted_data[feature])
-        del fitted_data
+    # ============================================================================================
+    # Load fitted data and plot
+    # ============================================================================================
+    
+    fitted_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
+    fitted_data = np.load(fitted_dir + f'{bin_type}_{feature}_fitted_data.npy', allow_pickle=True).item()
+    
+    fitted_vals_bins = np.unique(fitted_data[bin_type])
+    fitted_vals      = np.concatenate(fitted_data[bin_type])
+    fitted_z         = np.concatenate(fitted_data['z'])
+    fitted_y         = np.concatenate(fitted_data[feature])
+    del fitted_data
 
-        # Plot the fitted data
-        for bin_start, bin_end in zip(fitted_vals_bins[:-1], fitted_vals_bins[1:]):
-            select_idx = np.where((fitted_vals >= bin_start) & (fitted_vals < bin_end))[0]
-            if select_idx.size == 0:
-                pass
-            else:
-                color_val = np.mean(fitted_vals[select_idx])
+    # Plot the fitted data
+    for bin_start, bin_end in zip(fitted_vals_bins[:-1], fitted_vals_bins[1:]):
+        select_idx = np.where((fitted_vals >= bin_start) & (fitted_vals < bin_end))[0]
+        if select_idx.size == 0:
+            pass
+        else:
+            color_val = np.mean(fitted_vals[select_idx])
 
-                plot_x = fitted_z[select_idx]
-                plot_y = fitted_y[select_idx]
-                axs[ifeat].plot(plot_x, plot_y, color=cmap(norm(color_val)), ls='--') 
+            plot_x = fitted_z[select_idx]
+            plot_y = fitted_y[select_idx]
+            axs[ifeat].plot(plot_x, plot_y, color=cmap(norm(color_val)), ls='--') 
     axs[ifeat].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     
     # ============================================================================================
@@ -145,7 +142,7 @@ for ifeat, feature in enumerate(features):
 # ============================================================================================
 # Save the plot
 # ============================================================================================
-axs[1].set_xlabel('z')
+axs[-1].set_xlabel('z')
 save_dir = f'result/paper_plots/fig4/MTNG-Hydro/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)

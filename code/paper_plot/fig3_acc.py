@@ -4,7 +4,7 @@ from matplotlib import cm
 from matplotlib import pyplot as plt 
 from matplotlib.colors import BoundaryNorm
 plt.style.use('code/style.mplstyle')
-from func import load_stats, load_all_z, plot_feature
+from func import load_stats, load_all_z, plot_feature, fitting
 
 x_type = 'accretions'
 print('')
@@ -26,13 +26,19 @@ def accret_depth(inputs, a, b, c):
     accret, zval = inputs    
     return a*accret**b / (zval + 1)**c
 
-def accret_width(inputs, a, b, c):
+# def accret_width(inputs, a, b, c):
+#     accret, zval = inputs
+#     return a*accret**b / (zval + 1)**c
+
+def accret_width(inputs, a, b):
     accret, zval = inputs
-    return a*accret**b / (zval + 1)**c
+    return a*accret**b 
     
 def accret_DW(inputs, a, b, c):
     accret, zval = inputs
     return a*accret**b / (zval + 1)**c
+
+fit_funcs = [accret_depth, accret_width, accret_DW]
 
 # ============================================================================================
 # Set up the plot
@@ -66,26 +72,18 @@ cb.ax.xaxis.set_major_formatter(FuncFormatter(custom_format))
 cb.ax.tick_params(axis='x', rotation=70) 
 cb.set_label('z')
 
-
+plot_colors = [cmap, None]
 
 # ============================================================================================
 # Plot
 # ============================================================================================
 for ifeat, feature in enumerate(features):
         
-    if feature == 'depth':
-        fit_func = accret_depth
-    elif feature == 'width_dimless':
-        fit_func = accret_width
-    elif feature == 'DWratio':
-        fit_func = accret_DW
-        
     all_z, all_x_med, all_x_min, all_x_max = [], [], [], []
     all_y_med, all_y_min, all_y_max = [], [], []
         
     # Plot MTNG
     for snap in MTNG_snaps:
-        print(snap)
         MTNG_z, MTNG_mass, MTNG_feat = load_stats(MTNG_dir, f'snap_{snap}_Rsp_stats.npy',
                                                     f'med_{x_type}', feature)
         plot_feature(simu, np.round(MTNG_z, 1), MTNG_mass, MTNG_feat, [axs[ifeat], cmap, norm])
@@ -127,13 +125,12 @@ for ifeat, feature in enumerate(features):
     all_z = all_z[mask]
 
     
-    # # Fit the data
-    # popt, perr, red_chi2, y_fit, axs, fitted_data = fitting(bin_type, feature, 
-    #                                                         all_z, 
-    #                                                         all_x_med, 
-    #                                                         all_y_med, all_y_min, all_y_max,
-    #                                                         fit_func, [axs, cmap, norm],
-    #                                                         all_x_min, all_x_max, )
+    # # Fit the data    
+    # popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_funcs[ifeat], 
+    #                                                         values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
+    #                                                         labels = [x_type, 'z', feature],
+    #                                                         plot_info = [axs[ifeat], plot_colors[ifeat], norm,'--'], 
+    #                                                         bootstrap=True)
     # print(popt, red_chi2)
     
     
@@ -141,7 +138,7 @@ for ifeat, feature in enumerate(features):
     # fitted_data_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
     # if not os.path.exists(fitted_data_dir):
     #     os.makedirs(fitted_data_dir)
-    # np.save(fitted_data_dir + f'{bin_type}_{feature}_fitted_data.npy', fitted_data)
+    # np.save(fitted_data_dir + f'{x_type}_{feature}_fitted_data.npy', fitted_data)
     
     axs[ifeat].set_ylabel(Ylabels[ifeat])
     # axs[ifeat].legend(loc='best')

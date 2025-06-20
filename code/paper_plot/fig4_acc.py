@@ -16,8 +16,9 @@ print(f'>>> Plot depth and width vs z ({bin_type}) <<<')
 print('')
 
 def accret_depth0(inputs, a, b, c):
-    zval, accret = inputs    
-    return a*zval**b + c
+    zval, accret = inputs  
+    return a*accret**b*np.exp(c*zval)  
+    # return a*zval**b + c
 
 def accret_depth(inputs, a, b, c, d):
     zval, accret = inputs    
@@ -25,23 +26,26 @@ def accret_depth(inputs, a, b, c, d):
     
 def accret_depth2(inputs, a, b):
     zval, accret = inputs 
-    return a*(zval+1)**b 
+    return a*(zval+1)**b
+
+#-----------------------------------------------------------------------
 
 def accret_width0(inputs, a, b, c):
     zval, accret = inputs   
     return a*zval**b + c
 
-def accret_width(inputs, a, b, c, d):
+def accret_width(inputs, a):
     zval, accret = inputs   
-    return a*zval**b + c*accret**d
+    return -0.28*zval**a + 1.1*accret**(-0.5)
 
 def accret_width2(inputs, a, b):
     zval, accret = inputs 
     return a*(zval+1)**b 
+
+def accret_width3(inputs, a, b, c):
+    zval, accret = inputs 
+    return a*accret**b*(zval+1)**c
     
-# def accret_DW(inputs, a, b, c):
-#     zval, accret = inputs   
-#     return a*zval**b + c
 
 
 root_dir = f'result/bootstrap_stats_DK14/with_{bin_type}/'
@@ -81,6 +85,7 @@ MTNG_dir = f'{root_dir}/MTNG/{simu}-Arepo/MTNG-L500-4320-A/Nboots_1024/'
 fit_func0 = [accret_depth0, accret_width0]
 fit_func1 = [accret_depth, accret_width]
 fit_func2 = [accret_depth2, accret_width2]
+fit_func3 = [None, accret_width3]
 
 for ifeat, feature in enumerate(features):
 
@@ -142,28 +147,31 @@ for ifeat, feature in enumerate(features):
     all_z = all_z[mask]
     
     # Fit the data
-    popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func0[ifeat], 
+    if feature == 'width_dimless':
+        popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func0[ifeat], 
                                                             values = [all_z, all_x_med, all_y_med, all_y_min, all_y_max],
                                                             labels = ['z', bin_type, feature],
                                                             plot_info = [axs[ifeat], None, norm, '--'], 
                                                             bootstrap=True)
-    print(popt, red_chi2)
-    print(perr)
-    popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func1[ifeat], 
+        print('')
+        popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func1[ifeat], 
                                                             values = [all_z, all_x_med, all_y_med, all_y_min, all_y_max],
                                                             labels = ['z', bin_type, feature],
                                                             plot_info = [axs[ifeat], cmap, norm, 'dotted'], 
                                                             bootstrap=True)
-    print(popt, red_chi2)
-    print(perr)
-    popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func2[ifeat], 
+        print('')
+        popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func2[ifeat], 
                                                             values = [all_z, all_x_med, all_y_med, all_y_min, all_y_max],
                                                             labels = ['z', bin_type, feature],
                                                             plot_info = [axs[ifeat], None, norm, 'solid'], 
                                                             bootstrap=True)
-    print(popt, red_chi2)
-    print(perr)
-    print('')
+        print('')
+        # popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func3[ifeat], 
+        #                                                     values = [all_z, all_x_med, all_y_med, all_y_min, all_y_max],
+        #                                                     labels = ['z', bin_type, feature],
+        #                                                     plot_info = [axs[ifeat], cmap, norm, 'dashdot'], 
+        #                                                     bootstrap=True)
+        # print('')
 
     axs[ifeat].set_ylabel(Ylabels[ifeat])
     # axs[ifeat].legend(loc='best')

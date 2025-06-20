@@ -13,8 +13,10 @@ print('')
 
 root_dir = f'result/bootstrap_stats_DK14/with_{x_type}/'
 simu = 'Hydro'
-features = ['depth', 'width_dimless', 'DWratio']
-Ylabels = [r"$\mathcal{D}$", r"$\mathcal{W}$", r"$\mathcal{D}/\mathcal{W}$"]
+features = ['depth', 'width_dimless', 'DWratio'
+            ]
+Ylabels = [r"$\mathcal{D}$", r"$\mathcal{W}$", r"$\mathcal{D}/\mathcal{W}$"
+           ]
 
 # ============================================================================================
 # Define the fitting function with two variables
@@ -24,17 +26,23 @@ Ylabels = [r"$\mathcal{D}$", r"$\mathcal{W}$", r"$\mathcal{D}/\mathcal{W}$"]
 #     x, zval = inputs
 #     return a*np.log(x)/(zval+1)**b + c
 
-def width(inputs, a, b, c):
-    x, zval = inputs
-    return np.log(c*x**(a*(zval+1)**b))
-    
-def DW(inputs, a, b, c):
-    x, zval = inputs
-    return a*np.exp(b*x*(zval+0.6)) * (zval+1)**c
+def depth(inputs, a, b, c):
+    x, z = inputs
+    return a * x**b * (z+1)**c
+    # return (a*np.exp(b*x*(zval+0.6)) * (zval+1)**c) * (np.log(d*x**(e*(zval+1)**f)))
 
-def depth(inputs, a, b, c, d, e, f):
-    x, zval = inputs
-    return (a*np.exp(b*x*(zval+0.6)) * (zval+1)**c) * (np.log(d*x**(e*(zval+1)**f)))
+def width(inputs, a, b, c):
+    x, z = inputs
+    # return a*x*np.exp(-b*x**2) 
+    return a*np.log(x)*(z+1)**b + c
+    # return np.log(a*x**(b*(z+1)**c))
+    
+def DW(inputs, a, b, c, d, e, f):
+    x, z = inputs
+    return (a * x**b * (z+1)**c) / (d*np.log(x)*(z+1)**e+f)
+    # return (a * x**b * (z+1)**c) / (np.log(d*x**(e*(z+1)**f)))
+# [ 0.5423064  -0.79218023  1.82296251]
+
 
 # ============================================================================================
 # Set up the plot
@@ -57,7 +65,7 @@ cmap = plt.get_cmap('viridis', len(MTNG_snaps))
 bound = all_z
 norm = BoundaryNorm(bound, cmap.N)
 cb = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
-                ax=axs[2], orientation='horizontal', spacing='proportional', ticks=bound)
+                ax=axs[-1], orientation='horizontal', spacing='proportional', ticks=bound)
 # -----------------------------------------------------------------------------------------
 
 # Reduce colormap ticks sf
@@ -73,14 +81,13 @@ cb.set_label('z')
 # ============================================================================================
 # Plot
 # ============================================================================================
+
+fit_funcs = [depth, width, DW]
+plot_lines = ['--', '--', '--']
+plot_colors = [cmap, cmap, cmap]  
+
 for ifeat, feature in enumerate(features):
     print(feature)
-    if feature == 'depth':
-        fit_func = depth
-    elif feature == 'width_dimless':
-        fit_func = width
-    elif feature == 'DWratio':
-        fit_func = DW
             
     all_z, all_x_med, all_x_min, all_x_max = [], [], [], []
     all_y_med, all_y_min, all_y_max = [], [], []
@@ -128,22 +135,18 @@ for ifeat, feature in enumerate(features):
     all_z = all_z[valid_indices]
     
     # Fit the data
-    if fit_func is not None:
-        popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_func, 
+    popt, perr, red_chi2, y_fit, axs[ifeat], fitted_data = fitting(fit_funcs[ifeat], 
                                                             values = [all_x_med, all_z, all_y_med, all_y_min, all_y_max],
                                                             labels = [x_type, 'z', feature],
-                                                            plot_info = [axs[ifeat], cmap, norm, '--'], 
+                                                            plot_info = [axs[ifeat], plot_colors[ifeat], norm, plot_lines[ifeat]], 
                                                             bootstrap=True)
-        print(popt)
-        print(perr)
-        print(red_chi2)
-        print('')
+    print('')
         
-        # Save fitted data
-        fitted_data_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
-        if not os.path.exists(fitted_data_dir):
-            os.makedirs(fitted_data_dir)
-        np.save(fitted_data_dir + f'{x_type}_{feature}_fitted_data.npy', fitted_data)
+    # Save fitted data
+    fitted_data_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
+    if not os.path.exists(fitted_data_dir):
+        os.makedirs(fitted_data_dir)
+    np.save(fitted_data_dir + f'{x_type}_{feature}_fitted_data.npy', fitted_data)
     
     axs[ifeat].set_ylabel(Ylabels[ifeat])
     # axs[ifeat].legend(loc='best')
@@ -152,7 +155,8 @@ for ifeat, feature in enumerate(features):
 # Save the plot
 # ============================================================================================
 
-axs[2].set_xlabel("c")
+# axs[-1].set_ylim(None, 4)
+axs[-1].set_xlabel("c")
 
 save_dir = f'result/paper_plots/fig3_fit/MTNG-Hydro/'
 if not os.path.exists(save_dir):

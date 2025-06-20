@@ -3,7 +3,7 @@ import os
 from tqdm import tqdm
 
 # bin_types = ['mergerz']
-bin_types = ['mergerz_mass_30', 'mergerz_mass_35', 'mergerz_mass_40', 'mergerz_mass_45']
+bin_types = ['NFWconc_mass_30', 'NFWconc_mass_35', 'NFWconc_mass_40', 'NFWconc_mass_45']
 snaps = [# 129, 151, 179, 214, 237, 
          264] # MTNG snapshots
 
@@ -40,13 +40,14 @@ def pngs_to_gif(image_paths, out_path='output.gif', fps=60):
     images[0].save(out_path, save_all=True, append_images=images[1:], duration=duration, loop=0, optimize=True)
     print(f"[✅ 完成] 文件大小: {os.path.getsize(out_path)/(1024**2):.2f} MB")
 
-save_dir = f'result/bootstrap_videos/'
+profile = '_DK14'
+save_dir = f'result/bootstrap_videos{profile}/'
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
     
 if __name__ == "__main__":
     for bin_type in bin_types:
         for snap in snaps:
-            root_folder = f"result/bootstrap_plots/MTNG/Hydro-Arepo/MTNG-L500-4320-A/with_{bin_type}/snap_{snap}"
+            root_folder = f"result/bootstrap_plots{profile}/MTNG/Hydro-Arepo/MTNG-L500-4320-A/with_{bin_type}/snap_{snap}"
             image_paths = collect_all_pngs(root_folder)
             pngs_to_gif(image_paths, out_path=f"{save_dir}/{bin_type}_{snap}_profiles.gif", fps=60)

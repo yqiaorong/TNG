@@ -8,7 +8,7 @@ print('')
 print('>>> Plot the depth and width vs accretions at z = 0 <<<')
 print('')
 
-current_snap = 214
+current_snap = 264
 bin_type = 'accretions'
 root_dir = f'result/bootstrap_stats_DK14/with_{bin_type}'
 simus = ['Hydro']
@@ -30,7 +30,7 @@ def width(inputs, a, b):
 
 for simu in simus:
     for feature in features:
-        
+        print(feature)
         if feature == 'depth':
             fit_func = depth
         elif feature == 'width_dimless':
@@ -121,9 +121,9 @@ for simu in simus:
                                                             labels = ['accretions', 'z', feature],
                                                             plot_info = [axs, cmap, norm, '--'], 
                                                             bootstrap=True)
-        print(feature)
-        print(popt, red_chi2)
-        print(perr)
+        # print(feature)
+        # print(popt, red_chi2)
+        # print(perr)
         print('')
         
         # Fit the data
@@ -133,9 +133,9 @@ for simu in simus:
                                                             labels = ['accretions', 'z', feature],
                                                             plot_info = [axs, cmap, norm, 'dotted'], 
                                                             bootstrap=True)
-            print(feature)
-            print(popt, red_chi2)
-            print(perr)
+            # print(feature, 'linear')
+            # print(popt, red_chi2)
+            # print(perr)
             print('')
         
         # ============================================================================================
